@@ -1,5 +1,11 @@
 import "./App.css";
 
-function App() {}
+function App() {
+  return (
+    <div className="mx-5 mt-5">
+      <h1>Hello World!</h1>
+    </div>
+  );
+}
 
 export default App;

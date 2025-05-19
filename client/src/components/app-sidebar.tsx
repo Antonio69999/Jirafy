@@ -1,4 +1,7 @@
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+import { useColorThemeStore } from "@/store/colorThemeStore";
+import { useTheme } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
 
 import {
   Sidebar,
@@ -9,52 +12,43 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 
-// Menu items.
 const items = [
-  {
-    title: "Home",
-    url: "#",
-    icon: Home,
-  },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
+  { title: "Home", url: "#", icon: Home },
+  { title: "Dashboard", url: "#", icon: Inbox },
+  { title: "Calendar", url: "#", icon: Calendar },
+  { title: "Statistics", url: "#", icon: Search },
+  { title: "Settings", url: "#", icon: Settings },
 ];
 
 export function AppSidebar() {
+  const { colorTheme } = useColorThemeStore();
+
   return (
     <Sidebar>
-      <SidebarContent>
+      <SidebarContent className="py-6 px-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel
+            className={cn("text-lg font-semibold mb-6", `theme-${colorTheme}`)}
+          >
+            Jirafy
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-3">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    className={cn(
+                      "transition-colors",
+                      `theme-${colorTheme}`,
+                      "hover:bg-opacity-50 hover:bg-primary"
+                    )}
+                  >
+                    <item.icon className="size-5" />
+                    <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -62,6 +56,14 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="border-t py-4 px-4">
+        <div
+          className={cn("text-sm text-muted-foreground", `theme-${colorTheme}`)}
+        >
+          Jirafy © {new Date().getFullYear()}
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }

@@ -9,7 +9,7 @@ export function Header({ className }: { className?: string }) {
       <div className="w-full flex justify-between items-center p-4">
         <div className="flex items-center gap-4">
           <SidebarTrigger />
-          <h1 className="text-2xl font-bold truncate">Jirafy</h1>
+          <h1 className="text-2xl font-bold truncate"></h1>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <ColorThemeToggle />
