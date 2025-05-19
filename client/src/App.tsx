@@ -1,9 +1,19 @@
 import "./App.css";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useTheme } from "@/components/theme-provider";
+import { ColorSwitcher } from "@/components/ColorSwitcher";
 
 function App() {
   const { theme } = useTheme();
+
+  const savedTheme = localStorage.getItem("color-theme") as
+    | "blue"
+    | "yellow"
+    | "purple"
+    | null;
+  if (savedTheme) {
+    document.documentElement.classList.add(`theme-${savedTheme}`);
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -13,6 +23,10 @@ function App() {
       </header>
 
       <main className="container mx-auto p-4">
+        <main className="p-4">
+          <h2 className="mb-2">Changer la couleur principale :</h2>
+          <ColorSwitcher />
+        </main>
         <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Current Theme: {theme}</h2>
           <p className="text-muted-foreground mb-4">
