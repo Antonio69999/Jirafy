@@ -1,0 +1,21 @@
+{
+    "app": {
+        "title": "Jirafy",
+        "sidebar": {
+            "home": "Accueil",
+            "dashboard": "Tableau de bord",
+            "calendar": "Calendrier",
+            "statistics": "Statistiques",
+            "settings": "Paramètres"
+        },
+        "search": {
+            "placeholder": "Rechercher..."
+        },
+        "header": {
+            "addTask": "Ajouter une tâche",
+            "changeTheme": "Changer de thème",
+            "toggleTheme": "Changer le mode",
+            "create": "Ajouter une tâche"
+        }
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "app": {
+        "title": "Jirafy",
+        "sidebar": {
+            "home": "Home",
+            "dashboard": "Dashboard",
+            "calendar": "Calendar",
+            "statistics": "Statistics",
+            "settings": "Settings"
+        },
+        "search": {
+            "placeholder": "Search..."
+        },
+        "header": {
+            "addTask": "Add a task",
+            "changeTheme": "Change color theme",
+            "toggleTheme": "Toggle theme",
+            "create": "Add a task"
+        }
+    }
+}

@@ -1,7 +1,7 @@
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
 import { useColorThemeStore } from "@/store/colorThemeStore";
-import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 import {
   Sidebar,
@@ -15,25 +15,34 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 
-const items = [
-  { title: "Home", url: "#", icon: Home },
-  { title: "Dashboard", url: "#", icon: Inbox },
-  { title: "Calendar", url: "#", icon: Calendar },
-  { title: "Statistics", url: "#", icon: Search },
-  { title: "Settings", url: "#", icon: Settings },
-];
-
 export function AppSidebar() {
   const { colorTheme } = useColorThemeStore();
+  const { t } = useTranslation();
+
+  const items = [
+    { title: t("app.sidebar.home"), url: "#", icon: Home },
+    { title: t("app.sidebar.dashboard"), url: "#", icon: Inbox },
+    { title: t("app.sidebar.calendar"), url: "#", icon: Calendar },
+    { title: t("app.sidebar.statistics"), url: "#", icon: Search },
+    { title: t("app.sidebar.settings"), url: "#", icon: Settings },
+  ];
 
   return (
     <Sidebar>
       <SidebarContent className="py-6 px-4">
         <SidebarGroup>
           <SidebarGroupLabel
-            className={cn("text-lg font-semibold mb-6", `theme-${colorTheme}`)}
+            className={cn(
+              "flex items-center gap-2 mb-6",
+              `theme-${colorTheme}`
+            )}
           >
-            Jirafy
+            <img
+              src="https://placehold.co/50x50/?text=Logo"
+              alt="Logo"
+              className="rounded-md"
+            />
+            <span className="text-lg font-semibold">Jirafy</span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-3">
