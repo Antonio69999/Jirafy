@@ -54,6 +54,32 @@
         "language": {
             "title": "Language",
             "description": "Choose your preferred language"
+        },
+        "account": {
+            "title": "Account",
+            "password": {
+                "current": "Current Password",
+                "new": "New Password",
+                "confirm": "Confirm New Password",
+                "change": "Change Password",
+                "success": "Password updated",
+                "description": "Your password has been successfully updated.",
+                "minimumLength": "Password must be at least 8 characters long",
+                "required": "Current password required",
+                "mismatch": "Passwords do not match",
+                "requirements": "Password must include uppercase, lowercase and numbers"
+            },
+            "avatar": {
+                "title": "Profile Picture",
+                "description": "Upload a profile picture to personalize your account.",
+                "dropzone": "Drop your image here, or",
+                "browse": "browse",
+                "save": "Save Changes",
+                "cancel": "Cancel",
+                "uploading": "Uploading...",
+                "success": "Avatar updated",
+                "success_description": "Your profile picture has been updated successfully."
+            }
         }
     }
 }

@@ -29,15 +29,11 @@ export function Header({ className }: { className?: string }) {
             <CircleHelp className="size-5" />
           </Button>
           <div className="flex items-center gap-4 shrink-0">
-            {/* ... */}
-            {/* <LanguageSwitcher />
-            <ColorThemeToggle /> */}
             <ModeToggle />
-            {/* ... */}
           </div>
           <Avatar className="w-8 h-8">
             <AvatarImage
-              src="https://placehold.co/55x55/?text=Logo"
+              src="https://placehold.co/55x55/?text=PP"
               alt="User Avatar"
             />
             <AvatarFallback>CN</AvatarFallback>
