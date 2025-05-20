@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type ColorTheme =
+export type ColorTheme =
   | "blue"
   | "yellow"
   | "purple"

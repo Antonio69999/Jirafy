@@ -17,5 +17,43 @@
             "toggleTheme": "Changer le mode",
             "create": "Ajouter une tâche"
         }
+    },
+    "settings": {
+        "title": "Paramètres",
+        "description": "Personnalisez votre expérience Jirafy",
+        "general": "Paramètres généraux",
+        "appearance": {
+            "title": "Apparence"
+        },
+        "themeMode": {
+            "title": "Thème",
+            "description": "Choisissez votre mode d'affichage préféré",
+            "light": "Clair",
+            "dark": "Sombre",
+            "system": "Système"
+        },
+        "colorTheme": {
+            "title": "Thème de couleur",
+            "description": "Choisissez votre thème de couleur préféré",
+            "blue": "Bleu",
+            "green": "Vert",
+            "purple": "Violet",
+            "red": "Rouge",
+            "pink": "Rose",
+            "orange": "Orange",
+            "yellow": "Jaune"
+        },
+        "localization": {
+            "title": "Localisation",
+            "description": "Choisissez votre langue préférée",
+            "language": {
+                "en": "Anglais",
+                "fr": "Français"
+            }
+        },
+        "language": {
+            "title": "Langue",
+            "description": "Choisissez votre langue préférée"
+        }
     }
 }

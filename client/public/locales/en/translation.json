@@ -17,5 +17,43 @@
             "toggleTheme": "Toggle theme",
             "create": "Add a task"
         }
+    },
+    "settings": {
+        "title": "Settings",
+        "description": "Customize your Jirafy experience",
+        "general": "General Settings",
+        "appearance": {
+            "title": "Appearance"
+        },
+        "themeMode": {
+            "title": "Theme",
+            "description": "Choose your preferred display mode",
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
+        },
+        "colorTheme": {
+            "title": "Color Theme",
+            "description": "Choose your preferred color theme",
+            "blue": "Blue",
+            "green": "Green",
+            "purple": "Purple",
+            "red": "Red",
+            "pink": "Pink",
+            "orange": "Orange",
+            "yellow": "Yellow"
+        },
+        "localization": {
+            "title": "Localization",
+            "description": "Choose your preferred language",
+            "language": {
+                "en": "English",
+                "fr": "French"
+            }
+        },
+        "language": {
+            "title": "Language",
+            "description": "Choose your preferred language"
+        }
     }
 }

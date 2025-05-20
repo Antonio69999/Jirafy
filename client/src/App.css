@@ -116,6 +116,10 @@
   --primary-foreground: oklch(1 0 0);
   --accent: oklch(0.35 0.12 250);
   --accent-foreground: oklch(1 0 0);
+  --hover-bg: oklch(0.623 0.214 259.815 / 10%);
+  --active-bg: oklch(0.623 0.214 259.815 / 20%);
+  --focus-ring: oklch(0.623 0.214 259.815 / 30%);
+  --hover-border: oklch(0.623 0.214 259.815 / 50%);
 }
 
 /* 💛 Thème jaune */
@@ -124,6 +128,10 @@
   --primary-foreground: oklch(0.15 0 0);
   --accent: oklch(0.8 0.13 95);
   --accent-foreground: oklch(0.15 0 0);
+  --hover-bg: oklch(0.85 0.18 95 / 15%);
+  --active-bg: oklch(0.85 0.18 95 / 25%);
+  --focus-ring: oklch(0.85 0.18 95 / 30%);
+  --hover-border: oklch(0.85 0.18 95 / 50%);
 }
 
 /* 💜 Thème violet */
@@ -132,6 +140,10 @@
   --primary-foreground: oklch(1 0 0);
   --accent: oklch(0.4 0.12 305);
   --accent-foreground: oklch(1 0 0);
+  --hover-bg: oklch(0.5 0.18 305 / 10%);
+  --active-bg: oklch(0.5 0.18 305 / 20%);
+  --focus-ring: oklch(0.5 0.18 305 / 30%);
+  --hover-border: oklch(0.5 0.18 305 / 50%);
 }
 
 /* ❤️ Thème rouge */
@@ -140,6 +152,10 @@
   --primary-foreground: oklch(1 0 0);
   --accent: oklch(0.45 0.18 25);
   --accent-foreground: oklch(1 0 0);
+  --hover-bg: oklch(0.637 0.237 25.331 / 10%);
+  --active-bg: oklch(0.637 0.237 25.331 / 20%);
+  --focus-ring: oklch(0.637 0.237 25.331 / 30%);
+  --hover-border: oklch(0.637 0.237 25.331 / 50%);
 }
 
 /* 💗 Thème rose */
@@ -148,6 +164,10 @@
   --primary-foreground: oklch(1 0 0);
   --accent: oklch(0.5 0.2 16);
   --accent-foreground: oklch(1 0 0);
+  --hover-bg: oklch(0.645 0.246 16.439 / 10%);
+  --active-bg: oklch(0.645 0.246 16.439 / 20%);
+  --focus-ring: oklch(0.645 0.246 16.439 / 30%);
+  --hover-border: oklch(0.645 0.246 16.439 / 50%);
 }
 
 /* 🧡 Thème orange */
@@ -156,6 +176,10 @@
   --primary-foreground: oklch(0.15 0 0);
   --accent: oklch(0.68 0.16 60);
   --accent-foreground: oklch(0.15 0 0);
+  --hover-bg: oklch(0.705 0.213 47.604 / 10%);
+  --active-bg: oklch(0.705 0.213 47.604 / 20%);
+  --focus-ring: oklch(0.705 0.213 47.604 / 30%);
+  --hover-border: oklch(0.705 0.213 47.604 / 50%);
 }
 
 /* 💚 Thème vert */
@@ -164,6 +188,10 @@
   --primary-foreground: oklch(1 0 0);
   --accent: oklch(0.45 0.15 145);
   --accent-foreground: oklch(1 0 0);
+  --hover-bg: oklch(0.723 0.219 149.579 / 10%);
+  --active-bg: oklch(0.723 0.219 149.579 / 20%);
+  --focus-ring: oklch(0.723 0.219 149.579 / 30%);
+  --hover-border: oklch(0.723 0.219 149.579 / 50%);
 }
 
 @layer base {

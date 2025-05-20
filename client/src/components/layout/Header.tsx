@@ -1,12 +1,10 @@
-import { ModeToggle } from "@/components/ModeToggle";
-import { ColorThemeToggle } from "@/components/ColorThemeToggle";
+import { ModeToggle } from "@/components/toggles/ModeToggle";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { SearchBar } from "@/components/SearchBar";
+import { SearchBar } from "@/components/layout/SearchBar";
 import { cn } from "@/lib/utils";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { Plus, Bell, CircleHelp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useTranslation } from "react-i18next";
 
 export function Header({ className }: { className?: string }) {
@@ -32,8 +30,8 @@ export function Header({ className }: { className?: string }) {
           </Button>
           <div className="flex items-center gap-4 shrink-0">
             {/* ... */}
-            <LanguageSwitcher />
-            <ColorThemeToggle />
+            {/* <LanguageSwitcher />
+            <ColorThemeToggle /> */}
             <ModeToggle />
             {/* ... */}
           </div>

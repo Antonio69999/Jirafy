@@ -2,6 +2,7 @@ import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
 import { useColorThemeStore } from "@/store/colorThemeStore";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { NavLink } from "react-router";
 
 import {
   Sidebar,
@@ -20,11 +21,11 @@ export function AppSidebar() {
   const { t } = useTranslation();
 
   const items = [
-    { title: t("app.sidebar.home"), url: "#", icon: Home },
+    { title: t("app.sidebar.home"), url: "/", icon: Home },
     { title: t("app.sidebar.dashboard"), url: "#", icon: Inbox },
     { title: t("app.sidebar.calendar"), url: "#", icon: Calendar },
     { title: t("app.sidebar.statistics"), url: "#", icon: Search },
-    { title: t("app.sidebar.settings"), url: "#", icon: Settings },
+    { title: t("app.sidebar.settings"), url: "/settings", icon: Settings },
   ];
 
   return (
@@ -48,17 +49,25 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-3">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    tooltip={item.title}
-                    className={cn(
-                      "transition-colors",
-                      `theme-${colorTheme}`,
-                      "hover:bg-opacity-50 hover:bg-primary"
-                    )}
+                  <NavLink
+                    to={item.url}
+                    style={{ textDecoration: "none" }}
+                    className={({ isActive }) =>
+                      isActive ? "active-nav-link" : ""
+                    }
                   >
-                    <item.icon className="size-5" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
+                    <SidebarMenuButton
+                      tooltip={item.title}
+                      className={cn(
+                        "transition-colors",
+                        `theme-${colorTheme}`,
+                        "hover:bg-[var(--hover-bg)] focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:outline-none"
+                      )}
+                    >
+                      <item.icon className="size-5" />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </NavLink>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
