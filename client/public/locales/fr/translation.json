@@ -81,5 +81,14 @@
                 "success_description": "Votre image de profil a été mise à jour avec succès."
             }
         }
+    },
+    "dashboard": {
+        "description": "Gérez et suivez vos tâches de projet",
+        "addTask": "Ajouter une tâche",
+        "kanban": {
+            "todo": "À faire",
+            "inProgress": "En cours",
+            "done": "Terminé"
+        }
     }
 }

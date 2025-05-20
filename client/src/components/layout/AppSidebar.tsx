@@ -23,7 +23,7 @@ export function AppSidebar() {
 
   const items = [
     { title: t("app.sidebar.home"), url: "/", icon: Home },
-    { title: t("app.sidebar.dashboard"), url: "#", icon: Inbox },
+    { title: t("app.sidebar.dashboard"), url: "/dashboard", icon: Inbox },
     { title: t("app.sidebar.calendar"), url: "#", icon: Calendar },
     { title: t("app.sidebar.statistics"), url: "#", icon: Search },
     { title: t("app.sidebar.settings"), url: "/settings", icon: Settings },
@@ -46,6 +46,11 @@ export function AppSidebar() {
             />
             <span className="text-lg font-semibold">Jirafy</span>
           </SidebarGroupLabel>
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-muted-foreground/30"></div>
+            <div className="h-1 w-1 rounded-full bg-muted-foreground/50"></div>
+            <div className="h-px flex-1 bg-muted-foreground/30"></div>
+          </div>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-3">
               {items.map((item) => {
@@ -78,7 +83,11 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t py-4 px-4">
+      <div className="my-4 px-4">
+        <hr className="border-muted-foreground/40" />
+      </div>
+
+      <SidebarFooter className=" py-4 px-4">
         <div className="text-sm text-muted-foreground">
           Jirafy © {new Date().getFullYear()}
         </div>

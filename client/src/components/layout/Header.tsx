@@ -6,9 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Plus, Bell, CircleHelp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "react-i18next";
+import { useColorThemeStore } from "@/store/colorThemeStore";
 
 export function Header({ className }: { className?: string }) {
   const { t } = useTranslation();
+
+  const { colorTheme } = useColorThemeStore();
 
   return (
     <header className={cn("w-full min-w-0 border-b border-border", className)}>
@@ -19,7 +22,7 @@ export function Header({ className }: { className?: string }) {
           <h1 className="text-2xl font-bold truncate"></h1>
         </div>
         <div className="flex items-center gap-4 shrink-0">
-          <Button className="px-4 whitespace-nowrap">
+          <Button className={`px-4 whitespace-nowrap theme-${colorTheme}`}>
             <Plus className="mr-2" /> {t("app.header.create")}
           </Button>
           <Button variant="ghost" className="w-8 h-9 p-1">

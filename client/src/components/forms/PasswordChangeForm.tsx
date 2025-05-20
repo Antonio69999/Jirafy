@@ -59,7 +59,7 @@ export function PasswordChangeForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof passwordSchema>) {
+  function onSubmit() {
     setIsLoading(true);
 
     // Simulate form submission

@@ -81,5 +81,14 @@
                 "success_description": "Your profile picture has been updated successfully."
             }
         }
+    },
+    "dashboard": {
+        "description": "Manage and track your project tasks",
+        "addTask": "Add Task",
+        "kanban": {
+            "todo": "To Do",
+            "inProgress": "In Progress",
+            "done": "Done"
+        }
     }
 }
