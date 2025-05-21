@@ -131,5 +131,16 @@
             "delete": "Delete",
             "create": "Create Project"
         }
+    },
+    "teams": {
+        "title": "Title",
+        "description": "Manage your teams and their members",
+        "actions": {
+            "addTeam": "Add Team",
+            "editTeam": "Edit Team",
+            "deleteTeam": "Delete Team",
+            "addMember": "Add Member",
+            "removeMember": "Remove Member"
+        }
     }
 }

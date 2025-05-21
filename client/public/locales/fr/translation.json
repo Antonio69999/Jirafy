@@ -131,5 +131,17 @@
             "delete": "Supprimer",
             "create": "Créer un projet"
         }
+    },
+    "teams": {
+        "title": "Équipes",
+        "description": "Gérez vos équipes et leurs membres",
+        "actions": {
+            "addTeam": "Ajouter une équipe",
+            "editTeam": "Modifier l'équipe",
+            "deleteTeam": "Supprimer l'équipe",
+            "addMember": "Ajouter un membre",
+            "removeMember": "Supprimer le membre"
+        }
+        
     }
 }
