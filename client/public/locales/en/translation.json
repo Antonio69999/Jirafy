@@ -10,7 +10,8 @@
             "favourites": "Starred",
             "teams": "Teams",
             "projects": "Projects",
-            "workflows": "Workflows"
+            "workflows": "Workflows",
+            "recent": "Recent"
         },
         "search": {
             "placeholder": "Search..."

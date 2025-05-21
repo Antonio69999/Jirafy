@@ -10,7 +10,8 @@
             "favourites": "Éléments favoris",
             "teams": "Équipes",
             "projects": "Projets",
-            "workflows": "Flux de travail"
+            "workflows": "Flux de travail",
+            "recent": "Récents"
         },
         "search": {
             "placeholder": "Rechercher..."

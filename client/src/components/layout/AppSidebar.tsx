@@ -7,11 +7,12 @@ import {
   Star,
   Workflow,
   LayoutDashboard,
+  Clock,
 } from "lucide-react";
 import { useColorThemeStore } from "@/store/colorThemeStore";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
-import { NavLink, useLocation } from "react-router";
+import { NavLink, useLocation } from "react-router-dom";
 
 import {
   Sidebar,
@@ -32,7 +33,8 @@ export function AppSidebar() {
 
   const items = [
     { title: t("app.sidebar.home"), url: "/", icon: CircleUser },
-    { title: t("app.sidebar.favourites"), url: "/favourites", icon: Star },
+    { title: t("app.sidebar.recent"), url: "/?tab=viewed", icon: Clock },
+    { title: t("app.sidebar.favourites"), url: "/?tab=starred", icon: Star },
     { title: t("app.sidebar.projects"), url: "/projects", icon: Rocket },
     { title: t("app.sidebar.teams"), url: "/teams", icon: Users },
     {
@@ -70,10 +72,22 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
               {items.map((item) => {
-                const isActive =
-                  item.url === "/"
-                    ? location.pathname === "/"
-                    : location.pathname.startsWith(item.url);
+                const isActive = () => {
+                  if (item.url.startsWith("/?tab=")) {
+                    return (
+                      location.pathname === "/" &&
+                      location.search === item.url.substring(1)
+                    ); // substring to remove the leading '/'
+                  }
+
+                  // For regular home page without parameters
+                  if (item.url === "/") {
+                    return location.pathname === "/" && !location.search;
+                  }
+
+                  // For other pages
+                  return location.pathname.startsWith(item.url.split("?")[0]);
+                };
 
                 return (
                   <SidebarMenuItem key={item.title}>
@@ -84,7 +98,7 @@ export function AppSidebar() {
                           "transition-colors",
                           `theme-${colorTheme}`,
                           "hover:bg-[var(--hover-bg)] focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:outline-none",
-                          isActive ? "bg-[var(--active-bg)]" : ""
+                          isActive() ? "bg-[var(--active-bg)]" : ""
                         )}
                       >
                         <item.icon className="size-5" />

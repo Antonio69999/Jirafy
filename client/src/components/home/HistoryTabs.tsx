@@ -4,7 +4,7 @@ import { useColorThemeStore } from "@/store/colorThemeStore";
 import { Clock, Eye, Star } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   CheckSquare,
   BookmarkIcon,
@@ -38,6 +38,8 @@ type HistoryItem = {
 export default function HistoryTabs() {
   const { t } = useTranslation();
   const { colorTheme } = useColorThemeStore();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "worked";
 
   // Sample data for demonstration
   const workedOnItems: HistoryItem[] = [
@@ -65,9 +67,7 @@ export default function HistoryTabs() {
     },
   ];
 
-  // Dans votre fonction, ajoutez une fonction pour déterminer l'icône à utiliser
   const getActionIcon = (item: HistoryItem) => {
-    // Si c'est un projet, on montre toujours l'icône de dossier
     if (item.type === "project") {
       return <FolderIcon className="size-3.5" />;
     }
@@ -207,7 +207,7 @@ export default function HistoryTabs() {
 
   return (
     <div className={`theme-${colorTheme}`}>
-      <Tabs defaultValue="worked">
+      <Tabs defaultValue={defaultTab}>
         <TabsList className="mb-1">
           <TabsTrigger value="worked" className="flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5" />
