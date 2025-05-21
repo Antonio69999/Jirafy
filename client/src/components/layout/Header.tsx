@@ -15,7 +15,7 @@ export function Header({ className }: { className?: string }) {
 
   return (
     <header className={cn("w-full min-w-0 border-b border-border", className)}>
-      <div className="w-full flex justify-between items-center p-4">
+      <div className="w-full flex justify-between items-center p-4 py-2">
         <div className="flex items-center gap-4">
           <SidebarTrigger />
           <SearchBar />

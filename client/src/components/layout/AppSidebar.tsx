@@ -1,4 +1,13 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+import {
+  Calendar,
+  Rocket,
+  Settings,
+  CircleUser,
+  Users,
+  Star,
+  Workflow,
+  LayoutDashboard,
+} from "lucide-react";
 import { useColorThemeStore } from "@/store/colorThemeStore";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
@@ -22,20 +31,27 @@ export function AppSidebar() {
   const location = useLocation();
 
   const items = [
-    { title: t("app.sidebar.home"), url: "/", icon: Home },
-    { title: t("app.sidebar.dashboard"), url: "/dashboard", icon: Inbox },
+    { title: t("app.sidebar.home"), url: "/", icon: CircleUser },
+    { title: t("app.sidebar.favourites"), url: "/favourites", icon: Star },
+    { title: t("app.sidebar.projects"), url: "/projects", icon: Rocket },
+    { title: t("app.sidebar.teams"), url: "/teams", icon: Users },
+    {
+      title: t("app.sidebar.dashboard"),
+      url: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    { title: t("app.sidebar.workflows"), url: "/workflow", icon: Workflow },
     { title: t("app.sidebar.calendar"), url: "#", icon: Calendar },
-    { title: t("app.sidebar.statistics"), url: "#", icon: Search },
     { title: t("app.sidebar.settings"), url: "/settings", icon: Settings },
   ];
 
   return (
     <Sidebar>
-      <SidebarContent className="py-6 px-4">
+      <SidebarContent className="py-6 px-3">
         <SidebarGroup>
           <SidebarGroupLabel
             className={cn(
-              "flex items-center gap-2 mb-6",
+              "flex items-center gap-2 mb-5",
               `theme-${colorTheme}`
             )}
           >
@@ -52,7 +68,7 @@ export function AppSidebar() {
             <div className="h-px flex-1 bg-muted-foreground/30"></div>
           </div>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-3">
+            <SidebarMenu className="space-y-2">
               {items.map((item) => {
                 const isActive =
                   item.url === "/"

@@ -4,8 +4,9 @@ import { useColorThemeStore } from "@/store/colorThemeStore";
 import { PageContainer } from "@/components/pages/PageContainer";
 import { type Task, type TaskStatus } from "@/types/task";
 import { TaskCard } from "@/components/kanban/TaskCard";
-import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function Dashboard() {
   const { t } = useTranslation();
@@ -144,41 +145,56 @@ export function Dashboard() {
 
   return (
     <PageContainer title={t("app.sidebar.dashboard") || "Dashboard"}>
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <p className="text-muted-foreground">
-            {t("dashboard.description") ||
-              "Manage and track your project tasks"}
-          </p>
-        </div>
+      <div className="mb-3">
+        <p className="text-xs text-muted-foreground">
+          {t("dashboard.description") || "Manage and track your project tasks"}
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4  overflow-hidden">
-        {columns.map((column) => (
-          <div
-            key={column.id}
-            className="bg-card rounded-lg border shadow-sm flex flex-col h-max"
-          >
-            <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-card z-10">
-              <h3 className="font-semibold">{column.title}</h3>
-              <div className="bg-muted text-muted-foreground text-xs font-medium rounded-full px-2 py-1">
-                {getTasksByStatus(column.id as TaskStatus).length}
+      <ScrollArea className="h-[calc(100vh-15rem)]">
+        <div className="grid auto-cols-[230px] grid-flow-col gap-3 pb-3">
+          {columns.map((column) => (
+            <div
+              key={column.id}
+              className="bg-card rounded-md border shadow-sm flex flex-col h-full"
+            >
+              <div className="p-2 border-b flex justify-between items-center sticky top-0 bg-card z-10">
+                <h3 className="font-medium text-sm">{column.title}</h3>
+                <div className="bg-muted text-muted-foreground text-xs font-medium rounded-full px-1.5 py-0.5">
+                  {getTasksByStatus(column.id as TaskStatus).length}
+                </div>
               </div>
-            </div>
 
-            <div className="flex-1 p-2 overflow-y-auto">
-              {getTasksByStatus(column.id as TaskStatus).map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  colorTheme={colorTheme}
-                  getPriorityClass={getPriorityClass}
-                />
-              ))}
+              <ScrollArea className="flex-1 p-1.5">
+                {/* Tâches existantes */}
+                {getTasksByStatus(column.id as TaskStatus).map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    colorTheme={colorTheme}
+                    getPriorityClass={getPriorityClass}
+                  />
+                ))}
+
+                {/* Bouton "Ajouter une tâche" en pointillés */}
+                <button
+                  className={cn(
+                    "w-full p-2 border-2 border-dashed rounded-md mt-1.5",
+                    "flex items-center justify-center gap-1.5",
+                    "text-xs text-muted-foreground hover:text-foreground",
+                    "hover:border-[var(--primary)] hover:bg-muted/30 transition-colors",
+                    `theme-${colorTheme}`
+                  )}
+                  onClick={() => console.log(`Add task to ${column.id}`)}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  {t("dashboard.addTask") || "Add Task"}
+                </button>
+              </ScrollArea>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </ScrollArea>
     </PageContainer>
   );
 }

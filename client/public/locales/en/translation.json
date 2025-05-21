@@ -2,11 +2,15 @@
     "app": {
         "title": "Jirafy",
         "sidebar": {
-            "home": "Home",
+            "home": "For you",
             "dashboard": "Dashboard",
             "calendar": "Calendar",
             "statistics": "Statistics",
-            "settings": "Settings"
+            "settings": "Settings",
+            "favourites": "Starred",
+            "teams": "Teams",
+            "projects": "Projects",
+            "workflows": "Workflows"
         },
         "search": {
             "placeholder": "Search..."
@@ -16,6 +20,10 @@
             "changeTheme": "Change color theme",
             "toggleTheme": "Toggle theme",
             "create": "Add a task"
+        },
+        "common": {
+            "createdBy": "Created by",
+            "by": "by"
         }
     },
     "settings": {
@@ -89,6 +97,21 @@
             "todo": "To Do",
             "inProgress": "In Progress",
             "done": "Done"
+        }
+    },
+    "home": {
+        "description": "Your personal workspace",
+        "recentProjects": {
+            "title": "Recent Projects",
+            "viewAll": "View all projects",
+            "noProjects": "No recent projects found",
+            "createProject": "Create a new project",
+            "open": "Open project"
+        },
+        "history": {
+            "workedOn": "Worked on",
+            "viewed": "Viewed",
+            "starred": "Starred"
         }
     }
 }
