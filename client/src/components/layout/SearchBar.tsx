@@ -4,7 +4,11 @@ import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
-export function SearchBar() {
+interface SearchBarProps {
+  placeholder?: string;
+}
+
+export function SearchBar({ placeholder }: SearchBarProps) {
   const { colorTheme } = useColorThemeStore();
   const { t } = useTranslation();
 
@@ -25,7 +29,7 @@ export function SearchBar() {
               `theme-${colorTheme}`,
               "focus:border-primary focus:ring-primary"
             )}
-            placeholder={t("app.search.placeholder")}
+            placeholder={placeholder || t("app.search.placeholder")}
             type="search"
             autoFocus
             value=""

@@ -4,6 +4,7 @@ import { ArrowRight, Clock, Star } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 type Project = {
   id: string;
@@ -72,9 +73,19 @@ export default function RecentProject() {
         </h2>
         <Link
           to="/projects"
-          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+          className={cn(
+            "text-xs text-muted-foreground flex items-center gap-1 transition-colors",
+            `hover:text-[var(--theme-primary)] theme-${colorTheme}`
+          )}
         >
-          <span>{t("home.recentProjects.viewAll") || "View all projects"}</span>
+          <span
+            className={cn(
+              "text-xs text-muted-foreground flex items-center gap-1 transition-colors",
+              `hover:text-[var(--theme-primary)] theme-${colorTheme}`
+            )}
+          >
+            {t("home.recentProjects.viewAll") || "View all projects"}
+          </span>
           <ArrowRight className="h-3 w-3" />
         </Link>
       </div>

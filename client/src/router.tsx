@@ -4,6 +4,7 @@ import App from "./App";
 import { Layout } from "@/components/layout/Layout";
 import Settings from "./pages/Settings";
 import { Dashboard } from "./pages/Dashboard";
+import Projects from "./pages/Projects";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,14 @@ const router = createBrowserRouter([
     element: (
       <Layout>
         <Dashboard />
+      </Layout>
+    ),
+  },
+  {
+    path: "/projects",
+    element: (
+      <Layout>
+        <Projects />
       </Layout>
     ),
   },

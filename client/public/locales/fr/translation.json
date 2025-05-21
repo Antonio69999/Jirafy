@@ -114,5 +114,22 @@
             "viewed": "Vu",
             "starred": "Favoris"
         }
+    },
+    "project": {
+        "title": "Projet",
+        "description": "Gérez les paramètres et configurations de votre projet",
+        "table": {
+            "name": "Nom",
+            "description": "Description",
+            "type": "Type",
+            "actions": "Plus d'actions",
+            "lead": "Responsable",
+            "caption": "Liste des projets"
+        },
+        "actions": {
+            "archive": "Archiver",
+            "delete": "Supprimer",
+            "create": "Créer un projet"
+        }
     }
 }

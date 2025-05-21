@@ -114,5 +114,22 @@
             "viewed": "Viewed",
             "starred": "Starred"
         }
+    },
+    "project": {
+        "title": "Project",
+        "description": "Manage your project settings and configurations",
+        "table": {
+            "name": "Name",
+            "description": "Description",
+            "type": "Type",
+            "actions": "More actions",
+            "lead": "Lead",
+            "caption": "Project List"
+        },
+        "actions": {
+            "archive": "Archive",
+            "delete": "Delete",
+            "create": "Create Project"
+        }
     }
 }
