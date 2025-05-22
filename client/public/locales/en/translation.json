@@ -118,7 +118,8 @@
                 "urgent": "Urgent"
             },
             "create": "Create Task",
-            "cancel": "Cancel"
+            "cancel": "Cancel",
+            "titlePlaceholder": "What needs to be done?"
         },
         "editTask": {
             "title": "Edit task",

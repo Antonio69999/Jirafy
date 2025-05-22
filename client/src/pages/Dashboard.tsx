@@ -8,13 +8,51 @@ import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QuickStart } from "@/components/commons/QuickStart";
+import { Button } from "@/components/ui/button";
 
 export function Dashboard() {
   const { t } = useTranslation();
   const { colorTheme } = useColorThemeStore();
 
+  // Dans la fonction Dashboard, ajoutez ces états
+  const [editingColumn, setEditingColumn] = useState<string | null>(null);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+
+  // Ajoutez cette fonction pour générer un ID unique
+  const generateId = () => `task-${Math.floor(Math.random() * 10000)}`;
+
+  // Ajoutez ces fonctions pour gérer l'ajout de tâche
+  const handleAddTask = (columnId: string) => {
+    setEditingColumn(columnId);
+    setNewTaskTitle("");
+  };
+
+  const handleCancelAdd = () => {
+    setEditingColumn(null);
+  };
+
+  const handleSaveTask = (columnId: string) => {
+    if (newTaskTitle.trim() === "") {
+      handleCancelAdd();
+      return;
+    }
+
+    // Créez une nouvelle tâche avec le titre saisi
+    const newTask: Task = {
+      id: generateId(),
+      title: newTaskTitle.trim(),
+      status: columnId as TaskStatus,
+      priority: "medium", // Valeur par défaut
+      labels: [],
+    };
+
+    // Mise à jour de l'état des tâches
+    setTasks((prevTasks) => [...prevTasks, newTask]);
+    setEditingColumn(null);
+  };
+
   // Mock data for tasks
-  const [tasks] = useState<Task[]>([
+  const [tasks, setTasks] = useState<Task[]>([
     {
       id: "task-1",
       title: "Create UI components",
@@ -178,19 +216,64 @@ export function Dashboard() {
                 ))}
 
                 {/* Bouton "Ajouter une tâche" en pointillés */}
-                <button
-                  className={cn(
-                    "w-full p-2 border-2 border-dashed rounded-md mt-1.5",
-                    "flex items-center justify-center gap-1.5",
-                    "text-xs text-muted-foreground hover:text-foreground",
-                    "hover:border-[var(--primary)] hover:bg-muted/30 transition-colors",
-                    `theme-${colorTheme}`
-                  )}
-                  onClick={() => console.log(`Add task to ${column.id}`)}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  {t("dashboard.addTask.title") || "Add Task"}
-                </button>
+                {/* Remplacez le bouton "Ajouter une tâche" par ce code */}
+                {editingColumn === column.id ? (
+                  <div className="mt-1.5 border rounded-md overflow-hidden">
+                    <textarea
+                      className="w-full p-2 text-sm resize-none focus:outline-none"
+                      placeholder={
+                        t("dashboard.addTask.titlePlaceholder") ||
+                        "Que faut-il faire?"
+                      }
+                      value={newTaskTitle}
+                      onChange={(e) => setNewTaskTitle(e.target.value)}
+                      autoFocus
+                      rows={2}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSaveTask(column.id);
+                        } else if (e.key === "Escape") {
+                          handleCancelAdd();
+                        }
+                      }}
+                    />
+                    <div className="flex justify-end p-2 bg-muted/30 border-t">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCancelAdd}
+                        className="h-7 px-2 text-xs"
+                      >
+                        {t("dashboard.addTask.cancel") || "Annuler"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleSaveTask(column.id)}
+                        className={cn(
+                          "h-7 px-3 text-xs ml-1",
+                          `theme-${colorTheme}`
+                        )}
+                      >
+                        {t("dashboard.addTask.create") || "Ajouter"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className={cn(
+                      "w-full p-2 border-2 border-dashed rounded-md mt-1.5",
+                      "flex items-center justify-center gap-1.5",
+                      "text-xs text-muted-foreground hover:text-foreground",
+                      "hover:border-[var(--primary)] hover:bg-muted/30 transition-colors",
+                      `theme-${colorTheme}`
+                    )}
+                    onClick={() => handleAddTask(column.id)}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    {t("dashboard.addTask.title") || "Add Task"}
+                  </button>
+                )}
               </ScrollArea>
             </div>
           ))}
