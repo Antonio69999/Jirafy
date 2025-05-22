@@ -13,6 +13,7 @@ import { useColorThemeStore } from "@/store/colorThemeStore";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router-dom";
+import logo from "@/assets/logo.png";
 
 import {
   Sidebar,
@@ -57,11 +58,7 @@ export function AppSidebar() {
               `theme-${colorTheme}`
             )}
           >
-            <img
-              src="https://placehold.co/50x50/?text=Logo"
-              alt="Logo"
-              className="rounded-md"
-            />
+            <img src={logo} alt="Logo" className="rounded-md w-14" />
             <span className="text-lg font-semibold">Jirafy</span>
           </SidebarGroupLabel>
           <div className="my-5 flex items-center gap-3">
@@ -77,15 +74,13 @@ export function AppSidebar() {
                     return (
                       location.pathname === "/" &&
                       location.search === item.url.substring(1)
-                    ); // substring to remove the leading '/'
+                    );
                   }
 
-                  // For regular home page without parameters
                   if (item.url === "/") {
                     return location.pathname === "/" && !location.search;
                   }
 
-                  // For other pages
                   return location.pathname.startsWith(item.url.split("?")[0]);
                 };
 

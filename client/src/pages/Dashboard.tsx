@@ -7,6 +7,7 @@ import { TaskCard } from "@/components/kanban/TaskCard";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { QuickStart } from "@/components/commons/QuickStart";
 
 export function Dashboard() {
   const { t } = useTranslation();
@@ -188,13 +189,16 @@ export function Dashboard() {
                   onClick={() => console.log(`Add task to ${column.id}`)}
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  {t("dashboard.addTask") || "Add Task"}
+                  {t("dashboard.addTask.title") || "Add Task"}
                 </button>
               </ScrollArea>
             </div>
           ))}
         </div>
       </ScrollArea>
+      <div className="fixed bottom-6 right-6">
+        <QuickStart />
+      </div>
     </PageContainer>
   );
 }

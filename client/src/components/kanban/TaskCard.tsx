@@ -1,7 +1,10 @@
 import { cn } from "@/lib/utils";
 import { type Task } from "@/types/task";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Clock, MessageSquare } from "lucide-react";
+import { Clock, MessageSquare, SquarePen } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { EditTaskModal } from "@/components/modals/EditTaskModal";
 
 interface TaskCardProps {
   task: Task;
@@ -14,6 +17,9 @@ export function TaskCard({
   colorTheme,
   getPriorityClass,
 }: TaskCardProps) {
+  // State pour contrôler l'ouverture/fermeture de la modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   // Function to get initials from a name
   const getInitials = (name: string) => {
     return name
@@ -51,124 +57,150 @@ export function TaskCard({
   };
 
   return (
-    <div
-      className={cn(
-        "bg-background mb-2 p-3 rounded-md border shadow-sm",
-        `theme-${colorTheme}`,
-        "hover:border-[var(--hover-border)]"
-      )}
-    >
-      {/* Header with priority indicator and title */}
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2">
-          <div
-            className={cn(
-              "w-2 h-2 rounded-full",
-              getPriorityClass(task.priority)
-            )}
-            title={`Priority: ${task.priority}`}
-          />
-          <h4 className="font-medium text-sm">{task.title}</h4>
+    <>
+      <div
+        className={cn(
+          "bg-background mb-2 p-3 rounded-md border shadow-sm relative group",
+          `theme-${colorTheme}`,
+          "hover:border-[var(--hover-border)]"
+        )}
+      >
+        {/* Edit button that appears on hover */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-1 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6"
+          onClick={() => setIsEditModalOpen(true)}
+        >
+          <SquarePen className="h-3.5 w-3.5" />
+          <span className="sr-only">Edit task</span>
+        </Button>
+
+        {/* Header with priority indicator and title */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <div
+              className={cn(
+                "w-2 h-2 rounded-full",
+                getPriorityClass(task.priority)
+              )}
+              title={`Priority: ${task.priority}`}
+            />
+            <h4 className="font-medium text-sm">{task.title}</h4>
+          </div>
+
+          {/* Task ID or reference */}
+          <div className="text-xs text-muted-foreground">
+            #{task.id.split("-")[1]}
+          </div>
         </div>
 
-        {/* Task ID or reference */}
-        <div className="text-xs text-muted-foreground">
-          #{task.id.split("-")[1]}
-        </div>
-      </div>
+        {/* Description */}
+        {task.description && (
+          <p className="text-xs text-muted-foreground mb-3">
+            {task.description}
+          </p>
+        )}
 
-      {/* Description */}
-      {task.description && (
-        <p className="text-xs text-muted-foreground mb-3">{task.description}</p>
-      )}
-
-      {/* Task image if available */}
-      {task.image && (
-        <div className="mb-3 rounded-md overflow-hidden">
-          <img
-            src={task.image}
-            alt="Task attachment"
-            className="w-full h-auto object-cover"
-            style={{ maxHeight: "120px" }}
-          />
-        </div>
-      )}
-
-      {/* Footer with metadata */}
-      <div className="mt-2 flex flex-col gap-2">
-        {/* Labels if available */}
-        {task.labels && task.labels.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {task.labels.map((label, index) => (
-              <span
-                key={index}
-                className={cn(
-                  "text-xs px-2 py-0.5 rounded-full",
-                  getLabelClass(label)
-                )}
-              >
-                {label}
-              </span>
-            ))}
+        {/* Task image if available */}
+        {task.image && (
+          <div className="mb-3 rounded-md overflow-hidden">
+            <img
+              src={task.image}
+              alt="Task attachment"
+              className="w-full h-auto object-cover"
+              style={{ maxHeight: "120px" }}
+            />
           </div>
         )}
 
-        {/* Task metadata and assignees */}
-        <div className="flex items-center justify-between mt-1">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            {task.comments && (
-              <div
-                className="flex items-center mr-2"
-                title={`${task.comments} comments`}
-              >
-                <MessageSquare className="h-3 w-3 mr-1" />
-                {task.comments}
-              </div>
-            )}
-            {task.dueDate && (
-              <div className="flex items-center" title={`Due: ${task.dueDate}`}>
-                <Clock className="h-3 w-3 mr-1" />
-                {new Date(task.dueDate).toLocaleDateString()}
-              </div>
-            )}
-          </div>
-
-          {/* Assignees */}
-          {task.assignees && task.assignees.length > 0 && (
-            <div className="flex -space-x-2">
-              {task.assignees.slice(0, 3).map((assignee, index) => (
-                <Avatar
+        {/* Footer with metadata */}
+        <div className="mt-2 flex flex-col gap-2">
+          {/* Labels if available */}
+          {task.labels && task.labels.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {task.labels.map((label, index) => (
+                <span
                   key={index}
-                  className="h-5 w-5 border-2 border-background"
+                  className={cn(
+                    "text-xs px-2 py-0.5 rounded-full",
+                    getLabelClass(label)
+                  )}
                 >
-                  <AvatarImage src={assignee.avatar} alt={assignee.name} />
-                  <AvatarFallback className="text-[8px]">
-                    {getInitials(assignee.name)}
-                  </AvatarFallback>
-                </Avatar>
+                  {label}
+                </span>
               ))}
-              {task.assignees.length > 3 && (
-                <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[8px] font-medium border-2 border-background">
-                  +{task.assignees.length - 3}
-                </div>
-              )}
             </div>
           )}
 
-          {/* Single assignee */}
-          {task.assignee && !task.assignees && (
-            <Avatar className="h-5 w-5">
-              <AvatarImage
-                src={task.assignee.avatar}
-                alt={task.assignee.name}
-              />
-              <AvatarFallback className="text-[8px]">
-                {getInitials(task.assignee.name)}
-              </AvatarFallback>
-            </Avatar>
-          )}
+          {/* Task metadata and assignees */}
+          <div className="flex items-center justify-between mt-1">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              {task.comments && (
+                <div
+                  className="flex items-center mr-2"
+                  title={`${task.comments} comments`}
+                >
+                  <MessageSquare className="h-3 w-3 mr-1" />
+                  {task.comments}
+                </div>
+              )}
+              {task.dueDate && (
+                <div
+                  className="flex items-center"
+                  title={`Due: ${task.dueDate}`}
+                >
+                  <Clock className="h-3 w-3 mr-1" />
+                  {new Date(task.dueDate).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+
+            {/* Assignees */}
+            {task.assignees && task.assignees.length > 0 && (
+              <div className="flex -space-x-2">
+                {task.assignees.slice(0, 3).map((assignee, index) => (
+                  <Avatar
+                    key={index}
+                    className="h-5 w-5 border-2 border-background"
+                  >
+                    <AvatarImage src={assignee.avatar} alt={assignee.name} />
+                    <AvatarFallback className="text-[8px]">
+                      {getInitials(assignee.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+                {task.assignees.length > 3 && (
+                  <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[8px] font-medium border-2 border-background">
+                    +{task.assignees.length - 3}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Single assignee */}
+            {task.assignee && !task.assignees && (
+              <Avatar className="h-5 w-5">
+                <AvatarImage
+                  src={task.assignee.avatar}
+                  alt={task.assignee.name}
+                />
+                <AvatarFallback className="text-[8px]">
+                  {getInitials(task.assignee.name)}
+                </AvatarFallback>
+              </Avatar>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal d'édition de tâche */}
+      <EditTaskModal
+        task={task}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        colorTheme={colorTheme}
+      />
+    </>
   );
 }

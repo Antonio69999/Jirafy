@@ -3,7 +3,7 @@ import { PageContainer } from "@/components/pages/PageContainer";
 import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import RecentProject from "@/components/home/RecentProject";
-import HistoryTabs from "./components/home/HistoryTabs";
+import HistoryTabs from "@/components/home/HistoryTabs";
 
 function App() {
   const { t } = useTranslation();
@@ -14,7 +14,7 @@ function App() {
         <p className="text-xs text-muted-foreground">{t("home.description")}</p>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-12rem)]">
+      <ScrollArea className="h-[calc(100vh-15rem)]">
         <div className="space-y-6 pb-6">
           <RecentProject />
           <HistoryTabs />

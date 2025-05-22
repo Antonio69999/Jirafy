@@ -20,11 +20,16 @@
             "addTask": "Ajouter une tâche",
             "changeTheme": "Changer de thème",
             "toggleTheme": "Changer le mode",
-            "create": "Ajouter une tâche"
+            "create": "Créer"
         },
         "common": {
             "createdBy": "Créé par",
             "by": "par"
+        },
+        "quickStart": {
+            "title": "Démarrage rapide",
+            "description": "Commencez à utiliser notre application en quelques étapes seulement.",
+            "openTrigger": "Démarrage rapide"
         }
     },
     "settings": {
@@ -93,7 +98,34 @@
     },
     "dashboard": {
         "description": "Gérez et suivez vos tâches de projet",
-        "addTask": "Ajouter une tâche",
+        "addTask": {
+            "title": "Ajouter une tâche",
+            "description": "Créez une nouvelle tâche pour gérer votre projet",
+            "name": "Nom de la tâche",
+            "descriptionField": "Description de la tâche",
+            "dueDate": "Date d'échéance",
+            "project": "Projet",
+            "labels": "Étiquettes",
+            "addLabels": "Ajouter une étiquette",
+            "pickDate": "Choisir une date",
+            "addAssignees": "Ajouter des assignés",
+            "assignees": "Assignés",
+            "priorities": {
+                "title": "Priorité",
+                "low": "Basse",
+                "medium": "Moyenne",
+                "high": "Haute",
+                "urgent": "Urgent"
+            },
+            "create": "Créer une tâche",
+            "cancel": "Annuler"
+        },
+        "editTask": {
+            "title": "Modifier la tâche",
+            "description": "Modifier les détails de la tâche",
+            "cancel": "Annuler",
+            "submit": "Valider"
+        },
         "kanban": {
             "todo": "À faire",
             "inProgress": "En cours",
@@ -142,6 +174,5 @@
             "addMember": "Ajouter un membre",
             "removeMember": "Supprimer le membre"
         }
-        
     }
 }

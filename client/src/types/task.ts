@@ -19,4 +19,5 @@ export interface Task {
   dueDate?: string;
   comments?: number;
   attachments?: number;
+  projectId?: string;
 }

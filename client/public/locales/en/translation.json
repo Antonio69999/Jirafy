@@ -20,11 +20,16 @@
             "addTask": "Add a task",
             "changeTheme": "Change color theme",
             "toggleTheme": "Toggle theme",
-            "create": "Add a task"
+            "create": "Create"
         },
         "common": {
             "createdBy": "Created by",
             "by": "by"
+        },
+        "quickStart": {
+            "title": "Quickstart",
+            "description": "Get started with our app in just a few steps.",
+            "openTrigger": "Quickstart"
         }
     },
     "settings": {
@@ -93,7 +98,34 @@
     },
     "dashboard": {
         "description": "Manage and track your project tasks",
-        "addTask": "Add Task",
+        "addTask": {
+            "title": "Add a task",
+            "description": "Create a new task to manage your project",
+            "name": "Task name",
+            "descriptionField": "Task description",
+            "dueDate": "Due date",
+            "project": "Project",
+            "labels": "Labels",
+            "addLabels": "Add a label",
+            "pickDate": "Pick a date",
+            "addAssignees": "Add assignees",
+            "assignees": "Assignees",
+            "priorities": {
+                "title": "Priority",
+                "low": "Low",
+                "medium": "Medium",
+                "high": "High",
+                "urgent": "Urgent"
+            },
+            "create": "Create Task",
+            "cancel": "Cancel"
+        },
+        "editTask": {
+            "title": "Edit task",
+            "description": "Edit task details",
+            "cancel": "Cancel",
+            "submit": "Submit"
+        },
         "kanban": {
             "todo": "To Do",
             "inProgress": "In Progress",
