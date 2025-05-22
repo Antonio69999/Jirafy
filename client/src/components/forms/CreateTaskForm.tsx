@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { CalendarIcon, Tag, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,16 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { DatePickerField } from "@/components/forms/DatePickerField";
+import { LabelSelector } from "@/components/selectors/LabelSelector";
+import { UserSelector } from "@/components/selectors/UserSelector";
 
 const taskFormSchema = z.object({
   title: z.string().min(2, {
@@ -152,68 +144,18 @@ export default function CreateTaskForm({
     },
   ];
 
-  const addLabel = (labelId: string) => {
-    if (!selectedLabels.includes(labelId)) {
-      setSelectedLabels([...selectedLabels, labelId]);
-      form.setValue("labels", [...selectedLabels, labelId]);
-    }
+  const handleLabelsChange = (labels: string[]) => {
+    setSelectedLabels(labels);
+    form.setValue("labels", labels);
   };
 
-  const removeLabel = (labelId: string) => {
-    const updated = selectedLabels.filter((id) => id !== labelId);
-    setSelectedLabels(updated);
-    form.setValue("labels", updated);
-  };
-
-  const addAssignee = (user: { id: string; name: string; avatar?: string }) => {
-    if (!selectedAssignees.find((u) => u.id === user.id)) {
-      const updated = [...selectedAssignees, user];
-      setSelectedAssignees(updated);
-      form.setValue(
-        "assignees",
-        updated.map((u) => u.id)
-      );
-    }
-  };
-
-  const removeAssignee = (userId: string) => {
-    const updated = selectedAssignees.filter((user) => user.id !== userId);
-    setSelectedAssignees(updated);
+  const handleAssigneesChange = (
+    users: { id: string; name: string; avatar?: string }[]
+  ) => {
+    setSelectedAssignees(users);
     form.setValue(
       "assignees",
-      updated.map((u) => u.id)
-    );
-  };
-
-  // Helper function to get initials from name
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const getLabelClass = (labelId: string) => {
-    const label = availableLabels.find((l) => l.id === labelId);
-    if (!label) return "";
-
-    return (
-      {
-        red: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-        blue: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-        green:
-          "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-        purple:
-          "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-        pink: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300",
-        yellow:
-          "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
-        indigo:
-          "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
-        orange:
-          "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
-      }[label.color] || ""
+      users.map((u) => u.id)
     );
   };
 
@@ -356,45 +298,13 @@ export default function CreateTaskForm({
           control={form.control}
           name="dueDate"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>
-                {t("dashboard.addTask.dueDate") || "Due Date"}
-              </FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      type="button" // Ajout explicite pour empêcher la soumission du formulaire
-                      variant="outline"
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground",
-                        `focus-visible:ring-[var(--theme-primary)] focus-visible:border-[var(--theme-primary)] hover:border-[var(--hover-border)]`
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP", { locale: fr })
-                      ) : (
-                        <span>
-                          {t("dashboard.addTask.pickDate") || "Pick a date"}
-                        </span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-50" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                    className={cn(`theme-${colorTheme}`)}
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
+            <DatePickerField
+              value={field.value}
+              onChange={field.onChange}
+              label={t("dashboard.addTask.dueDate") || "Due Date"}
+              placeholder={t("dashboard.addTask.pickDate") || "Pick a date"}
+              error={form.formState.errors.dueDate?.message}
+            />
           )}
         />
 
@@ -402,71 +312,13 @@ export default function CreateTaskForm({
           control={form.control}
           name="labels"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("dashboard.addTask.labels") || "Labels"}</FormLabel>
-              <div className="mb-2">
-                {selectedLabels.map((labelId) => {
-                  const label = availableLabels.find((l) => l.id === labelId);
-                  return (
-                    <Badge
-                      key={labelId}
-                      className={cn("mr-1 mb-1", getLabelClass(labelId))}
-                      onClick={() => removeLabel(labelId)}
-                    >
-                      {label?.name}
-                      <span className="ml-1 cursor-pointer">×</span>
-                    </Badge>
-                  );
-                })}
-              </div>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-full justify-between",
-                        !field.value && "text-muted-foreground",
-                        `focus-visible:ring-[var(--theme-primary)] focus-visible:border-[var(--theme-primary)] hover:border-[var(--hover-border)]`
-                      )}
-                    >
-                      <span>
-                        {t("dashboard.addTask.addLabels") || "Add labels"}
-                      </span>
-                      <Tag className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0 z-50">
-                  <div className="p-2">
-                    {availableLabels.map((label) => (
-                      <div
-                        key={label.id}
-                        className={cn(
-                          "flex items-center p-2 rounded-md cursor-pointer hover:bg-muted",
-                          selectedLabels.includes(label.id) && "bg-muted"
-                        )}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          addLabel(label.id);
-                        }}
-                      >
-                        <div
-                          className={cn(
-                            "w-2 h-2 rounded-full mr-2",
-                            `bg-${label.color}-500`
-                          )}
-                        />
-                        <span>{label.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
+            <LabelSelector
+              selectedLabels={selectedLabels}
+              onLabelsChange={handleLabelsChange}
+              availableLabels={availableLabels}
+              label={t("dashboard.addTask.labels") || "Labels"}
+              error={form.formState.errors.labels?.message}
+            />
           )}
         />
 
@@ -474,78 +326,13 @@ export default function CreateTaskForm({
           control={form.control}
           name="assignees"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                {t("dashboard.addTask.assignees") || "Assignees"}
-              </FormLabel>
-              <div className="flex flex-wrap gap-1 mb-2">
-                {selectedAssignees.map((user) => (
-                  <Badge
-                    key={user.id}
-                    variant="outline"
-                    className="p-1 pl-1 pr-2 flex items-center gap-1 bg-background"
-                    onClick={() => removeAssignee(user.id)}
-                  >
-                    <Avatar className="h-5 w-5">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback className="text-[8px]">
-                        {getInitials(user.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{user.name}</span>
-                    <span className="ml-1 cursor-pointer">×</span>
-                  </Badge>
-                ))}
-              </div>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-full justify-between",
-                        !field.value && "text-muted-foreground",
-                        `focus-visible:ring-[var(--theme-primary)] focus-visible:border-[var(--theme-primary)] hover:border-[var(--hover-border)]`
-                      )}
-                    >
-                      <span>
-                        {t("dashboard.addTask.addAssignees") || "Add assignees"}
-                      </span>
-                      <User className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0 z-50">
-                  <div className="p-2">
-                    {availableUsers.map((user) => (
-                      <div
-                        key={user.id}
-                        className={cn(
-                          "flex items-center p-2 rounded-md cursor-pointer hover:bg-muted",
-                          selectedAssignees.some((u) => u.id === user.id) &&
-                            "bg-muted"
-                        )}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          addAssignee(user);
-                        }}
-                      >
-                        <Avatar className="h-6 w-6 mr-2">
-                          <AvatarImage src={user.avatar} alt={user.name} />
-                          <AvatarFallback className="text-[10px]">
-                            {getInitials(user.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{user.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
+            <UserSelector
+              selectedUsers={selectedAssignees}
+              onUsersChange={handleAssigneesChange}
+              availableUsers={availableUsers}
+              label={t("dashboard.addTask.assignees") || "Assignees"}
+              error={form.formState.errors.assignees?.message}
+            />
           )}
         />
 

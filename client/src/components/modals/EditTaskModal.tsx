@@ -30,7 +30,7 @@ export function EditTaskModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          "sm:max-w-[900px] max-h-[85vh] overflow-hidden border", // Changed from overflow-y-auto to overflow-hidden
+          "sm:max-w-[900px] max-h-[85vh] overflow-hidden border",
           `theme-${colorTheme} border-[var(--hover-border)]`
         )}
       >
@@ -46,7 +46,6 @@ export function EditTaskModal({
 
         <ScrollArea className="h-[calc(100vh-18rem)]">
           <div className="pr-4">
-            {/* Padding à droite pour éviter que le contenu touche la scrollbar */}
             <CreateTaskForm
               isEditing={true}
               initialData={{

@@ -20,6 +20,7 @@ function App() {
           <HistoryTabs />
         </div>
       </ScrollArea>
+   
     </PageContainer>
   );
 }

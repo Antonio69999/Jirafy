@@ -65,7 +65,6 @@ export function QuickStart() {
             {t("app.quickStart.description")}
           </p>
 
-          {/* Reste du contenu ici */}
         </div>
       </SheetContent>
     </Sheet>
