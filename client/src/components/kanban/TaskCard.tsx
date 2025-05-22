@@ -65,17 +65,6 @@ export function TaskCard({
           "hover:border-[var(--hover-border)]"
         )}
       >
-        {/* Edit button that appears on hover */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute top-1 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6"
-          onClick={() => setIsEditModalOpen(true)}
-        >
-          <SquarePen className="h-3.5 w-3.5" />
-          <span className="sr-only">Edit task</span>
-        </Button>
-
         {/* Header with priority indicator and title */}
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
@@ -87,6 +76,15 @@ export function TaskCard({
               title={`Priority: ${task.priority}`}
             />
             <h4 className="font-medium text-sm">{task.title}</h4>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5 ml-1"
+              onClick={() => setIsEditModalOpen(true)}
+            >
+              <SquarePen className="h-3 w-3" />
+              <span className="sr-only">Edit task</span>
+            </Button>
           </div>
 
           {/* Task ID or reference */}

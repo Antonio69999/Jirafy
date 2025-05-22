@@ -3,10 +3,18 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Plus, Bell, CircleHelp } from "lucide-react";
+import { Plus, Bell, CircleHelp, User, Settings, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "react-i18next";
 import { useColorThemeStore } from "@/store/colorThemeStore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Header({ className }: { className?: string }) {
   const { t } = useTranslation();
@@ -34,13 +42,35 @@ export function Header({ className }: { className?: string }) {
           <div className="flex items-center gap-4 shrink-0">
             <ModeToggle />
           </div>
-          <Avatar className="w-8 h-8">
-            <AvatarImage
-              src="https://placehold.co/55x55/?text=PP"
-              alt="User Avatar"
-            />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Avatar className="w-8 h-8">
+                <AvatarImage
+                  src="https://placehold.co/55x55/?text=PP"
+                  alt="User Avatar"
+                />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className={`theme-${colorTheme}`}>
+              <DropdownMenuLabel className="font-medium">
+                {t("app.header.userMenu.label")}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground">
+                <User className="mr-2 h-4 w-4" />
+                {t("app.header.userMenu.profile")}
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground">
+                <Settings className="mr-2 h-4 w-4" />
+                {t("app.header.userMenu.settings")}
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground">
+                <LogOut className="mr-2 h-4 w-4" />
+                {t("app.header.userMenu.logout")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

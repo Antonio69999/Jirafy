@@ -20,7 +20,13 @@
             "addTask": "Add a task",
             "changeTheme": "Change color theme",
             "toggleTheme": "Toggle theme",
-            "create": "Create"
+            "create": "Create",
+            "userMenu": {
+                "label": "User Menu",
+                "profile": "Profile",
+                "settings": "Settings",
+                "logout": "Logout"
+            }
         },
         "common": {
             "createdBy": "Created by",

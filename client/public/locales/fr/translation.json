@@ -20,7 +20,13 @@
             "addTask": "Ajouter une tâche",
             "changeTheme": "Changer de thème",
             "toggleTheme": "Changer le mode",
-            "create": "Créer"
+            "create": "Créer",
+            "userMenu": {
+                "label": "Menu utilisateur",
+                "profile": "Profil",
+                "settings": "Paramètres",
+                "logout": "Déconnexion"
+            }
         },
         "common": {
             "createdBy": "Créé par",
