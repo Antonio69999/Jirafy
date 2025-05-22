@@ -100,6 +100,22 @@
                 "success": "Avatar mis à jour",
                 "success_description": "Votre image de profil a été mise à jour avec succès."
             }
+        },
+        "notifications": {
+            "title": "Notifications",
+            "description": "Gérez vos préférences de notification",
+            "email": {
+                "title": "Notifications par e-mail",
+                "description": "Recevez des notifications par e-mail pour les mises à jour importantes"
+            },
+            "push": {
+                "title": "Notifications push",
+                "description": "Recevez des notifications push sur votre appareil"
+            },
+            "sms": {
+                "title": "Notifications par SMS",
+                "description": "Recevez des notifications par SMS sur votre téléphone"
+            }
         }
     },
     "dashboard": {

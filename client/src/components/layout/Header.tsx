@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link } from "react-router-dom";
 
 export function Header({ className }: { className?: string }) {
   const { t } = useTranslation();
@@ -61,9 +62,14 @@ export function Header({ className }: { className?: string }) {
                 <User className="mr-2 h-4 w-4" />
                 {t("app.header.userMenu.profile")}
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground">
-                <Settings className="mr-2 h-4 w-4" />
-                {t("app.header.userMenu.settings")}
+              <DropdownMenuItem
+                asChild
+                className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground"
+              >
+                <Link to="/settings" className="flex items-center w-full">
+                  <Settings className="mr-2 h-4 w-4" />
+                  {t("app.header.userMenu.settings")}
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground">
                 <LogOut className="mr-2 h-4 w-4" />

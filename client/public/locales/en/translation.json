@@ -100,6 +100,20 @@
                 "success": "Avatar updated",
                 "success_description": "Your profile picture has been updated successfully."
             }
+        },
+        "notifications": {
+            "title": "Notifications",
+            "description": "Manage your notification preferences",
+            "email": {
+                "label": "Email Notifications",
+                "description": "Receive notifications via email"
+            },
+            "push": {
+                "label": "Push Notifications",
+                "description": "Receive notifications on your device"
+            },
+            "saveChanges": "Save Changes",
+            "cancel": "Cancel"
         }
     },
     "dashboard": {
