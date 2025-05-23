@@ -118,6 +118,7 @@
     },
     "dashboard": {
         "description": "Manage and track your project tasks",
+        "tabInDevelopment": "In development",
         "addTask": {
             "title": "Add a task",
             "description": "Create a new task to manage your project",
@@ -184,6 +185,24 @@
                 "labels": "Labels",
                 "comingSoon": "Coming soon"
             }
+        },
+        "tabs": {
+            "summary": "Summary",
+            "details": "Details",
+            "board": "Board",
+            "list": "List",
+            "calendar": "Calendar",
+            "timeline": "Timeline",
+            "reports": "Reports",
+            "settings": "Settings"
+        },
+        "list": {
+            "title": "Title",
+            "status": "Status",
+            "priority": "Priority",
+            "labels": "Labels",
+            "assignee": "Assignee",
+            "dueDate": "Due Date"
         }
     },
     "home": {
@@ -204,6 +223,7 @@
     "project": {
         "title": "Project",
         "description": "Manage your project settings and configurations",
+        "settings": "Settings",
         "table": {
             "name": "Name",
             "description": "Description",

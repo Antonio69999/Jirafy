@@ -120,6 +120,7 @@
     },
     "dashboard": {
         "description": "Gérez et suivez vos tâches de projet",
+        "tabInDevelopment": "Cet onglet est en cours de développement",
         "addTask": {
             "title": "Ajouter une tâche",
             "description": "Créez une nouvelle tâche pour gérer votre projet",
@@ -186,6 +187,23 @@
                 "labels": "Étiquettes",
                 "comingSoon": "Bientôt disponible"
             }
+        },
+        "tabs": {
+            "summary": "Résumé",
+            "board": "Tableau",
+            "list": "Liste",
+            "calendar": "Calendrier",
+            "timeline": "Chronologie",
+            "reports": "Rapports",
+            "settings": "Paramètres"
+        },
+        "list": {
+            "title": "Titre",
+            "status": "Statut",
+            "priority": "Priorité",
+            "labels": "Étiquettes",
+            "assignee": "Assigné à",
+            "dueDate": "Date d'échéance"
         }
     },
     "home": {
@@ -206,6 +224,7 @@
     "project": {
         "title": "Projet",
         "description": "Gérez les paramètres et configurations de votre projet",
+        "settings": "Paramètres",
         "table": {
             "name": "Nom",
             "description": "Description",

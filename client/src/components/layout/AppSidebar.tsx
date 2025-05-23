@@ -1,5 +1,4 @@
 import {
-  Calendar,
   Rocket,
   Settings,
   CircleUser,
@@ -83,7 +82,6 @@ export function AppSidebar() {
       icon: LayoutDashboard,
     },
     { title: t("app.sidebar.workflows"), url: "/workflow", icon: Workflow },
-    { title: t("app.sidebar.calendar"), url: "#", icon: Calendar },
     { title: t("app.sidebar.settings"), url: "/settings", icon: Settings },
   ];
 
