@@ -175,7 +175,8 @@ export default function CreateTaskForm({
                     "Enter task title"
                   }
                   className={cn(
-                    `focus-visible:ring-[var(--theme-primary)] focus-visible:border-[var(--theme-primary)]`
+                    `theme-${colorTheme}`,
+                    "focus-visible:ring-[var(--primary)]/30 focus-visible:border-[var(--primary)] hover:border-[var(--hover-border)]"
                   )}
                   {...field}
                 />
@@ -201,7 +202,8 @@ export default function CreateTaskForm({
                   }
                   className={cn(
                     "min-h-[100px]",
-                    `focus-visible:ring-[var(--theme-primary)] focus-visible:border-[var(--theme-primary)]`
+                    `theme-${colorTheme}`,
+                    "focus-visible:ring-[var(--primary)]/30 focus-visible:border-[var(--primary)] hover:border-[var(--hover-border)]"
                   )}
                   {...field}
                 />

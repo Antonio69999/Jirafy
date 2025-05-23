@@ -125,13 +125,15 @@
             "description": "Créez une nouvelle tâche pour gérer votre projet",
             "name": "Nom de la tâche",
             "descriptionField": "Description de la tâche",
+            "descriptionPlaceholder": "Décrivez la tâche ici",
             "dueDate": "Date d'échéance",
             "project": "Projet",
             "labels": "Étiquettes",
             "addLabels": "Ajouter une étiquette",
             "pickDate": "Choisir une date",
-            "addAssignees": "Ajouter des assignés",
-            "assignees": "Assignés",
+            "addMembers": "Ajouter des membres",
+            "members": "Membres",
+            "submit": "Valider",
             "priorities": {
                 "title": "Priorité",
                 "low": "Basse",
@@ -141,7 +143,8 @@
             },
             "create": "Créer une tâche",
             "cancel": "Annuler",
-            "titlePlaceholder": "Que faut il faire ?"
+            "titlePlaceholder": "Que faut il faire ?",
+            "selectProject": "Sélectionner un projet"
         },
         "editTask": {
             "title": "Modifier la tâche",
@@ -153,6 +156,36 @@
             "todo": "À faire",
             "inProgress": "En cours",
             "done": "Terminé"
+        },
+        "createTask": {
+            "title": "Créer une tâche",
+            "description": "Créer une nouvelle tâche",
+            "cancel": "Annuler",
+            "submit": "Créer",
+            "guidelines": {
+                "title": "Directives",
+                "description": "Veuillez suivre ces directives lors de la création d'une tâche :",
+                "points": [
+                    "Soyez clair et concis dans la description de votre tâche.",
+                    "Assignez la tâche au membre de l'équipe approprié.",
+                    "Fixez une date d'échéance réaliste pour la tâche.",
+                    "Utilisez des étiquettes pour catégoriser la tâche."
+                ],
+                "item1": "Utilisez un titre clair et orienté vers l'action",
+                "item2": "Incluez des détails pertinents dans la description",
+                "item3": "Assignez des étiquettes appropriées pour un filtrage facile",
+                "item4": "Fixez des dates d'échéance réalistes"
+            },
+            "templates": {
+                "title": "Modèle de tâche",
+                "description": "Utilisez ce modèle pour créer une nouvelle tâche",
+                "name": "Nom de la tâche",
+                "descriptionField": "Description de la tâche",
+                "dueDate": "Date d'échéance",
+                "project": "Projet",
+                "labels": "Étiquettes",
+                "comingSoon": "Bientôt disponible"
+            }
         }
     },
     "home": {

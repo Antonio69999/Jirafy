@@ -13,8 +13,8 @@ export function PageContainer({
   className,
 }: PageContainerProps) {
   return (
-    <div className={cn("container mx-auto px-6 py-8", className)}>
-      <h1 className="text-3xl font-extrabold tracking-tight lg:text-4xl mb-6">
+    <div className={cn("container mx-auto px-3 py-7", className)}>
+      <h1 className="text-3xl font-extrabold tracking-tight lg:text-4xl mb-5">
         {title}
       </h1>
 

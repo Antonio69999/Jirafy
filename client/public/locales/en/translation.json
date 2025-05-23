@@ -123,6 +123,7 @@
             "description": "Create a new task to manage your project",
             "name": "Task name",
             "descriptionField": "Task description",
+            "descriptionPlaceholder": "Add a description",
             "dueDate": "Due date",
             "project": "Project",
             "labels": "Labels",
@@ -130,6 +131,7 @@
             "pickDate": "Pick a date",
             "addAssignees": "Add assignees",
             "assignees": "Assignees",
+            "submit": "Submit",
             "priorities": {
                 "title": "Priority",
                 "low": "Low",
@@ -139,7 +141,8 @@
             },
             "create": "Create Task",
             "cancel": "Cancel",
-            "titlePlaceholder": "What needs to be done?"
+            "titlePlaceholder": "What needs to be done?",
+            "selectProject": "Select a project"
         },
         "editTask": {
             "title": "Edit task",
@@ -151,6 +154,36 @@
             "todo": "To Do",
             "inProgress": "In Progress",
             "done": "Done"
+        },
+        "createTask": {
+            "title": "Create task",
+            "description": "Create a new task",
+            "cancel": "Cancel",
+            "submit": "Create",
+            "guidelines": {
+                "title": "Guidelines",
+                "description": "Please follow these guidelines when creating a task:",
+                "points": [
+                    "Be clear and concise in your task description.",
+                    "Assign the task to the appropriate team member.",
+                    "Set a realistic due date for the task.",
+                    "Use labels to categorize the task."
+                ],
+                "item1": "Use a clear, action-oriented title",
+                "item2": "Include relevant details in the description",
+                "item3": "Assign appropriate labels for easy filtering",
+                "item4": "Set realistic due dates"
+            },
+            "templates": {
+                "title": "Task Template",
+                "description": "Use this template to create a new task",
+                "name": "Task Name",
+                "descriptionField": "Task Description",
+                "dueDate": "Due Date",
+                "project": "Project",
+                "labels": "Labels",
+                "comingSoon": "Coming soon"
+            }
         }
     },
     "home": {

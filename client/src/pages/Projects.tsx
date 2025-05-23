@@ -224,7 +224,14 @@ export default function Projects() {
                     project.starred ? "text-[var(--primary)]" : ""
                   )}
                 >
-                  {project.name}
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={`https://robohash.org/${project.id}`}
+                      alt={`${project.name} logo`}
+                      className="h-7 w-7 rounded-sm"
+                    />
+                    {project.name}
+                  </div>
                 </TableCell>
                 <TableCell>{project.type}</TableCell>
                 <TableCell>{project.lead}</TableCell>

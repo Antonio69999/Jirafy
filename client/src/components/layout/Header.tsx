@@ -16,69 +16,87 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
+import { useState } from "react"; // Import useState
+import { CreateModal } from "@/components/modals/CreateModal"; // Import CreateModal
 
 export function Header({ className }: { className?: string }) {
   const { t } = useTranslation();
-
   const { colorTheme } = useColorThemeStore();
 
+  // Add state to control modal visibility
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   return (
-    <header className={cn("w-full min-w-0 border-b border-border", className)}>
-      <div className="w-full flex justify-between items-center p-4 py-2">
-        <div className="flex items-center gap-4">
-          <SidebarTrigger />
-          <SearchBar />
-          <h1 className="text-2xl font-bold truncate"></h1>
-        </div>
-        <div className="flex items-center gap-4 shrink-0">
-          <Button className={`px-4 whitespace-nowrap theme-${colorTheme}`}>
-            <Plus className="mr-2" /> {t("app.header.create")}
-          </Button>
-          <Button variant="ghost" className="w-8 h-9 p-1">
-            <Bell className="size-5" />
-          </Button>
-          <Button variant="ghost" className="w-8 h-9 p-1">
-            <CircleHelp className="size-5" />
-          </Button>
-          <div className="flex items-center gap-4 shrink-0">
-            <ModeToggle />
+    <>
+      <header
+        className={cn("w-full min-w-0 border-b border-border", className)}
+      >
+        <div className="w-full flex justify-between items-center p-4 py-2">
+          <div className="flex items-center gap-4">
+            <SidebarTrigger />
+            <SearchBar />
+            <h1 className="text-2xl font-bold truncate"></h1>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Avatar className="w-8 h-8">
-                <AvatarImage
-                  src="https://placehold.co/55x55/?text=PP"
-                  alt="User Avatar"
-                />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className={`theme-${colorTheme}`}>
-              <DropdownMenuLabel className="font-medium">
-                {t("app.header.userMenu.label")}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground">
-                <User className="mr-2 h-4 w-4" />
-                {t("app.header.userMenu.profile")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                asChild
-                className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground"
-              >
-                <Link to="/settings" className="flex items-center w-full">
-                  <Settings className="mr-2 h-4 w-4" />
-                  {t("app.header.userMenu.settings")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground">
-                <LogOut className="mr-2 h-4 w-4" />
-                {t("app.header.userMenu.logout")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-4 shrink-0">
+            <Button
+              className={`px-4 whitespace-nowrap theme-${colorTheme}`}
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <Plus className="mr-2" /> {t("app.header.create")}
+            </Button>
+            <Button variant="ghost" className="w-8 h-9 p-1">
+              <Bell className="size-5" />
+            </Button>
+            <Button variant="ghost" className="w-8 h-9 p-1">
+              <CircleHelp className="size-5" />
+            </Button>
+            <div className="flex items-center gap-4 shrink-0">
+              <ModeToggle />
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Avatar className="w-8 h-8">
+                  <AvatarImage
+                    src="https://placehold.co/55x55/?text=PP"
+                    alt="User Avatar"
+                  />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className={`theme-${colorTheme}`}>
+                <DropdownMenuLabel className="font-medium">
+                  {t("app.header.userMenu.label")}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground">
+                  <User className="mr-2 h-4 w-4" />
+                  {t("app.header.userMenu.profile")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  asChild
+                  className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground"
+                >
+                  <Link to="/settings" className="flex items-center w-full">
+                    <Settings className="mr-2 h-4 w-4" />
+                    {t("app.header.userMenu.settings")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {t("app.header.userMenu.logout")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Add the CreateModal component */}
+      <CreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        colorTheme={colorTheme}
+      />
+    </>
   );
 }

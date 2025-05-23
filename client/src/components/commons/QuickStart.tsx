@@ -34,12 +34,13 @@ export function QuickStart() {
 
         <Button
           className={cn(
-            "flex items-center justify-center rounded-full mx-1",
-            "text-primary-foreground border-primary-foreground/30 border",
-            "hover:opacity-80 transition-colors",
+            "flex items-center justify-center rounded-full mx-1 cursor-pointer",
+            "text-primary-foreground bg-primary",
+            "hover:bg-primary/70 hover:text-primary-foreground transition-colors",
             "border-none"
           )}
           variant="outline"
+          size="sm"
         >
           <X className="h-3 w-3" />
         </Button>
@@ -64,7 +65,6 @@ export function QuickStart() {
           <p className="text-center text-muted-foreground mb-6">
             {t("app.quickStart.description")}
           </p>
-
         </div>
       </SheetContent>
     </Sheet>
