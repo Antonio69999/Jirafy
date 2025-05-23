@@ -183,103 +183,119 @@ export function Dashboard() {
   };
 
   return (
-    <PageContainer title={t("app.sidebar.dashboard") || "Dashboard"}>
-      <div className="mb-3">
-        <p className="text-xs text-muted-foreground">
-          {t("dashboard.description") || "Manage and track your project tasks"}
-        </p>
+    <PageContainer title="Jirafy Development" compact className="p-0 sm:p-2">
+      <div className="flex items-center gap-2 mb-2">
+        <div
+          className="w-8 h-8 rounded-md flex items-center justify-center text-white font-medium"
+          style={{ backgroundColor: "#4c9aff" }}
+        >
+          JF
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-base font-semibold">Jirafy Development</h1>
+            <div className="bg-muted text-muted-foreground text-xs font-medium rounded-full px-2 py-0.5">
+              JFY
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Development of the Jirafy project management platform
+          </p>
+        </div>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-15rem)]">
-        <div className="grid auto-cols-[230px] grid-flow-col gap-3 pb-3">
-          {columns.map((column) => (
-            <div
-              key={column.id}
-              className="bg-card rounded-md border shadow-sm flex flex-col h-full"
-            >
-              <div className="p-2 border-b flex justify-between items-center sticky top-0 bg-card z-10">
-                <h3 className="font-medium text-sm">{column.title}</h3>
-                <div className="bg-muted text-muted-foreground text-xs font-medium rounded-full px-1.5 py-0.5">
-                  {getTasksByStatus(column.id as TaskStatus).length}
-                </div>
-              </div>
-
-              <ScrollArea className="flex-1 p-1.5">
-                {/* Tâches existantes */}
-                {getTasksByStatus(column.id as TaskStatus).map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    colorTheme={colorTheme}
-                    getPriorityClass={getPriorityClass}
-                  />
-                ))}
-
-                {/* Bouton "Ajouter une tâche" en pointillés */}
-                {/* Remplacez le bouton "Ajouter une tâche" par ce code */}
-                {editingColumn === column.id ? (
-                  <div className="mt-1.5 border rounded-md overflow-hidden">
-                    <textarea
-                      className="w-full p-2 text-sm resize-none focus:outline-none"
-                      placeholder={
-                        t("dashboard.addTask.titlePlaceholder") ||
-                        "Que faut-il faire?"
-                      }
-                      value={newTaskTitle}
-                      onChange={(e) => setNewTaskTitle(e.target.value)}
-                      autoFocus
-                      rows={2}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSaveTask(column.id);
-                        } else if (e.key === "Escape") {
-                          handleCancelAdd();
-                        }
-                      }}
-                    />
-                    <div className="flex justify-end p-2 bg-muted/30 border-t">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleCancelAdd}
-                        className="h-7 px-2 text-xs"
-                      >
-                        {t("dashboard.addTask.cancel") || "Annuler"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handleSaveTask(column.id)}
-                        className={cn(
-                          "h-7 px-3 text-xs ml-1",
-                          `theme-${colorTheme}`
-                        )}
-                      >
-                        {t("dashboard.addTask.create") || "Ajouter"}
-                      </Button>
-                    </div>
+      <ScrollArea className="h-[calc(100vh-11rem)]">
+        <div className="flex-1 px-1 pb-3 overflow-auto">
+          <div className="flex gap-3 min-w-fit pb-1">
+            {columns.map((column) => (
+              <div
+                key={column.id}
+                className="bg-card rounded-md border shadow-sm flex flex-col h-full w-[280px] flex-shrink-0"
+              >
+                <div className="p-2 border-b flex justify-between items-center sticky top-0 bg-card z-10">
+                  <h3 className="font-medium text-sm">{column.title}</h3>
+                  <div className="bg-muted text-muted-foreground text-xs font-medium rounded-full px-1.5 py-0.5">
+                    {getTasksByStatus(column.id as TaskStatus).length}
                   </div>
-                ) : (
-                  <button
-                    className={cn(
-                      "w-full p-2 border-2 border-dashed rounded-md mt-1.5",
-                      "flex items-center justify-center gap-1.5",
-                      "text-xs text-muted-foreground hover:text-foreground",
-                      "hover:border-[var(--primary)] hover:bg-muted/30 transition-colors",
-                      `theme-${colorTheme}`
-                    )}
-                    onClick={() => handleAddTask(column.id)}
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    {t("dashboard.addTask.title") || "Add Task"}
-                  </button>
-                )}
-              </ScrollArea>
-            </div>
-          ))}
+                </div>
+
+                <ScrollArea className="flex-1 p-1.5">
+                  {/* Tâches existantes */}
+                  {getTasksByStatus(column.id as TaskStatus).map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      colorTheme={colorTheme}
+                      getPriorityClass={getPriorityClass}
+                    />
+                  ))}
+
+                  {/* Bouton "Ajouter une tâche" en pointillés */}
+                  {/* Remplacez le bouton "Ajouter une tâche" par ce code */}
+                  {editingColumn === column.id ? (
+                    <div className="mt-1.5 border rounded-md overflow-hidden">
+                      <textarea
+                        className="w-full p-2 text-sm resize-none focus:outline-none"
+                        placeholder={
+                          t("dashboard.addTask.titlePlaceholder") ||
+                          "Que faut-il faire?"
+                        }
+                        value={newTaskTitle}
+                        onChange={(e) => setNewTaskTitle(e.target.value)}
+                        autoFocus
+                        rows={2}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSaveTask(column.id);
+                          } else if (e.key === "Escape") {
+                            handleCancelAdd();
+                          }
+                        }}
+                      />
+                      <div className="flex justify-end p-2 bg-muted/30 border-t">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleCancelAdd}
+                          className="h-7 px-2 text-xs"
+                        >
+                          {t("dashboard.addTask.cancel") || "Annuler"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleSaveTask(column.id)}
+                          className={cn(
+                            "h-7 px-3 text-xs ml-1",
+                            `theme-${colorTheme}`
+                          )}
+                        >
+                          {t("dashboard.addTask.create") || "Ajouter"}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      className={cn(
+                        "w-full p-2 border-2 border-dashed rounded-md mt-1.5",
+                        "flex items-center justify-center gap-1.5",
+                        "text-xs text-muted-foreground hover:text-foreground",
+                        "hover:border-[var(--primary)] hover:bg-muted/30 transition-colors",
+                        `theme-${colorTheme}`
+                      )}
+                      onClick={() => handleAddTask(column.id)}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      {t("dashboard.addTask.title") || "Add Task"}
+                    </button>
+                  )}
+                </ScrollArea>
+              </div>
+            ))}
+          </div>
         </div>
       </ScrollArea>
-      <div className="fixed bottom-6 right-6">
+      <div className="fixed bottom-4 right-4">
         <QuickStart />
       </div>
     </PageContainer>
