@@ -1,0 +1,25 @@
+# Codeception Acceptance Test Suite Configuration
+#
+# Perform tests in a browser by either emulating one using PhpBrowser, or in a real browser using WebDriver.
+# If you need both WebDriver and PhpBrowser tests, create a separate suite for each.
+
+actor: AcceptanceTester
+modules:
+  enabled:
+    - WebDriver:
+        url: http://127.0.0.1:8000
+        browser: safari
+    - Laravel:
+        part: ORM
+        cleanup: false
+        environment_file: .env.testing
+    - Asserts
+    - \Helper\Acceptance
+gherkin:
+  contexts:
+    default:
+      - AcceptanceContext
+step_decorators:
+  - Codeception\Step\ConditionalAssertion
+  - Codeception\Step\TryTo
+  - Codeception\Step\Retry
