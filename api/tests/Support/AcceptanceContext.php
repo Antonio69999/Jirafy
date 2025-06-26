@@ -49,5 +49,25 @@ class AcceptanceContext
     public function jeVoisLeMessageDerreur($arg1)
     {
         $this->I->see($arg1);
+        $this->I->seeElement('.error-message'); // Plus spécifique
+    }
+
+    /**
+     * @Then je suis redirigé vers :arg1
+     */
+    public function jeSuisRedirigeVers($arg1)
+    {
+        $this->I->seeCurrentUrlEquals($arg1);
+    }
+
+    /**
+     * @Given un utilisateur existe avec l'email :arg1
+     */
+    public function unUtilisateurExisteAvecLemail($email)
+    {
+        $this->I->haveRecord('users', [
+            'email' => $email,
+            'password' => bcrypt('password123')
+        ]);
     }
 }
