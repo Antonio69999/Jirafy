@@ -60,7 +60,7 @@ export function RegisterForm({
   });
 
   const onSubmit = (data: RegisterFormData) => {
-    registerMutation.mutate(data as RegisterData);
+    registerMutation.mutate(data);
   };
 
   return (
@@ -87,8 +87,8 @@ export function RegisterForm({
                     <FormControl>
                       <Input
                         placeholder="John Doe"
-                        {...field}
                         disabled={registerMutation.isPending}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -106,8 +106,8 @@ export function RegisterForm({
                       <Input
                         type="email"
                         placeholder="m@example.com"
-                        {...field}
                         disabled={registerMutation.isPending}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -124,8 +124,8 @@ export function RegisterForm({
                     <FormControl>
                       <Input
                         type="password"
-                        {...field}
                         disabled={registerMutation.isPending}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -142,8 +142,8 @@ export function RegisterForm({
                     <FormControl>
                       <Input
                         type="password"
-                        {...field}
                         disabled={registerMutation.isPending}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -156,9 +156,7 @@ export function RegisterForm({
                 className="w-full"
                 disabled={registerMutation.isPending}
               >
-                {registerMutation.isPending
-                  ? "Creating account..."
-                  : "Register"}
+                {registerMutation.isPending ? "Creating account..." : "Register"}
               </Button>
             </form>
           </Form>

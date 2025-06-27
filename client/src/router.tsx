@@ -7,6 +7,7 @@ import { Dashboard } from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
 import Teams from "@/pages/Teams";
 import Register from "@/pages/Register";
+import Login from "@/pages/Login";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
   },
 ]);
 
