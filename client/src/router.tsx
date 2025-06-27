@@ -6,6 +6,7 @@ import Settings from "@/pages/Settings";
 import { Dashboard } from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
 import Teams from "@/pages/Teams";
+import Register from "@/pages/Register";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
         <Teams />
       </Layout>
     ),
+  },
+  {
+    path: "/register",
+    element: <Register />,
   },
 ]);
 
