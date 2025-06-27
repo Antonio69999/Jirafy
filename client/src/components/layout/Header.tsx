@@ -16,15 +16,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
-import { useState } from "react"; // Import useState
-import { CreateModal } from "@/components/modals/CreateModal"; // Import CreateModal
+import { useState } from "react";
+import { CreateModal } from "@/components/modals/CreateModal";
+import { useLogout } from "@/hooks/useLogout";
+import { useAuthStore } from "@/store/authStore";
 
 export function Header({ className }: { className?: string }) {
   const { t } = useTranslation();
   const { colorTheme } = useColorThemeStore();
+  const { user } = useAuthStore();
+  const logoutMutation = useLogout();
 
-  // Add state to control modal visibility
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
+
+  // Générer les initiales de l'utilisateur
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+    : user?.email?.substring(0, 2).toUpperCase() || "U";
 
   return (
     <>
@@ -57,15 +73,27 @@ export function Header({ className }: { className?: string }) {
               <DropdownMenuTrigger>
                 <Avatar className="w-8 h-8">
                   <AvatarImage
-                    src="https://placehold.co/55x55/?text=PP"
-                    alt="User Avatar"
+                    src={
+                      user?.avatar ||
+                      "https://placehold.co/55x55/?text=" + initials
+                    }
+                    alt={user?.name || user?.email || "User Avatar"}
                   />
-                  <AvatarFallback>CN</AvatarFallback>
+                  <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent className={`theme-${colorTheme}`}>
                 <DropdownMenuLabel className="font-medium">
-                  {t("app.header.userMenu.label")}
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user?.name || t("app.header.userMenu.label")}
+                    </p>
+                    {user?.email && (
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    )}
+                  </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground">
@@ -81,9 +109,15 @@ export function Header({ className }: { className?: string }) {
                     {t("app.header.userMenu.settings")}
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground">
+                <DropdownMenuItem
+                  className="cursor-pointer hover:bg-[var(--hover-bg)] focus:bg-[var(--hover-bg)] focus:text-foreground"
+                  onClick={handleLogout}
+                  disabled={logoutMutation.isPending}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
-                  {t("app.header.userMenu.logout")}
+                  {logoutMutation.isPending
+                    ? t("app.header.userMenu.loggingOut", "Déconnexion...")
+                    : t("app.header.userMenu.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

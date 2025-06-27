@@ -34,4 +34,26 @@ export const authService = {
   async logout(): Promise<void> {
     await api.post("/api/auth/logout");
   },
+
+  async refresh(): Promise<AuthResponse> {
+    const response = await api.post<ApiResponse<AuthResponse>>(
+      "/api/auth/refresh"
+    );
+
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || "Refresh failed");
+    }
+
+    return response.data.data;
+  },
+
+  async me(): Promise<AuthResponse> {
+    const response = await api.get<ApiResponse<AuthResponse>>("/api/auth/me");
+
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || "Failed to get user info");
+    }
+
+    return response.data.data;
+  },
 };
