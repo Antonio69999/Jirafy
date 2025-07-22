@@ -2,7 +2,7 @@
 
 namespace App\Services\Auth;
 
-use App\Contracts\Auth\LoginServiceInterface;
+use App\Interfaces\Auth\LoginServiceInterface;
 use App\Models\User;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use Illuminate\Support\Facades\Hash;

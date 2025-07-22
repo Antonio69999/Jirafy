@@ -3,7 +3,7 @@
 namespace App\Services\Auth;
 
 use App\Models\User;
-use App\Contracts\Auth\PasswordServiceInterface;
+use App\Interfaces\Auth\PasswordServiceInterface;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Exceptions\Auth\PasswordMismatchException;
 use Illuminate\Support\Facades\Hash;

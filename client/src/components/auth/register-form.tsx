@@ -47,8 +47,6 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const registerMutation = useRegister();
-
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -59,7 +57,11 @@ export function RegisterForm({
     },
   });
 
+  const registerMutation = useRegister(form.setError);
+
   const onSubmit = (data: RegisterFormData) => {
+    // Clear previous server errors
+    form.clearErrors();
     registerMutation.mutate(data);
   };
 
@@ -99,7 +101,7 @@ export function RegisterForm({
               <FormField
                 control={form.control}
                 name="email"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
@@ -107,6 +109,11 @@ export function RegisterForm({
                         type="email"
                         placeholder="m@example.com"
                         disabled={registerMutation.isPending}
+                        className={
+                          fieldState.error
+                            ? "border-red-500 focus:border-red-500"
+                            : ""
+                        }
                         {...field}
                       />
                     </FormControl>
@@ -118,13 +125,18 @@ export function RegisterForm({
               <FormField
                 control={form.control}
                 name="password"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
                         disabled={registerMutation.isPending}
+                        className={
+                          fieldState.error
+                            ? "border-red-500 focus:border-red-500"
+                            : ""
+                        }
                         {...field}
                       />
                     </FormControl>
@@ -136,13 +148,18 @@ export function RegisterForm({
               <FormField
                 control={form.control}
                 name="password_confirmation"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
                         disabled={registerMutation.isPending}
+                        className={
+                          fieldState.error
+                            ? "border-red-500 focus:border-red-500"
+                            : ""
+                        }
                         {...field}
                       />
                     </FormControl>
@@ -156,7 +173,9 @@ export function RegisterForm({
                 className="w-full"
                 disabled={registerMutation.isPending}
               >
-                {registerMutation.isPending ? "Creating account..." : "Register"}
+                {registerMutation.isPending
+                  ? "Creating account..."
+                  : "Register"}
               </Button>
             </form>
           </Form>

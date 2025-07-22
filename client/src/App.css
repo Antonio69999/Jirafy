@@ -194,6 +194,14 @@
   --hover-border: oklch(0.723 0.219 149.579 / 50%);
 }
 
+.text-destructive {
+  color: rgb(239 68 68);
+}
+
+.border-destructive {
+  border-color: rgb(239 68 68);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

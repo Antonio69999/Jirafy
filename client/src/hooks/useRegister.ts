@@ -5,8 +5,9 @@ import { authService } from "@/api/services/authService";
 import { useAuthStore } from "@/store/authStore";
 import type { RegisterData, ApiResponse } from "@/types/auth";
 import { AxiosError } from "axios";
+import type { UseFormSetError } from "react-hook-form";
 
-export const useRegister = () => {
+export const useRegister = (setError?: UseFormSetError<RegisterData>) => {
   const navigate = useNavigate();
   const { setAuth, setLoading } = useAuthStore();
 
@@ -26,16 +27,25 @@ export const useRegister = () => {
       if (error.response?.data) {
         const { message, errors } = error.response.data;
 
-        if (errors && Object.keys(errors).length > 0) {
-          // Afficher toutes les erreurs de validation
-          Object.values(errors)
-            .flat()
-            .forEach((errorMessage) => {
-              toast.error(errorMessage);
-            });
-        } else {
-          toast.error(message || "Erreur lors de l'inscription");
+        if (errors && Object.keys(errors).length > 0 && setError) {
+          // Set form field errors
+          Object.entries(errors).forEach(
+            ([field, fieldErrors]: [string, string[]]) => {
+              setError(field as keyof RegisterData, {
+                type: "server",
+                message: fieldErrors[0],
+              });
+            }
+          );
+        } else if (message && setError) {
+          // Mettre l'erreur générale sur le champ email pour la rendre visible
+          setError("email", {
+            type: "server",
+            message: message,
+          });
         }
+
+        toast.error(message || "Erreur lors de l'inscription");
       } else if (error.code === "NETWORK_ERROR") {
         toast.error(
           "Erreur de connexion au serveur. Vérifiez votre connexion."

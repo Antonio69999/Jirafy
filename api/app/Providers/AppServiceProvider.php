@@ -3,9 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Contracts\Auth\LoginServiceInterface;
-use App\Contracts\Auth\RegisterServiceInterface;
-use App\Contracts\Auth\PasswordServiceInterface;
+use App\Interfaces\Auth\LoginServiceInterface;
+use App\Interfaces\Auth\RegisterServiceInterface;
+use App\Interfaces\Auth\PasswordServiceInterface;
 use App\Services\Auth\LoginService;
 use App\Services\Auth\RegisterService;
 use App\Services\Auth\PasswordService;

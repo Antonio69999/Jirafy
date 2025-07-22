@@ -3,7 +3,7 @@
 namespace App\Services\Auth;
 
 use App\Models\User;
-use App\Contracts\Auth\RegisterServiceInterface;
+use App\Interfaces\Auth\RegisterServiceInterface;
 use App\Exceptions\Auth\EmailAlreadyExistsException;
 use App\Exceptions\Auth\PasswordMismatchException;
 use Illuminate\Support\Facades\Hash;
@@ -56,7 +56,7 @@ class RegisterService implements RegisterServiceInterface
             'name' => $userData['name'] ?? $userData['email'],
             'email' => $userData['email'],
             'password' => Hash::make($userData['password']),
-            'email_verified_at' => now(), // Auto-verify pour simplifier
+            'email_verified_at' => now(),
         ]);
     }
 

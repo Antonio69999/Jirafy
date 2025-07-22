@@ -37,8 +37,6 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const loginMutation = useLogin();
-
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -47,7 +45,10 @@ export function LoginForm({
     },
   });
 
+  const loginMutation = useLogin(form.setError);
+
   const onSubmit = (data: LoginFormData) => {
+    form.clearErrors();
     loginMutation.mutate(data as LoginData);
   };
 
@@ -69,7 +70,7 @@ export function LoginForm({
               <FormField
                 control={form.control}
                 name="email"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
@@ -77,6 +78,11 @@ export function LoginForm({
                         type="email"
                         placeholder="m@example.com"
                         disabled={loginMutation.isPending}
+                        className={
+                          fieldState.error
+                            ? "border-red-500 focus:border-red-500"
+                            : ""
+                        }
                         {...field}
                       />
                     </FormControl>
@@ -88,7 +94,7 @@ export function LoginForm({
               <FormField
                 control={form.control}
                 name="password"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <div className="flex items-center justify-between">
                       <FormLabel>Password</FormLabel>
@@ -103,6 +109,11 @@ export function LoginForm({
                       <Input
                         type="password"
                         disabled={loginMutation.isPending}
+                        className={
+                          fieldState.error
+                            ? "border-red-500 focus:border-red-500"
+                            : ""
+                        }
                         {...field}
                       />
                     </FormControl>
