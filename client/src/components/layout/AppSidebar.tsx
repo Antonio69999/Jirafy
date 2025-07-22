@@ -48,21 +48,8 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const location = useLocation();
 
-  // Exemples de projets récents (À terme, ces données viendraient d'un store ou d'une API)
-  const [recentProjects] = useState<RecentProject[]>([
-    {
-      id: "1",
-      name: "Jirafy Development",
-      key: "JFY",
-      color: "#4c9aff",
-    },
-    {
-      id: "2",
-      name: "Marketing Campaign",
-      key: "MKT",
-      color: "#f87171",
-    },
-  ]);
+  // État pour les projets récents (vide par défaut)
+  const [recentProjects] = useState<RecentProject[]>([]);
 
   const items = [
     { title: t("app.sidebar.home"), url: "/", icon: CircleUser },
@@ -168,37 +155,44 @@ export function AppSidebar() {
                         >
                           <div className="space-y-2">
                             {/* Liste des projets récents */}
-                            {recentProjects.map((project) => (
-                              <NavLink
-                                key={project.id}
-                                to={`/dashboard?project=${project.id}`}
-                                style={{ textDecoration: "none" }}
-                              >
-                                <div
-                                  className={cn(
-                                    "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm",
-                                    "transition-colors",
-                                    `theme-${colorTheme}`,
-                                    "hover:bg-[var(--hover-bg)]",
-                                    location.pathname === "/dashboard" &&
-                                      location.search ===
-                                        `?project=${project.id}`
-                                      ? "bg-[var(--active-bg)]"
-                                      : ""
-                                  )}
+                            {recentProjects.length > 0 ? (
+                              recentProjects.map((project) => (
+                                <NavLink
+                                  key={project.id}
+                                  to={`/dashboard?project=${project.id}`}
+                                  style={{ textDecoration: "none" }}
                                 >
                                   <div
-                                    className="w-5 h-5 rounded flex items-center justify-center text-white text-xs font-medium"
-                                    style={{ backgroundColor: project.color }}
+                                    className={cn(
+                                      "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm",
+                                      "transition-colors",
+                                      `theme-${colorTheme}`,
+                                      "hover:bg-[var(--hover-bg)]",
+                                      location.pathname === "/dashboard" &&
+                                        location.search ===
+                                          `?project=${project.id}`
+                                        ? "bg-[var(--active-bg)]"
+                                        : ""
+                                    )}
                                   >
-                                    {project.key.substring(0, 2)}
+                                    <div
+                                      className="w-5 h-5 rounded flex items-center justify-center text-white text-xs font-medium"
+                                      style={{ backgroundColor: project.color }}
+                                    >
+                                      {project.key.substring(0, 2)}
+                                    </div>
+                                    <span className="truncate">
+                                      {project.name}
+                                    </span>
                                   </div>
-                                  <span className="truncate">
-                                    {project.name}
-                                  </span>
-                                </div>
-                              </NavLink>
-                            ))}
+                                </NavLink>
+                              ))
+                            ) : (
+                              <div className="px-2 py-3 text-center text-muted-foreground text-sm">
+                                {t("app.sidebar.noRecentProjects") ||
+                                  "Aucun projet récent"}
+                              </div>
+                            )}
 
                             {/* Lien vers la page des projets */}
                             <NavLink

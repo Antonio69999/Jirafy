@@ -11,7 +11,8 @@
             "teams": "Teams",
             "projects": "Projects",
             "workflows": "Workflows",
-            "recent": "Recent"
+            "recent": "Recent",
+            "noRecentProjects": "No recent projects"
         },
         "search": {
             "placeholder": "Search..."
@@ -203,7 +204,10 @@
             "labels": "Labels",
             "assignee": "Assignee",
             "dueDate": "Due Date"
-        }
+        },
+        "noProject": "No project selected",
+        "selectProject": "Select a project to view tasks",
+        "selectProjectDescription": "Choose a project from the sidebar to start managing tasks."
     },
     "home": {
         "description": "Your personal workspace",
@@ -217,7 +221,11 @@
         "history": {
             "workedOn": "Worked on",
             "viewed": "Viewed",
-            "starred": "Starred"
+            "starred": "Starred",
+            "noStarredItems": "No starred items found",
+            "noRecentItems": "No recent items found",
+            "noViewedItems": "No viewed items found",
+            "noWorkedItems": "No worked items found"
         }
     },
     "project": {

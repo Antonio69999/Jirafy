@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 type Project = {
   id: string;
@@ -19,41 +20,8 @@ export default function RecentProject() {
   const { t } = useTranslation();
   const { colorTheme } = useColorThemeStore();
 
-  // Projets de démonstration
-  const recentProjects: Project[] = [
-    {
-      id: "1",
-      name: "Jirafy Development",
-      key: "JFY",
-      lastAccessed: "2023-12-10T10:30:00",
-      starred: true,
-      color: "#4c9aff",
-    },
-    {
-      id: "2",
-      name: "Marketing Campaign",
-      key: "MKT",
-      lastAccessed: "2023-12-09T16:45:00",
-      starred: false,
-      color: "#f87171",
-    },
-    {
-      id: "3",
-      name: "Mobile App",
-      key: "MAPP",
-      lastAccessed: "2023-12-08T09:15:00",
-      starred: true,
-      color: "#a78bfa",
-    },
-    {
-      id: "4",
-      name: "Website Redesign",
-      key: "WRD",
-      lastAccessed: "2023-12-07T14:20:00",
-      starred: false,
-      color: "#34d399",
-    },
-  ];
+  // État pour les projets récents (vide par défaut)
+  const [recentProjects] = useState<Project[]>([]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

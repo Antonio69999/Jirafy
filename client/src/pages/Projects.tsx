@@ -42,37 +42,8 @@ export default function Projects() {
   const { t } = useTranslation();
   const { colorTheme } = useColorThemeStore();
 
-  // Exemple de données de projets
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: "1",
-      name: "Projet exemple",
-      type: "Business",
-      lead: "John Doe",
-      starred: false,
-    },
-    {
-      id: "2",
-      name: "Application mobile",
-      type: "Développement",
-      lead: "Jane Smith",
-      starred: true,
-    },
-    {
-      id: "3",
-      name: "Refonte site web",
-      type: "Design",
-      lead: "David Miller",
-      starred: false,
-    },
-    ...Array.from({ length: 10 }, (_, i) => ({
-      id: `${i + 4}`,
-      name: `Projet test ${i + 1}`,
-      type: i % 2 === 0 ? "Marketing" : "Support",
-      lead: `Utilisateur ${i + 1}`,
-      starred: false,
-    })),
-  ]);
+  // État pour les projets (vide par défaut)
+  const [projects, setProjects] = useState<Project[]>([]);
 
   // Configuration de la pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -186,126 +157,136 @@ export default function Projects() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentProjects.map((project) => (
-              <TableRow
-                key={project.id}
-                className={cn(
-                  project.starred
-                    ? `hover:bg-[var(--hover-bg)] theme-${colorTheme}`
-                    : ""
-                )}
-              >
-                <TableCell className="w-[40px]">
-                  <button
-                    onClick={() => toggleStar(project.id)}
-                    className={cn(
-                      "hover:text-[var(--primary)] focus:outline-none transition-all",
-                      `theme-${colorTheme}`
-                    )}
-                  >
-                    <Star
-                      className={cn(
-                        "h-4 w-4 transition-colors",
-                        project.starred
-                          ? starColorClass()
-                          : "text-muted-foreground"
-                      )}
-                    />
-                    <span className="sr-only">
-                      {project.starred
-                        ? "Remove from favorites"
-                        : "Add to favorites"}
-                    </span>
-                  </button>
-                </TableCell>
-                <TableCell
+            {currentProjects.length > 0 ? (
+              currentProjects.map((project) => (
+                <TableRow
+                  key={project.id}
                   className={cn(
-                    "font-medium",
-                    project.starred ? "text-[var(--primary)]" : ""
+                    project.starred
+                      ? `hover:bg-[var(--hover-bg)] theme-${colorTheme}`
+                      : ""
                   )}
                 >
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={`https://robohash.org/${project.id}`}
-                      alt={`${project.name} logo`}
-                      className="h-7 w-7 rounded-sm"
+                  <TableCell className="w-[40px]">
+                    <button
+                      onClick={() => toggleStar(project.id)}
+                      className={cn(
+                        "hover:text-[var(--primary)] focus:outline-none transition-all",
+                        `theme-${colorTheme}`
+                      )}
+                    >
+                      <Star
+                        className={cn(
+                          "h-4 w-4 transition-colors",
+                          project.starred
+                            ? starColorClass()
+                            : "text-muted-foreground"
+                        )}
+                      />
+                      <span className="sr-only">
+                        {project.starred
+                          ? "Remove from favorites"
+                          : "Add to favorites"}
+                      </span>
+                    </button>
+                  </TableCell>
+                  <TableCell
+                    className={cn(
+                      "font-medium",
+                      project.starred ? "text-[var(--primary)]" : ""
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={`https://robohash.org/${project.id}`}
+                        alt={`${project.name} logo`}
+                        className="h-7 w-7 rounded-sm"
+                      />
+                      {project.name}
+                    </div>
+                  </TableCell>
+                  <TableCell>{project.type}</TableCell>
+                  <TableCell>{project.lead}</TableCell>
+                  <TableCell className="text-right">
+                    <ProjectActionMenu
+                      projectId={project.id}
+                      onArchive={handleArchive}
+                      onDelete={handleDelete}
                     />
-                    {project.name}
-                  </div>
-                </TableCell>
-                <TableCell>{project.type}</TableCell>
-                <TableCell>{project.lead}</TableCell>
-                <TableCell className="text-right">
-                  <ProjectActionMenu
-                    projectId={project.id}
-                    onArchive={handleArchive}
-                    onDelete={handleDelete}
-                  />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  {t("project.table.empty") || "Aucun projet trouvé"}
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </ScrollArea>
-      {/* Pagination */}
-      <div className="mt-4 flex justify-center">
-        <Pagination>
-          <PaginationContent>
-            {/* Bouton précédent */}
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() =>
-                  currentPage > 1 && setCurrentPage(currentPage - 1)
-                }
-                className={cn(
-                  currentPage === 1
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer hover:text-[var(--primary)]",
-                  `theme-${colorTheme}`
-                )}
-              />
-            </PaginationItem>
-
-            {/* Numéros de page */}
-            {getPageNumbers().map((page, index) => (
-              <PaginationItem key={index}>
-                {page === "ellipsis1" || page === "ellipsis2" ? (
-                  <PaginationEllipsis />
-                ) : (
-                  <PaginationLink
-                    onClick={() => setCurrentPage(Number(page))}
-                    isActive={currentPage === page}
-                    className={cn(
-                      "cursor-pointer",
-                      `theme-${colorTheme}`,
-                      currentPage === page
-                        ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                        : "hover:text-[var(--primary)]"
-                    )}
-                  >
-                    {page}
-                  </PaginationLink>
-                )}
+      {/* Pagination - Affichée seulement s'il y a des projets */}
+      {projects.length > 0 && (
+        <div className="mt-4 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              {/* Bouton précédent */}
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() =>
+                    currentPage > 1 && setCurrentPage(currentPage - 1)
+                  }
+                  className={cn(
+                    currentPage === 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer hover:text-[var(--primary)]",
+                    `theme-${colorTheme}`
+                  )}
+                />
               </PaginationItem>
-            ))}
 
-            {/* Bouton suivant */}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() =>
-                  currentPage < totalPages && setCurrentPage(currentPage + 1)
-                }
-                className={cn(
-                  currentPage === totalPages
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer hover:text-[var(--primary)]",
-                  `theme-${colorTheme}`
-                )}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+              {/* Numéros de page */}
+              {getPageNumbers().map((page, index) => (
+                <PaginationItem key={index}>
+                  {page === "ellipsis1" || page === "ellipsis2" ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      onClick={() => setCurrentPage(Number(page))}
+                      isActive={currentPage === page}
+                      className={cn(
+                        "cursor-pointer",
+                        `theme-${colorTheme}`,
+                        currentPage === page
+                          ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
+                          : "hover:text-[var(--primary)]"
+                      )}
+                    >
+                      {page}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
+
+              {/* Bouton suivant */}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    currentPage < totalPages && setCurrentPage(currentPage + 1)
+                  }
+                  className={cn(
+                    currentPage === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer hover:text-[var(--primary)]",
+                    `theme-${colorTheme}`
+                  )}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </PageContainer>
   );
 }

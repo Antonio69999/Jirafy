@@ -11,7 +11,8 @@
             "teams": "Équipes",
             "projects": "Projets",
             "workflows": "Flux de travail",
-            "recent": "Récents"
+            "recent": "Récents",
+            "noRecentProjects": "Aucun projet récent"
         },
         "search": {
             "placeholder": "Rechercher..."
@@ -204,7 +205,10 @@
             "labels": "Étiquettes",
             "assignee": "Assigné à",
             "dueDate": "Date d'échéance"
-        }
+        },
+        "noProject": "Aucun projet sélectionné",
+        "selectProject": "Sélectionnez un projet pour afficher les tâches",
+        "selectProjectDescription": "Choisissez un projet dans la barre latérale pour commencer à gérer les tâches."
     },
     "home": {
         "description": "",
@@ -218,7 +222,11 @@
         "history": {
             "workedOn": "Travaillé sur",
             "viewed": "Vu",
-            "starred": "Favoris"
+            "starred": "Favoris",
+            "noStarredItems": "Aucun élément favori trouvé",
+            "noRecentItems": "Aucun élément récent trouvé",
+            "noViewedItems": "Aucun élément vu trouvé",
+            "noWorkedItems": "Aucun élément travaillé trouvé"
         }
     },
     "project": {

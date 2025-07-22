@@ -13,6 +13,7 @@ import {
   Zap,
   ExternalLink,
 } from "lucide-react";
+import { useState } from "react";
 
 type ActionType =
   | "complete"
@@ -41,31 +42,10 @@ export default function HistoryTabs() {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get("tab") || "worked";
 
-  // Sample data for demonstration
-  const workedOnItems: HistoryItem[] = [
-    {
-      id: "1",
-      title: "Implement user authentication",
-      type: "task",
-      identifier: "JFY-101",
-      timestamp: "2023-12-10T14:30:00",
-      projectColor: "#4c9aff",
-      projectName: "Jirafy Development",
-      createdBy: "Alex Chen",
-      actionType: "edit",
-    },
-    {
-      id: "2",
-      title: "Design landing page mockups",
-      type: "task",
-      identifier: "MKT-42",
-      timestamp: "2023-12-10T11:15:00",
-      projectColor: "#f87171",
-      projectName: "Marketing Campaign",
-      createdBy: "Sophie Martin",
-      actionType: "create",
-    },
-  ];
+  // États pour les éléments d'historique (vides par défaut)
+  const [workedOnItems] = useState<HistoryItem[]>([]);
+  const [viewedItems] = useState<HistoryItem[]>([]);
+  const [starredItems] = useState<HistoryItem[]>([]);
 
   const getActionIcon = (item: HistoryItem) => {
     if (item.type === "project") {
@@ -88,50 +68,6 @@ export default function HistoryTabs() {
         return <CheckSquare className="size-3.5" />;
     }
   };
-
-  const viewedItems: HistoryItem[] = [
-    {
-      id: "3",
-      title: "Mobile App",
-      type: "project",
-      identifier: "MAPP",
-      timestamp: "2023-12-09T16:40:00",
-      projectColor: "#a78bfa",
-      actionType: "view",
-    },
-    {
-      id: "4",
-      title: "Fix navigation bug on mobile",
-      type: "task",
-      identifier: "JFY-98",
-      timestamp: "2023-12-09T15:20:00",
-      projectColor: "#4c9aff",
-      projectName: "Jirafy Development",
-      actionType: "create",
-    },
-  ];
-
-  const starredItems: HistoryItem[] = [
-    {
-      id: "5",
-      title: "Implement dark mode support",
-      type: "task",
-      identifier: "JFY-75",
-      timestamp: "2023-12-08T10:45:00",
-      projectColor: "#4c9aff",
-      projectName: "Jirafy Development",
-      actionType: "view",
-    },
-    {
-      id: "6",
-      title: "Website Redesign",
-      type: "project",
-      identifier: "WRD",
-      timestamp: "2023-12-07T09:30:00",
-      projectColor: "#34d399",
-      actionType: "bookmark",
-    },
-  ];
 
   const formatDate = (dateString: string) => {
     const now = new Date();

@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import App from "./App";
 import { Layout } from "@/components/layout/Layout";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Settings from "@/pages/Settings";
 import { Dashboard } from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
@@ -13,41 +14,51 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <Layout>
-        <App />
-      </Layout>
+      <ProtectedRoute>
+        <Layout>
+          <App />
+        </Layout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/settings",
     element: (
-      <Layout>
-        <Settings />
-      </Layout>
+      <ProtectedRoute>
+        <Layout>
+          <Settings />
+        </Layout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/dashboard",
     element: (
-      <Layout>
-        <Dashboard />
-      </Layout>
+      <ProtectedRoute>
+        <Layout>
+          <Dashboard />
+        </Layout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/projects",
     element: (
-      <Layout>
-        <Projects />
-      </Layout>
+      <ProtectedRoute>
+        <Layout>
+          <Projects />
+        </Layout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/teams",
     element: (
-      <Layout>
-        <Teams />
-      </Layout>
+      <ProtectedRoute>
+        <Layout>
+          <Teams />
+        </Layout>
+      </ProtectedRoute>
     ),
   },
   {
