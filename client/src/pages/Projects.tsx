@@ -124,7 +124,7 @@ export default function Projects() {
     <PageContainer title={t("app.sidebar.projects") || "Projects"}>
       <div className="flex justify-between items-center mb-4">
         <div>
-          <SearchBar placeholder="Rechercher un projet..." />
+          <SearchBar placeholder={t("project.search.placeholder")} />
         </div>
         <Button
           className={cn(

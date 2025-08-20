@@ -2,7 +2,7 @@
 
 namespace App\Services\Auth;
 
-use App\Models\User;
+use App\Models\Auth\User;
 use App\Interfaces\Auth\PasswordServiceInterface;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Exceptions\Auth\PasswordMismatchException;

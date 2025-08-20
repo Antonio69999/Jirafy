@@ -238,12 +238,16 @@
             "type": "Type",
             "actions": "More actions",
             "lead": "Lead",
-            "caption": "Project List"
+            "caption": "Project List",
+            "empty": "No project found"
         },
         "actions": {
             "archive": "Archive",
             "delete": "Delete",
             "create": "Create Project"
+        },
+        "search": {
+            "placeholder": "Search for a project..."
         }
     },
     "teams": {

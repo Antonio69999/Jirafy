@@ -2,7 +2,7 @@
 
 namespace App\Interfaces\Auth;
 
-use App\Models\User;
+use App\Models\Auth\User;
 
 interface PasswordServiceInterface
 {

@@ -239,12 +239,16 @@
             "type": "Type",
             "actions": "Plus d'actions",
             "lead": "Responsable",
-            "caption": "Liste des projets"
+            "caption": "Liste des projets",
+            "empty": "Aucun projet trouvé"
         },
         "actions": {
             "archive": "Archiver",
             "delete": "Supprimer",
             "create": "Créer un projet"
+        },
+        "search": {
+            "placeholder": "Rechercher un projet..."
         }
     },
     "teams": {
