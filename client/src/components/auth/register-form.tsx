@@ -21,7 +21,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { ModeToggle } from "../toggles/ModeToggle";
 import { useRegister } from "@/hooks/useRegister";
-import { type RegisterData } from "@/types/auth";
 import { Link } from "react-router-dom";
 
 const registerSchema = z

@@ -28,6 +28,8 @@ import { useColorThemeStore } from "@/store/colorThemeStore";
 import { cn } from "@/lib/utils";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { Button } from "@/components/ui/button";
+import ProjectCreateModal from "@/components/modals/CreateProjectModal";
+import type { Project as ApiProject } from "@/types/project";
 
 // Type pour les projets
 type Project = {
@@ -49,6 +51,8 @@ export default function Projects() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const totalPages = Math.ceil(projects.length / itemsPerPage);
+
+  const [createOpen, setCreateOpen] = useState(false);
 
   // Projets affichés sur la page actuelle
   const currentProjects = useMemo(() => {
@@ -121,172 +125,195 @@ export default function Projects() {
   };
 
   return (
-    <PageContainer title={t("app.sidebar.projects") || "Projects"}>
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <SearchBar placeholder={t("project.search.placeholder")} />
+    <>
+      <PageContainer title={t("app.sidebar.projects") || "Projects"}>
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <SearchBar placeholder={t("project.search.placeholder")} />
+          </div>
+          <Button
+            onClick={() => setCreateOpen(true)}
+            className={cn(
+              "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)]",
+              `theme-${colorTheme}`
+            )}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {t("project.actions.create") || "Créer un projet"}
+          </Button>
         </div>
-        <Button
-          className={cn(
-            "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)]",
-            `theme-${colorTheme}`
-          )}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t("project.actions.create") || "Créer un projet"}
-        </Button>
-      </div>
-      <ScrollArea className="h-[calc(100vh-18rem)]">
-        <Table>
-          <TableCaption>
-            {t("project.table.caption") || "Liste des projets"}
-          </TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[40px]"></TableHead>
-              <TableHead className="w-[200px]">
-                {t("project.table.name")}
-              </TableHead>
-              <TableHead className="w-[150px]">
-                {t("project.table.type")}
-              </TableHead>
-              <TableHead>{t("project.table.lead")}</TableHead>
-              <TableHead className="text-right w-[100px]">
-                {t("project.table.actions")}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {currentProjects.length > 0 ? (
-              currentProjects.map((project) => (
-                <TableRow
-                  key={project.id}
-                  className={cn(
-                    project.starred
-                      ? `hover:bg-[var(--hover-bg)] theme-${colorTheme}`
-                      : ""
-                  )}
-                >
-                  <TableCell className="w-[40px]">
-                    <button
-                      onClick={() => toggleStar(project.id)}
-                      className={cn(
-                        "hover:text-[var(--primary)] focus:outline-none transition-all",
-                        `theme-${colorTheme}`
-                      )}
-                    >
-                      <Star
-                        className={cn(
-                          "h-4 w-4 transition-colors",
-                          project.starred
-                            ? starColorClass()
-                            : "text-muted-foreground"
-                        )}
-                      />
-                      <span className="sr-only">
-                        {project.starred
-                          ? "Remove from favorites"
-                          : "Add to favorites"}
-                      </span>
-                    </button>
-                  </TableCell>
-                  <TableCell
+        <ScrollArea className="h-[calc(100vh-18rem)]">
+          <Table>
+            <TableCaption>
+              {t("project.table.caption") || "Liste des projets"}
+            </TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[40px]"></TableHead>
+                <TableHead className="w-[200px]">
+                  {t("project.table.name")}
+                </TableHead>
+                <TableHead className="w-[150px]">
+                  {t("project.table.type")}
+                </TableHead>
+                <TableHead>{t("project.table.lead")}</TableHead>
+                <TableHead className="text-right w-[100px]">
+                  {t("project.table.actions")}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {currentProjects.length > 0 ? (
+                currentProjects.map((project) => (
+                  <TableRow
+                    key={project.id}
                     className={cn(
-                      "font-medium",
-                      project.starred ? "text-[var(--primary)]" : ""
+                      project.starred
+                        ? `hover:bg-[var(--hover-bg)] theme-${colorTheme}`
+                        : ""
                     )}
                   >
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={`https://robohash.org/${project.id}`}
-                        alt={`${project.name} logo`}
-                        className="h-7 w-7 rounded-sm"
-                      />
-                      {project.name}
-                    </div>
-                  </TableCell>
-                  <TableCell>{project.type}</TableCell>
-                  <TableCell>{project.lead}</TableCell>
-                  <TableCell className="text-right">
-                    <ProjectActionMenu
-                      projectId={project.id}
-                      onArchive={handleArchive}
-                      onDelete={handleDelete}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  {t("project.table.empty") || "Aucun projet trouvé"}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </ScrollArea>
-      {/* Pagination - Affichée seulement s'il y a des projets */}
-      {projects.length > 0 && (
-        <div className="mt-4 flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              {/* Bouton précédent */}
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() =>
-                    currentPage > 1 && setCurrentPage(currentPage - 1)
-                  }
-                  className={cn(
-                    currentPage === 1
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer hover:text-[var(--primary)]",
-                    `theme-${colorTheme}`
-                  )}
-                />
-              </PaginationItem>
-
-              {/* Numéros de page */}
-              {getPageNumbers().map((page, index) => (
-                <PaginationItem key={index}>
-                  {page === "ellipsis1" || page === "ellipsis2" ? (
-                    <PaginationEllipsis />
-                  ) : (
-                    <PaginationLink
-                      onClick={() => setCurrentPage(Number(page))}
-                      isActive={currentPage === page}
+                    <TableCell className="w-[40px]">
+                      <button
+                        onClick={() => toggleStar(project.id)}
+                        className={cn(
+                          "hover:text-[var(--primary)] focus:outline-none transition-all",
+                          `theme-${colorTheme}`
+                        )}
+                      >
+                        <Star
+                          className={cn(
+                            "h-4 w-4 transition-colors",
+                            project.starred
+                              ? starColorClass()
+                              : "text-muted-foreground"
+                          )}
+                        />
+                        <span className="sr-only">
+                          {project.starred
+                            ? "Remove from favorites"
+                            : "Add to favorites"}
+                        </span>
+                      </button>
+                    </TableCell>
+                    <TableCell
                       className={cn(
-                        "cursor-pointer",
-                        `theme-${colorTheme}`,
-                        currentPage === page
-                          ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                          : "hover:text-[var(--primary)]"
+                        "font-medium",
+                        project.starred ? "text-[var(--primary)]" : ""
                       )}
                     >
-                      {page}
-                    </PaginationLink>
-                  )}
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={`https://robohash.org/${project.id}`}
+                          alt={`${project.name} logo`}
+                          className="h-7 w-7 rounded-sm"
+                        />
+                        {project.name}
+                      </div>
+                    </TableCell>
+                    <TableCell>{project.type}</TableCell>
+                    <TableCell>{project.lead}</TableCell>
+                    <TableCell className="text-right">
+                      <ProjectActionMenu
+                        projectId={project.id}
+                        onArchive={handleArchive}
+                        onDelete={handleDelete}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    {t("project.table.empty") || "Aucun projet trouvé"}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </ScrollArea>
+        {/* Pagination - Affichée seulement s'il y a des projets */}
+        {projects.length > 0 && (
+          <div className="mt-4 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                {/* Bouton précédent */}
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() =>
+                      currentPage > 1 && setCurrentPage(currentPage - 1)
+                    }
+                    className={cn(
+                      currentPage === 1
+                        ? "pointer-events-none opacity-50"
+                        : "cursor-pointer hover:text-[var(--primary)]",
+                      `theme-${colorTheme}`
+                    )}
+                  />
                 </PaginationItem>
-              ))}
 
-              {/* Bouton suivant */}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() =>
-                    currentPage < totalPages && setCurrentPage(currentPage + 1)
-                  }
-                  className={cn(
-                    currentPage === totalPages
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer hover:text-[var(--primary)]",
-                    `theme-${colorTheme}`
-                  )}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
-    </PageContainer>
+                {/* Numéros de page */}
+                {getPageNumbers().map((page, index) => (
+                  <PaginationItem key={index}>
+                    {page === "ellipsis1" || page === "ellipsis2" ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        onClick={() => setCurrentPage(Number(page))}
+                        isActive={currentPage === page}
+                        className={cn(
+                          "cursor-pointer",
+                          `theme-${colorTheme}`,
+                          currentPage === page
+                            ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
+                            : "hover:text-[var(--primary)]"
+                        )}
+                      >
+                        {page}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+
+                {/* Bouton suivant */}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() =>
+                      currentPage < totalPages &&
+                      setCurrentPage(currentPage + 1)
+                    }
+                    className={cn(
+                      currentPage === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : "cursor-pointer hover:text-[var(--primary)]",
+                      `theme-${colorTheme}`
+                    )}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+      </PageContainer>
+
+      {/* Modal de création de projet */}
+      <ProjectCreateModal
+        isOpen={createOpen}
+        onClose={setCreateOpen}
+        onSuccess={(p: ApiProject) => {
+          // Mappe l’objet API -> ton type d’affichage local
+          setProjects((prev) => [
+            {
+              id: String(p.id),
+              name: p.name,
+              type: p.key ?? "-", // à ajuster si tu as un vrai type
+              lead: p.lead?.name ?? "-", // si l’API renvoie lead
+              starred: false,
+            },
+            ...prev,
+          ]);
+        }}
+      />
+    </>
   );
 }

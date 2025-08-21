@@ -6,7 +6,7 @@ import { useAuthStore } from "@/store/authStore";
 import type { RegisterData, ApiResponse } from "@/types/auth";
 import { AxiosError } from "axios";
 import type { UseFormSetError } from "react-hook-form";
-
+ 
 export const useRegister = (setError?: UseFormSetError<RegisterData>) => {
   const navigate = useNavigate();
   const { setAuth, setLoading } = useAuthStore();
