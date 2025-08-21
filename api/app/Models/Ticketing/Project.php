@@ -4,28 +4,30 @@ namespace App\Models\Ticketing;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Auth\User;
+use App\Models\Teams\Team;
 
 class Project extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['team_id','key','name','description','lead_user_id','issue_seq'];
+    protected $fillable = ['team_id', 'key', 'name', 'description', 'lead_user_id', 'issue_seq'];
 
     public function team()
     {
-        return $this->belongsTo(\App\Models\Teams\Team::class);
+        return $this->belongsTo(Team::class);
     }
 
     public function lead()
     {
-        return $this->belongsTo(\App\Models\User::class, 'lead_user_id');
+        return $this->belongsTo(User::class, 'lead_user_id');
     }
 
     public function members()
     {
-        return $this->belongsToMany(\App\Models\User::class, 'project_users')
-                    ->withPivot('role')
-                    ->withTimestamps();
+        return $this->belongsToMany(User::class, 'project_users')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     public function issues()
@@ -36,8 +38,8 @@ class Project extends Model
     public function statuses()
     {
         return $this->belongsToMany(Status::class, 'project_statuses')
-                    ->withPivot(['position','is_default'])
-                    ->withTimestamps()
-                    ->orderBy('project_statuses.position');
+            ->withPivot(['position', 'is_default'])
+            ->withTimestamps()
+            ->orderBy('project_statuses.position');
     }
 }

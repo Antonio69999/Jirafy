@@ -2,6 +2,7 @@
 
 namespace App\Models\Ticketing;
 
+use App\Models\Auth\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -26,8 +27,8 @@ class Issue extends Model
     public function status()   { return $this->belongsTo(Status::class, 'status_id'); }
     public function priority() { return $this->belongsTo(Priority::class, 'priority_id'); }
 
-    public function reporter() { return $this->belongsTo(\App\Models\User::class, 'reporter_id'); }
-    public function assignee() { return $this->belongsTo(\App\Models\User::class, 'assignee_id'); }
+    public function reporter() { return $this->belongsTo(User::class, 'reporter_id'); }
+    public function assignee() { return $this->belongsTo(User::class, 'assignee_id'); }
 
     // réactive quand tu ajoutes les colonnes
     // public function epic()   { return $this->belongsTo(self::class, 'epic_id'); }
