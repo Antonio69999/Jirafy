@@ -28,7 +28,6 @@ export const useRegister = (setError?: UseFormSetError<RegisterData>) => {
         const { message, errors } = error.response.data;
 
         if (errors && Object.keys(errors).length > 0 && setError) {
-          // Set form field errors
           Object.entries(errors).forEach(
             ([field, fieldErrors]: [string, string[]]) => {
               setError(field as keyof RegisterData, {
@@ -38,7 +37,6 @@ export const useRegister = (setError?: UseFormSetError<RegisterData>) => {
             }
           );
         } else if (message && setError) {
-          // Mettre l'erreur générale sur le champ email pour la rendre visible
           setError("email", {
             type: "server",
             message: message,

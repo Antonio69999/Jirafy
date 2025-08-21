@@ -29,7 +29,6 @@ export const useLogin = (setError?: UseFormSetError<LoginData>) => {
         const { message, errors } = error.response.data;
 
         if (errors && Object.keys(errors).length > 0 && setError) {
-          // Set form field errors
           Object.entries(errors).forEach(
             ([field, fieldErrors]: [string, string[]]) => {
               setError(field as keyof LoginData, {
@@ -39,15 +38,13 @@ export const useLogin = (setError?: UseFormSetError<LoginData>) => {
             }
           );
         } else if (message && setError) {
-          // Mettre l'erreur générale sur le champ email pour la rendre visible
           setError("email", {
             type: "server",
             message: message,
           });
-          // Optionnellement, aussi sur le password
           setError("password", {
             type: "server",
-            message: " ", // Espace pour éviter de dupliquer le message
+            message: " ",
           });
         }
 

@@ -23,7 +23,6 @@ export const useLogout = () => {
     onError: (error: AxiosError<ApiResponse<never>>) => {
       console.error("Logout error:", error);
 
-      // Même si l'API échoue, on déconnecte l'utilisateur côté client
       clearAuth();
 
       if (error.response?.status === 401) {
