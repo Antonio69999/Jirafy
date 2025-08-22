@@ -22,7 +22,7 @@ class ProjectStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'team_id' => ['required', 'integer', 'exists:teams,id'],
+            'team_id' => ['nullable', 'integer', 'exists:teams,id'],
             'key' => ['required', 'string', 'max:20', 'regex:/^[A-Z][A-Z0-9\-]*$/', 'unique:projects,key'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],

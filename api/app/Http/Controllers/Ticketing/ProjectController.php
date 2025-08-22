@@ -6,14 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Ticketing\{ProjectStoreRequest, ProjectUpdateRequest};
 use App\Models\Ticketing\Project;
 use Illuminate\Http\Request;
-use App\Ticketing\Interfaces\ProjectServiceInterface as InterfacesProjectServiceInterface;
+use App\Interfaces\Ticketing\ProjectServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
 class ProjectController extends Controller
 {
-
-    public function __construct(private InterfacesProjectServiceInterface $service) {}
+    public function __construct(private ProjectServiceInterface $service) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -27,7 +26,11 @@ class ProjectController extends Controller
 
         $page = $this->service->getAllProjects($filters, $perPage);
 
-        return response()->json($page);
+        return response()->json([
+            'success' => true,
+            'data' => $page,
+            'message' => 'Projects retrieved successfully'
+        ]);
     }
 
     public function show(Project $project): JsonResponse
@@ -35,24 +38,43 @@ class ProjectController extends Controller
         $project->load(['team:id,slug,name', 'lead:id,name,email'])
             ->loadCount('issues');
 
-        return response()->json($project);
+        return response()->json([
+            'success' => true,
+            'data' => $project,
+            'message' => 'Project retrieved successfully'
+        ]);
     }
 
     public function store(ProjectStoreRequest $request): JsonResponse
     {
         $project = $this->service->createProject($request->validated());
-        return response()->json($project, Response::HTTP_CREATED);
+
+        return response()->json([
+            'success' => true,
+            'data' => $project,
+            'message' => 'Project created successfully'
+        ], Response::HTTP_CREATED);
     }
 
     public function update(ProjectUpdateRequest $request, Project $project): JsonResponse
     {
         $updated = $this->service->updateProject($project, $request->validated());
-        return response()->json($updated);
+
+        return response()->json([
+            'success' => true,
+            'data' => $updated,
+            'message' => 'Project updated successfully'
+        ]);
     }
 
     public function destroy(Project $project): JsonResponse
     {
         $this->service->deleteProject($project);
-        return response()->json(null, 204);
+
+        return response()->json([
+            'success' => true,
+            'data' => null,
+            'message' => 'Project deleted successfully'
+        ], 204);
     }
 }

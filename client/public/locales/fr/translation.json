@@ -159,6 +159,7 @@
             "inProgress": "En cours",
             "done": "Terminé"
         },
+        
         "createTask": {
             "title": "Créer une tâche",
             "description": "Créer une nouvelle tâche",
@@ -187,6 +188,21 @@
                 "project": "Projet",
                 "labels": "Étiquettes",
                 "comingSoon": "Bientôt disponible"
+            }
+        },
+        "createProject": {
+            "title": "Créer un projet",
+            "description": "Renseigne les informations pour créer un nouveau projet.",
+            "guidelines": {
+                "title": "Bonnes pratiques",
+                "item1": "Utilise une clé courte et parlante (ex: OPS, WEB, APP).",
+                "item2": "Donne un nom précis et utile à la recherche.",
+                "item3": "Ajoute une description claire (contexte, objectifs).",
+                "item4": "Associe la team et le lead si connu pour préparer les permissions."
+            },
+            "templates": {
+                "title": "Infos",
+                "body": "Tu pourras définir le workflow du projet après la création (statuts, transitions)."
             }
         },
         "tabs": {
@@ -249,6 +265,26 @@
         },
         "search": {
             "placeholder": "Rechercher un projet..."
+        },
+        "form": {
+            "key": "Clé du projet",
+            "name": "Nom du projet",
+            "namePlaceholder": "Entrez le nom du projet",
+            "description": "Description",
+            "descriptionPlaceholder": "Décrivez votre projet...",
+            "team": "Équipe",
+            "selectTeam": "Sélectionner une équipe",
+            "noTeam": "Aucune équipe",
+            "lead": "Chef de projet",
+            "selectLead": "Sélectionner un chef de projet",
+            "noLead": "Aucun chef de projet",
+            "cancel": "Annuler",
+            "updating": "Mise à jour...",
+            "creating": "Création...",
+            "update": "Mettre à jour",
+            "create": "Créer le projet",
+            "updateSuccess": "Projet mis à jour avec succès",
+            "createSuccess": "Projet créé avec succès"
         }
     },
     "teams": {

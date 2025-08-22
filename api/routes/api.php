@@ -1,18 +1,19 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Ticketing\ProjectController;
 
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1');
-    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
-
-    Route::middleware('auth:api')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::get('/me', [AuthController::class, 'me']);
-        Route::post('/refresh', [AuthController::class, 'refresh']);
-    });
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login',    [AuthController::class, 'login']);
+    Route::post('refresh',  [AuthController::class, 'refresh']);
+    Route::post('logout',   [AuthController::class, 'logout']);
+    Route::get('me',        [AuthController::class, 'me']);
 });
 
-Route::middleware('auth:api')->group(function () {});
+Route::apiResource('projects', ProjectController::class);
+
+Route::fallback(function () {
+    return response()->json(['success' => false, 'message' => 'Route non trouvée'], 404);
+});

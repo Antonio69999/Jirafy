@@ -176,6 +176,21 @@
                 "item3": "Assign appropriate labels for easy filtering",
                 "item4": "Set realistic due dates"
             },
+            "createProject": {
+                "title": "Create a project",
+                "description": "Enter the information to create a new project.",
+                "guidelines": {
+                    "title": "Best practices",
+                    "item1": "Use a short, meaningful key (e.g., OPS, WEB, APP).",
+                    "item2": "Provide a precise, searchable name.",
+                    "item3": "Add a clear description (context, goals).",
+                    "item4": "Associate the team and lead if known to prepare permissions."
+                },
+                "templates": {
+                    "title": "Info",
+                    "body": "You will be able to define the project's workflow after creation (statuses, transitions)."
+                }
+            },
             "templates": {
                 "title": "Task Template",
                 "description": "Use this template to create a new task",
@@ -248,6 +263,26 @@
         },
         "search": {
             "placeholder": "Search for a project..."
+        },
+        "form": {
+            "key": "Project key",
+            "name": "Project name",
+            "namePlaceholder": "Enter the project name",
+            "description": "Description",
+            "descriptionPlaceholder": "Describe your project...",
+            "team": "Team",
+            "selectTeam": "Select a team",
+            "noTeam": "No team",
+            "lead": "Project lead",
+            "selectLead": "Select a project lead",
+            "noLead": "No project lead",
+            "cancel": "Cancel",
+            "updating": "Updating...",
+            "creating": "Creating...",
+            "update": "Update",
+            "create": "Create project",
+            "updateSuccess": "Project updated successfully",
+            "createSuccess": "Project created successfully"
         }
     },
     "teams": {

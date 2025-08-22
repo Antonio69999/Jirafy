@@ -32,7 +32,7 @@ export function SearchBar({ placeholder }: SearchBarProps) {
             placeholder={placeholder || t("app.search.placeholder")}
             type="search"
             autoFocus
-            value=""
+            defaultValue=""
           />
         </form>
       </div>

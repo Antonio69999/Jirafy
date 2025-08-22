@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Ticketing\Services;
+namespace App\Services\Ticketing;
 
 use App\Models\Ticketing\{Project, Status, ProjectStatus};
-use App\Ticketing\Interfaces\ProjectServiceInterface as InterfacesProjectServiceInterface;
+use App\Interfaces\Ticketing\ProjectServiceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
-class ProjectService implements InterfacesProjectServiceInterface
+class ProjectService implements ProjectServiceInterface
 {
     public function createProject(array $data): Project
     {

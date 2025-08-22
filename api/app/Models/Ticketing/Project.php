@@ -11,7 +11,7 @@ class Project extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['team_id', 'key', 'name', 'description', 'lead_user_id', 'issue_seq'];
+    protected $fillable = ['team_id', 'key', 'name', 'description', 'lead_user_id'];
 
     public function team()
     {
@@ -42,4 +42,12 @@ class Project extends Model
             ->withTimestamps()
             ->orderBy('project_statuses.position');
     }
+
+    protected $casts = [
+        'team_id' => 'integer',
+        'lead_user_id' => 'integer',
+    ];
+    protected $attributes = [
+        'issue_seq' => 0, // valeur par défaut au niveau modèle
+    ];
 }

@@ -2,17 +2,18 @@
 
 namespace App\Models\Teams;
 
+use App\Models\Auth\User;
 use Illuminate\Database\Eloquent\Model;
 
 class Team extends Model
 {
-    protected $fillable = ['slug','name','description'];
+    protected $fillable = ['slug', 'name', 'description'];
 
     public function members()
     {
-        return $this->belongsToMany(\App\Models\User::class, 'team_users')
-                    ->withPivot('role')
-                    ->withTimestamps();
+        return $this->belongsToMany(User::class, 'team_users')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     public function projects()
