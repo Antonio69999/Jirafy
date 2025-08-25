@@ -11,6 +11,7 @@ import { KanbanView } from "@/components/kanban/KanbanView";
 import { ListView } from "@/components/kanban/ListView";
 import { PlaceholderView } from "@/components/kanban/PlaceholderView";
 import { ProjectHeader } from "@/components/kanban/ProjectHeader";
+import { useProject } from "@/hooks/useProject";
 
 type TabType =
   | "summary"
@@ -26,7 +27,15 @@ export function Dashboard() {
   const { colorTheme } = useColorThemeStore();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // État pour le projet actuel (vide par défaut)
+  // Récupération du projet depuis l'URL
+  const projectId = searchParams.get("project");
+  const {
+    data: projectData,
+    loading: projectLoading,
+    error: projectError,
+  } = useProject(projectId ? parseInt(projectId) : undefined);
+
+  // État pour le projet actuel (basé sur les données API)
   const [currentProject, setCurrentProject] = useState<{
     id: string;
     name: string;
@@ -39,11 +48,25 @@ export function Dashboard() {
   // Gestion des onglets
   const [activeTab, setActiveTab] = useState<TabType>("board");
 
-  // Récupérer le projet et l'onglet actif depuis l'URL
+  // Mettre à jour le projet actuel quand les données arrivent
   useEffect(() => {
-    const projectId = searchParams.get("project");
-    const tab = searchParams.get("tab") as TabType;
+    if (projectData) {
+      setCurrentProject({
+        id: String(projectData.id),
+        name: projectData.name,
+        key: projectData.key,
+        description: projectData.description || "",
+        color: "#3b82f6", // Couleur par défaut, vous pouvez ajouter un champ color au modèle Project
+        lead: projectData.lead?.name || "Non assigné",
+      });
+    } else {
+      setCurrentProject(null);
+    }
+  }, [projectData]);
 
+  // Récupérer l'onglet actif depuis l'URL
+  useEffect(() => {
+    const tab = searchParams.get("tab") as TabType;
     if (
       tab &&
       [
@@ -58,19 +81,14 @@ export function Dashboard() {
     ) {
       setActiveTab(tab);
     }
-
-    // Ici vous récupéreriez les détails du projet si projectId existe
-    if (projectId) {
-      // TODO: Charger les données du projet depuis l'API
-      // setCurrentProject(await fetchProject(projectId));
-    }
   }, [searchParams]);
 
   // Changer d'onglet
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    searchParams.set("tab", tab);
-    setSearchParams(searchParams);
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("tab", tab);
+    setSearchParams(newSearchParams);
   };
 
   // États pour les tâches
@@ -188,8 +206,48 @@ export function Dashboard() {
     }
   };
 
+  // Gestion des états de chargement et d'erreur
+  if (projectId && projectLoading) {
+    return (
+      <PageContainer
+        title={t("app.common.loading") || "Chargement..."}
+        compact
+        className="p-0 sm:p-2"
+      >
+        <div className="flex items-center justify-center h-[calc(100vh-10rem)]">
+          <div className="text-center">
+            <p className="text-muted-foreground">
+              {t("app.common.loading") || "Chargement du projet..."}
+            </p>
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  if (projectId && projectError) {
+    return (
+      <PageContainer
+        title={t("app.common.error") || "Erreur"}
+        compact
+        className="p-0 sm:p-2"
+      >
+        <div className="flex items-center justify-center h-[calc(100vh-10rem)]">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-2 text-red-500">
+              {t("app.common.error") || "Erreur"}
+            </h2>
+            <p className="text-muted-foreground">
+              {projectError.message || "Impossible de charger le projet"}
+            </p>
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
+
   // Si aucun projet n'est sélectionné, afficher un message
-  if (!currentProject) {
+  if (!projectId || !currentProject) {
     return (
       <PageContainer
         title={t("dashboard.noProject") || "Dashboard"}

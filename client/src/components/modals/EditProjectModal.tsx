@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { useColorThemeStore } from "@/store/colorThemeStore";
@@ -16,11 +17,12 @@ import type { Project } from "@/types/project";
 
 type Props = {
   isOpen: boolean;
-  onClose: (open: boolean) => void | void; // shadcn onOpenChange signature
+  onClose: (open: boolean) => void | void;
   onSuccess?: (project: Project) => void;
+  project?: Project;
 };
 
-export default function ProjectCreateModal({
+export default function ProjectEditModal({
   isOpen,
   onClose,
   onSuccess,
@@ -71,9 +73,18 @@ export default function ProjectCreateModal({
                       {t("dashboard.createProject.guidelines.item1") ||
                         "Utilise une clé courte et parlante (ex: OPS, WEB, APP)."}
                     </li>
-                    <li>{t("dashboard.createProject.guidelines.item2")} </li>
-                    <li>{t("dashboard.createProject.guidelines.item3")} </li>
-                    <li>{t("dashboard.createProject.guidelines.item4")}</li>
+                    <li>
+                      {t("dashboard.createProject.guidelines.item2") ||
+                        "Donne un nom précis et utile à la recherche."}
+                    </li>
+                    <li>
+                      {t("dashboard.createProject.guidelines.item3") ||
+                        "Ajoute une description claire (contexte, objectifs)."}
+                    </li>
+                    <li>
+                      {t("dashboard.createProject.guidelines.item4") ||
+                        "Associe la team et le lead si connu pour préparer les permissions."}
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -83,7 +94,8 @@ export default function ProjectCreateModal({
                   {t("dashboard.createProject.templates.title") || "Infos"}
                 </h3>
                 <div className="text-sm text-muted-foreground">
-                  {t("dashboard.createProject.templates.body")}
+                  {t("dashboard.createProject.templates.body") ||
+                    "Tu pourras définir le workflow du projet après la création (statuts, transitions)."}
                 </div>
               </div>
             </div>

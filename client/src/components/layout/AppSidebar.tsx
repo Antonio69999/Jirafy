@@ -33,14 +33,14 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useProjects } from "@/hooks/useProject";
 
 // Type pour les projets récents
 type RecentProject = {
   id: string;
   name: string;
   key: string;
-  color: string;
 };
 
 export function AppSidebar() {
@@ -48,8 +48,28 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const location = useLocation();
 
-  // État pour les projets récents (vide par défaut)
-  const [recentProjects] = useState<RecentProject[]>([]);
+  // Récupération des projets récents
+  const { data: projectsData, loading } = useProjects({
+    per_page: 5, // Limiter aux 5 projets les plus récents
+    order_by: "created_at",
+    order_dir: "desc",
+  });
+
+  const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
+
+  // Conversion des données API vers le format local
+  useEffect(() => {
+    if (projectsData?.data) {
+      const convertedProjects: RecentProject[] = projectsData.data.map(
+        (project) => ({
+          id: String(project.id),
+          name: project.name,
+          key: project.key,
+        })
+      );
+      setRecentProjects(convertedProjects);
+    }
+  }, [projectsData]);
 
   const items = [
     { title: t("app.sidebar.home"), url: "/", icon: CircleUser },
@@ -155,7 +175,11 @@ export function AppSidebar() {
                         >
                           <div className="space-y-2">
                             {/* Liste des projets récents */}
-                            {recentProjects.length > 0 ? (
+                            {loading ? (
+                              <div className="px-2 py-3 text-center text-muted-foreground text-sm">
+                                {t("common.loading") || "Chargement..."}
+                              </div>
+                            ) : recentProjects.length > 0 ? (
                               recentProjects.map((project) => (
                                 <NavLink
                                   key={project.id}
@@ -175,12 +199,6 @@ export function AppSidebar() {
                                         : ""
                                     )}
                                   >
-                                    <div
-                                      className="w-5 h-5 rounded flex items-center justify-center text-white text-xs font-medium"
-                                      style={{ backgroundColor: project.color }}
-                                    >
-                                      {project.key.substring(0, 2)}
-                                    </div>
                                     <span className="truncate">
                                       {project.name}
                                     </span>

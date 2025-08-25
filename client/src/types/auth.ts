@@ -17,6 +17,14 @@ export interface User {
   email_verified_at: string | null;
   created_at: string;
   updated_at: string;
+  role: "super_admin" | "admin" | "user";
+  teams?: {
+    id: number;
+    name: string;
+    pivot: {
+      role: "owner" | "admin" | "member";
+    };
+  }[];
 }
 
 export interface AuthResponse {

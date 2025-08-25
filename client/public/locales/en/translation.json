@@ -31,7 +31,11 @@
         },
         "common": {
             "createdBy": "Created by",
-            "by": "by"
+            "by": "by",
+            "edit": "Edit",
+            "delete": "Delete",
+            "loading": "Loading...",
+            "error": "Error"
         },
         "quickStart": {
             "title": "Quickstart",
@@ -175,32 +179,32 @@
                 "item2": "Include relevant details in the description",
                 "item3": "Assign appropriate labels for easy filtering",
                 "item4": "Set realistic due dates"
-            },
-            "createProject": {
-                "title": "Create a project",
-                "description": "Enter the information to create a new project.",
-                "guidelines": {
-                    "title": "Best practices",
-                    "item1": "Use a short, meaningful key (e.g., OPS, WEB, APP).",
-                    "item2": "Provide a precise, searchable name.",
-                    "item3": "Add a clear description (context, goals).",
-                    "item4": "Associate the team and lead if known to prepare permissions."
-                },
-                "templates": {
-                    "title": "Info",
-                    "body": "You will be able to define the project's workflow after creation (statuses, transitions)."
-                }
+            }
+        },
+        "createProject": {
+            "title": "Create a project",
+            "description": "Enter the information to create a new project.",
+            "guidelines": {
+                "title": "Best practices",
+                "item1": "Use a short, meaningful key (e.g., OPS, WEB, APP).",
+                "item2": "Provide a precise, searchable name.",
+                "item3": "Add a clear description (context, goals).",
+                "item4": "Associate the team and lead if known to prepare permissions."
             },
             "templates": {
-                "title": "Task Template",
-                "description": "Use this template to create a new task",
-                "name": "Task Name",
-                "descriptionField": "Task Description",
-                "dueDate": "Due Date",
-                "project": "Project",
-                "labels": "Labels",
-                "comingSoon": "Coming soon"
+                "title": "Info",
+                "body": "You will be able to define the project's workflow after creation (statuses, transitions)."
             }
+        },
+        "templates": {
+            "title": "Task Template",
+            "description": "Use this template to create a new task",
+            "name": "Task Name",
+            "descriptionField": "Task Description",
+            "dueDate": "Due Date",
+            "project": "Project",
+            "labels": "Labels",
+            "comingSoon": "Coming soon"
         },
         "tabs": {
             "summary": "Summary",

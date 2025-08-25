@@ -31,7 +31,11 @@
         },
         "common": {
             "createdBy": "Créé par",
-            "by": "par"
+            "by": "par",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "loading": "Chargement...",
+            "error": "Erreur"
         },
         "quickStart": {
             "title": "Démarrage rapide",
@@ -159,7 +163,6 @@
             "inProgress": "En cours",
             "done": "Terminé"
         },
-        
         "createTask": {
             "title": "Créer une tâche",
             "description": "Créer une nouvelle tâche",

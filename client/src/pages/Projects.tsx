@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/pagination";
 
 import { useTranslation } from "react-i18next";
-import { ProjectActionMenu } from "@/components/menus/ProjectActionMenu";
 import { Plus, Star } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useColorThemeStore } from "@/store/colorThemeStore";
@@ -29,85 +28,109 @@ import { cn } from "@/lib/utils";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { Button } from "@/components/ui/button";
 import ProjectCreateModal from "@/components/modals/CreateProjectModal";
+import ProjectEditModal from "@/components/modals/EditProjectModal";
+import { useProjects } from "@/hooks/useProject";
 import type { Project as ApiProject } from "@/types/project";
+import { usePermissions } from "@/hooks/usePermissions";
 
-// Type pour les projets
-type Project = {
+// Type pour les projets affichés
+type DisplayProject = {
   id: string;
   name: string;
   type: string;
   lead: string;
   starred: boolean;
+  originalData: ApiProject;
 };
 
 export default function Projects() {
   const { t } = useTranslation();
   const { colorTheme } = useColorThemeStore();
+  const { canCreateProject, canEditProject, canDeleteProject } =
+    usePermissions();
 
-  // État pour les projets (vide par défaut)
-  const [projects, setProjects] = useState<Project[]>([]);
-
-  // Configuration de la pagination
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-  const totalPages = Math.ceil(projects.length / itemsPerPage);
 
+  // États modales
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<ApiProject | null>(null);
 
-  // Projets affichés sur la page actuelle
-  const currentProjects = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return projects.slice(startIndex, startIndex + itemsPerPage);
-  }, [projects, currentPage]);
+  // Récupération API
+  const {
+    data: projectsData,
+    loading,
+    error,
+    refetch,
+  } = useProjects({
+    page: currentPage,
+    per_page: itemsPerPage,
+  });
+
+  // Transformation pour affichage
+  const projects: DisplayProject[] = useMemo(() => {
+    if (!projectsData?.data) return [];
+    return projectsData.data.map((project) => ({
+      id: String(project.id),
+      name: project.name,
+      type: project.key || "-",
+      lead: project.lead?.name || "-",
+      starred: false, // TODO favoris
+      originalData: project,
+    }));
+  }, [projectsData]);
+
+  const totalPages = projectsData?.last_page || 1;
+  const currentProjects = projects;
 
   const getPageNumbers = () => {
     const pageNumbers = [];
     const maxVisiblePages = 5;
-
     pageNumbers.push(1);
 
     if (totalPages <= maxVisiblePages) {
-      for (let i = 2; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
+      for (let i = 2; i <= totalPages; i++) pageNumbers.push(i);
     } else {
-      if (currentPage > 3) {
-        pageNumbers.push("ellipsis1");
-      }
-
+      if (currentPage > 3) pageNumbers.push("ellipsis1");
       const startPage = Math.max(2, currentPage - 1);
       const endPage = Math.min(totalPages - 1, currentPage + 1);
-
-      for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(i);
-      }
-
-      if (currentPage < totalPages - 2) {
-        pageNumbers.push("ellipsis2");
-      }
-
-      if (totalPages > 1) {
-        pageNumbers.push(totalPages);
-      }
+      for (let i = startPage; i <= endPage; i++) pageNumbers.push(i);
+      if (currentPage < totalPages - 2) pageNumbers.push("ellipsis2");
+      if (totalPages > 1) pageNumbers.push(totalPages);
     }
 
     return pageNumbers;
   };
 
-  const toggleStar = (id: string) => {
-    setProjects(
-      projects.map((project: Project) =>
-        project.id === id ? { ...project, starred: !project.starred } : project
-      )
-    );
+  // Actions
+  const toggleStar = (id: string) => console.log(`Toggle star ${id}`);
+
+  const handleDelete = (project: ApiProject) => {
+    if (canDeleteProject(project)) {
+      // TODO: delete API
+      console.log("Suppression projet:", project.id);
+      refetch();
+    }
   };
 
-  const handleArchive = (id: string) => {
-    console.log(`Archive project ${id}`);
+  const handleEdit = (project: ApiProject) => {
+    if (canEditProject(project)) {
+      setEditingProject(project);
+      setEditOpen(true);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    console.log(`Delete project ${id}`);
+  const handleCreateSuccess = () => {
+    refetch();
+    setCreateOpen(false);
+  };
+
+  const handleEditSuccess = () => {
+    refetch();
+    setEditOpen(false);
+    setEditingProject(null);
   };
 
   const starColorClass = () => {
@@ -120,28 +143,48 @@ export default function Projects() {
       orange: "fill-orange-400 text-orange-400",
       green: "fill-green-400 text-green-400",
     };
-
     return themeColorMap[colorTheme] || "fill-yellow-400 text-yellow-400";
   };
+
+  if (loading) {
+    return (
+      <PageContainer title={t("app.sidebar.projects") || "Projects"}>
+        <div className="flex justify-center items-center h-64 text-muted-foreground">
+          {t("common.loading") || "Chargement..."}
+        </div>
+      </PageContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageContainer title={t("app.sidebar.projects") || "Projects"}>
+        <div className="flex justify-center items-center h-64 text-red-500">
+          {t("common.error") || "Une erreur est survenue"}: {error.message}
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <>
       <PageContainer title={t("app.sidebar.projects") || "Projects"}>
         <div className="flex justify-between items-center mb-4">
-          <div>
-            <SearchBar placeholder={t("project.search.placeholder")} />
-          </div>
-          <Button
-            onClick={() => setCreateOpen(true)}
-            className={cn(
-              "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)]",
-              `theme-${colorTheme}`
-            )}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            {t("project.actions.create") || "Créer un projet"}
-          </Button>
+          <SearchBar placeholder={t("project.search.placeholder")} />
+          {canCreateProject() && (
+            <Button
+              onClick={() => setCreateOpen(true)}
+              className={cn(
+                "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)]",
+                `theme-${colorTheme}`
+              )}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {t("project.actions.create") || "Créer un projet"}
+            </Button>
+          )}
         </div>
+
         <ScrollArea className="h-[calc(100vh-18rem)]">
           <Table>
             <TableCaption>
@@ -150,14 +193,10 @@ export default function Projects() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[40px]"></TableHead>
-                <TableHead className="w-[200px]">
-                  {t("project.table.name")}
-                </TableHead>
-                <TableHead className="w-[150px]">
-                  {t("project.table.type")}
-                </TableHead>
+                <TableHead>{t("project.table.name")}</TableHead>
+                <TableHead>{t("project.table.type")}</TableHead>
                 <TableHead>{t("project.table.lead")}</TableHead>
-                <TableHead className="text-right w-[100px]">
+                <TableHead className="text-right w-[200px]">
                   {t("project.table.actions")}
                 </TableHead>
               </TableRow>
@@ -165,43 +204,22 @@ export default function Projects() {
             <TableBody>
               {currentProjects.length > 0 ? (
                 currentProjects.map((project) => (
-                  <TableRow
-                    key={project.id}
-                    className={cn(
-                      project.starred
-                        ? `hover:bg-[var(--hover-bg)] theme-${colorTheme}`
-                        : ""
-                    )}
-                  >
-                    <TableCell className="w-[40px]">
-                      <button
-                        onClick={() => toggleStar(project.id)}
-                        className={cn(
-                          "hover:text-[var(--primary)] focus:outline-none transition-all",
-                          `theme-${colorTheme}`
-                        )}
-                      >
+                  <TableRow key={project.id}>
+                    {/* Favoris */}
+                    <TableCell>
+                      <button onClick={() => toggleStar(project.id)}>
                         <Star
                           className={cn(
-                            "h-4 w-4 transition-colors",
+                            "h-4 w-4",
                             project.starred
                               ? starColorClass()
                               : "text-muted-foreground"
                           )}
                         />
-                        <span className="sr-only">
-                          {project.starred
-                            ? "Remove from favorites"
-                            : "Add to favorites"}
-                        </span>
                       </button>
                     </TableCell>
-                    <TableCell
-                      className={cn(
-                        "font-medium",
-                        project.starred ? "text-[var(--primary)]" : ""
-                      )}
-                    >
+                    {/* Nom */}
+                    <TableCell>
                       <div className="flex items-center gap-2">
                         <img
                           src={`https://robohash.org/${project.id}`}
@@ -213,18 +231,32 @@ export default function Projects() {
                     </TableCell>
                     <TableCell>{project.type}</TableCell>
                     <TableCell>{project.lead}</TableCell>
-                    <TableCell className="text-right">
-                      <ProjectActionMenu
-                        projectId={project.id}
-                        onArchive={handleArchive}
-                        onDelete={handleDelete}
-                      />
+                    {/* Actions conditionnées */}
+                    <TableCell className="text-right flex gap-2 justify-end">
+                      {canEditProject(project.originalData) && (
+                        <Button
+                          onClick={() => handleEdit(project.originalData)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          {t("app.common.edit") || "Modifier"}
+                        </Button>
+                      )}
+                      {canDeleteProject(project.originalData) && (
+                        <Button
+                          onClick={() => handleDelete(project.originalData)}
+                          variant="destructive"
+                          size="sm"
+                        >
+                          {t("app.common.delete") || "Supprimer"}
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={5} className="text-center h-24">
                     {t("project.table.empty") || "Aucun projet trouvé"}
                   </TableCell>
                 </TableRow>
@@ -232,12 +264,12 @@ export default function Projects() {
             </TableBody>
           </Table>
         </ScrollArea>
-        {/* Pagination - Affichée seulement s'il y a des projets */}
+
+        {/* Pagination */}
         {projects.length > 0 && (
           <div className="mt-4 flex justify-center">
             <Pagination>
               <PaginationContent>
-                {/* Bouton précédent */}
                 <PaginationItem>
                   <PaginationPrevious
                     onClick={() =>
@@ -252,22 +284,14 @@ export default function Projects() {
                   />
                 </PaginationItem>
 
-                {/* Numéros de page */}
-                {getPageNumbers().map((page, index) => (
-                  <PaginationItem key={index}>
+                {getPageNumbers().map((page, idx) => (
+                  <PaginationItem key={idx}>
                     {page === "ellipsis1" || page === "ellipsis2" ? (
                       <PaginationEllipsis />
                     ) : (
                       <PaginationLink
                         onClick={() => setCurrentPage(Number(page))}
                         isActive={currentPage === page}
-                        className={cn(
-                          "cursor-pointer",
-                          `theme-${colorTheme}`,
-                          currentPage === page
-                            ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                            : "hover:text-[var(--primary)]"
-                        )}
                       >
                         {page}
                       </PaginationLink>
@@ -275,7 +299,6 @@ export default function Projects() {
                   </PaginationItem>
                 ))}
 
-                {/* Bouton suivant */}
                 <PaginationItem>
                   <PaginationNext
                     onClick={() =>
@@ -296,24 +319,23 @@ export default function Projects() {
         )}
       </PageContainer>
 
-      {/* Modal de création de projet */}
+      {/* Modales */}
       <ProjectCreateModal
         isOpen={createOpen}
-        onClose={setCreateOpen}
-        onSuccess={(p: ApiProject) => {
-          // Mappe l’objet API -> ton type d’affichage local
-          setProjects((prev) => [
-            {
-              id: String(p.id),
-              name: p.name,
-              type: p.key ?? "-", // à ajuster si tu as un vrai type
-              lead: p.lead?.name ?? "-", // si l’API renvoie lead
-              starred: false,
-            },
-            ...prev,
-          ]);
-        }}
+        onClose={() => setCreateOpen(false)}
+        onSuccess={handleCreateSuccess}
       />
+      {editingProject && (
+        <ProjectEditModal
+          isOpen={editOpen}
+          onClose={() => {
+            setEditOpen(false);
+            setEditingProject(null);
+          }}
+          onSuccess={handleEditSuccess}
+          project={editingProject}
+        />
+      )}
     </>
   );
 }

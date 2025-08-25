@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { projectService } from "@/api/services/projectService";
+import { usePermissions } from "./usePermissions";
 import type { Paginated } from "@/types/common";
 import type {
   Project,
@@ -13,6 +14,77 @@ type Error = {
   status?: number;
 } | null;
 
+export function useCreateProject() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error>(null);
+  const { canCreateProject } = usePermissions();
+
+  const create = async (payload: ProjectCreate): Promise<Project | null> => {
+    if (!canCreateProject()) {
+      setError({
+        message: "Vous n'avez pas les permissions pour créer un projet",
+        status: 403,
+      });
+      return null;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await projectService.create(payload);
+      return result;
+    } catch (err: any) {
+      setError({
+        message: err.message || "Erreur lors de la création du projet",
+        status: err.status,
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { create, loading, error, canCreate: canCreateProject };
+}
+
+export function useUpdateProject() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error>(null);
+  const { canEditProject } = usePermissions();
+
+  const update = async (
+    id: number,
+    payload: ProjectUpdate,
+    project?: Project
+  ): Promise<Project | null> => {
+    if (!canEditProject(project)) {
+      setError({
+        message: "Vous n'avez pas les permissions pour modifier ce projet",
+        status: 403,
+      });
+      return null;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await projectService.update(id, payload);
+      return result;
+    } catch (err: any) {
+      setError({
+        message: err.message || "Erreur lors de la mise à jour du projet",
+        status: err.status,
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { update, loading, error };
+}
+
+// Garder les autres hooks existants...
 export function useProjects(params: ProjectListParams = {}) {
   const [data, setData] = useState<Paginated<Project> | null>(null);
   const [loading, setLoading] = useState(false);
@@ -35,7 +107,7 @@ export function useProjects(params: ProjectListParams = {}) {
       }
     };
     fetchData();
-  }, [JSON.stringify(params)]); // Utiliser JSON.stringify pour la comparaison d'objet
+  }, [JSON.stringify(params)]);
 
   const refetch = () => {
     const fetchData = async () => {
@@ -59,7 +131,6 @@ export function useProjects(params: ProjectListParams = {}) {
   return { data, loading, error, refetch };
 }
 
-// Hook pour récupérer un projet spécifique
 export function useProject(id: number | undefined) {
   const [data, setData] = useState<Project | null>(null);
   const [loading, setLoading] = useState(false);
@@ -114,65 +185,20 @@ export function useProject(id: number | undefined) {
   return { data, loading, error, refetch };
 }
 
-// Hook pour créer un projet
-export function useCreateProject() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error>(null);
-
-  const create = async (payload: ProjectCreate): Promise<Project | null> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await projectService.create(payload);
-      return result;
-    } catch (err: any) {
-      setError({
-        message: err.message || "Erreur lors de la création du projet",
-        status: err.status,
-      });
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { create, loading, error };
-}
-
-// Hook pour mettre à jour un projet
-export function useUpdateProject() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error>(null);
-
-  const update = async (
-    id: number,
-    payload: ProjectUpdate
-  ): Promise<Project | null> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await projectService.update(id, payload);
-      return result;
-    } catch (err: any) {
-      setError({
-        message: err.message || "Erreur lors de la mise à jour du projet",
-        status: err.status,
-      });
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { update, loading, error };
-}
-
-// Hook pour supprimer un projet
 export function useDeleteProject() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>(null);
+  const { canDeleteProject } = usePermissions();
 
-  const remove = async (id: number): Promise<boolean> => {
+  const remove = async (id: number, project?: Project): Promise<boolean> => {
+    if (!canDeleteProject(project)) {
+      setError({
+        message: "Vous n'avez pas les permissions pour supprimer ce projet",
+        status: 403,
+      });
+      return false;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -192,12 +218,12 @@ export function useDeleteProject() {
   return { remove, loading, error };
 }
 
-// Hook générique pour les opérations CRUD
 export function useProjectActions() {
   const {
     create,
     loading: createLoading,
     error: createError,
+    canCreate,
   } = useCreateProject();
   const {
     update,
@@ -219,5 +245,6 @@ export function useProjectActions() {
     remove,
     loading,
     error,
+    canCreate,
   };
 }
