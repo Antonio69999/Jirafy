@@ -7,7 +7,6 @@ import type {
   IssueUpdate,
   IssueListParams,
 } from "@/types/issue";
-import { useAuthStore } from "@/store/authStore";
 
 type Error = {
   message: string;

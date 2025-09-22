@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-
+import { useUsers } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -32,6 +32,12 @@ import { useCreateIssue, useUpdateIssue } from "@/hooks/useIssue";
 import { useProjects } from "@/hooks/useProject";
 import { useAuthStore } from "@/store/authStore";
 import type { Issue } from "@/types/issue";
+import { useProjectLabels } from "@/hooks/useLabel"; // Utiliser useProjectLabels au lieu de useLabels
+import {
+  useIssueTypes,
+  useIssueStatuses,
+  useIssuePriorities,
+} from "@/hooks/useIssueMetadata";
 
 const taskFormSchema = z.object({
   title: z.string().min(2, {
@@ -64,9 +70,21 @@ export default function CreateTaskForm({
   const { colorTheme } = useColorThemeStore();
   const { user } = useAuthStore();
 
-  const { create, loading: createLoading, error: createError } = useCreateIssue();
-  const { update, loading: updateLoading, error: updateError } = useUpdateIssue();
+  const {
+    create,
+    loading: createLoading,
+    error: createError,
+  } = useCreateIssue();
+  const {
+    update,
+    loading: updateLoading,
+    error: updateError,
+  } = useUpdateIssue();
   const { data: projectsData } = useProjects({ per_page: 50 });
+  const { data: usersData } = useUsers();
+  const { data: issueTypesData } = useIssueTypes();
+  const { data: issueStatusesData } = useIssueStatuses();
+  const { data: issuePrioritiesData } = useIssuePriorities();
 
   const loading = createLoading || updateLoading;
   const error = createError || updateError;
@@ -89,46 +107,42 @@ export default function CreateTaskForm({
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
-    defaultValues: initialData ? { ...defaultValues, ...initialData } : defaultValues,
+    defaultValues: initialData
+      ? { ...defaultValues, ...initialData }
+      : defaultValues,
   });
 
-  // Mock data - à remplacer par de vrais appels API
-  const availableLabels = [
-    { id: "bug", name: "Bug", color: "red" },
-    { id: "feature", name: "Feature", color: "green" },
-    { id: "enhancement", name: "Enhancement", color: "blue" },
-    { id: "documentation", name: "Documentation", color: "purple" },
-    { id: "design", name: "Design", color: "pink" },
-    { id: "testing", name: "Testing", color: "yellow" },
-  ];
+  // Observer le projet sélectionné pour récupérer ses labels
+  const selectedProjectId = form.watch("project");
+  const { data: projectLabelsData } = useProjectLabels(
+    selectedProjectId ? parseInt(selectedProjectId) : null
+  );
 
-  const availableUsers = [
-    { id: "1", name: "John Doe", avatar: "https://i.pravatar.cc/150?img=1" },
-    { id: "2", name: "Jane Smith", avatar: "https://i.pravatar.cc/150?img=2" },
-    { id: "3", name: "David Miller", avatar: "https://i.pravatar.cc/150?img=3" },
-    { id: "4", name: "Emma Johnson", avatar: "https://i.pravatar.cc/150?img=4" },
-  ];
+  // Transformer les données pour le composant LabelSelector
+  const availableLabels =
+    projectLabelsData?.map((label) => ({
+      id: String(label.id),
+      name: label.name,
+      color: label.color,
+    })) || [];
 
-  // Mock data pour les types d'issues, statuts et priorités
-  const issueTypes = [
-    { id: 1, name: "Bug", key: "BUG" },
-    { id: 2, name: "Feature", key: "FEATURE" },
-    { id: 3, name: "Task", key: "TASK" },
-    { id: 4, name: "Story", key: "STORY" },
-  ];
+  const availableUsers =
+    usersData?.map((user) => ({
+      id: String(user.id),
+      name: user.name,
+    })) || [];
 
-  const issueStatuses = [
-    { id: 1, name: "To Do", key: "TODO" },
-    { id: 2, name: "In Progress", key: "IN_PROGRESS" },
-    { id: 3, name: "Done", key: "DONE" },
-  ];
+  const issueTypes = issueTypesData || [];
+  const issueStatuses = issueStatusesData || [];
+  const issuePriorities = issuePrioritiesData || [];
 
-  const issuePriorities = [
-    { id: 1, name: "Low", key: "LOW", weight: 1 },
-    { id: 2, name: "Medium", key: "MEDIUM", weight: 2 },
-    { id: 3, name: "High", key: "HIGH", weight: 3 },
-    { id: 4, name: "Urgent", key: "URGENT", weight: 4 },
-  ];
+  // Réinitialiser les labels quand le projet change
+  useEffect(() => {
+    if (selectedProjectId) {
+      setSelectedLabels([]);
+      form.setValue("labels", []);
+    }
+  }, [selectedProjectId, form]);
 
   async function onSubmit(data: TaskFormValues) {
     if (!user) {
@@ -138,9 +152,11 @@ export default function CreateTaskForm({
 
     try {
       // Mapper les données du formulaire vers le format API
-      const priority = issuePriorities.find(p => p.key.toLowerCase() === data.priority.toLowerCase());
-      const issueType = issueTypes.find(t => t.key === "TASK"); // Par défaut
-      const status = issueStatuses.find(s => s.key === "TODO"); // Par défaut
+      const priority = issuePriorities.find(
+        (p) => p.key.toLowerCase() === data.priority.toLowerCase()
+      );
+      const issueType = issueTypes.find((t) => t.key === "TASK");
+      const status = issueStatuses.find((s) => s.key === "TODO");
 
       const issueData = {
         project_id: parseInt(data.project),
@@ -152,14 +168,15 @@ export default function CreateTaskForm({
         title: data.title,
         description: data.description || null,
         story_points: null,
-        due_date: data.dueDate ? data.dueDate.toISOString().split('T')[0] : null,
+        due_date: data.dueDate
+          ? data.dueDate.toISOString().split("T")[0]
+          : null,
+        labels: selectedLabels.map((id) => parseInt(id)),
       };
 
       let result: Issue | null = null;
 
       if (isEditing) {
-        // Pour l'édition, il faudrait passer l'ID de l'issue
-        // result = await update(issueId, issueData);
         toast.info("Édition d'issue pas encore implémentée");
         return;
       } else {
@@ -198,7 +215,7 @@ export default function CreateTaskForm({
   const handleAssigneeChange = (
     users: { id: string; name: string; avatar?: string }[]
   ) => {
-    const assignee = users[0]; // Prendre seulement le premier utilisateur
+    const assignee = users[0];
     setSelectedAssignee(assignee);
     form.setValue("assignee", assignee?.id || undefined);
   };
@@ -273,10 +290,7 @@ export default function CreateTaskForm({
                 <FormLabel>
                   {t("dashboard.addTask.project") || "Projet"} *
                 </FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger
                       className={cn(
@@ -313,10 +327,7 @@ export default function CreateTaskForm({
                 <FormLabel>
                   {t("dashboard.addTask.priorities.title") || "Priorité"}
                 </FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger
                       className={cn(
@@ -361,7 +372,9 @@ export default function CreateTaskForm({
               value={field.value}
               onChange={field.onChange}
               label={t("dashboard.addTask.dueDate") || "Date d'échéance"}
-              placeholder={t("dashboard.addTask.pickDate") || "Choisir une date"}
+              placeholder={
+                t("dashboard.addTask.pickDate") || "Choisir une date"
+              }
               error={form.formState.errors.dueDate?.message}
             />
           )}
@@ -377,6 +390,7 @@ export default function CreateTaskForm({
               availableLabels={availableLabels}
               label={t("dashboard.addTask.labels") || "Étiquettes"}
               error={form.formState.errors.labels?.message}
+              disabled={!selectedProjectId}
             />
           )}
         />
@@ -407,8 +421,8 @@ export default function CreateTaskForm({
               {t("dashboard.addTask.cancel") || "Annuler"}
             </Button>
           )}
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={loading}
             className={cn(
               `theme-${colorTheme}`,

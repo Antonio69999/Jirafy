@@ -14,6 +14,7 @@ interface ListViewProps {
   tasks: Task[];
   colorTheme: string;
   getPriorityClass: (priority?: string) => string;
+  onTaskSuccess?: () => void;
 }
 
 export function ListView({
@@ -96,8 +97,8 @@ export function ListView({
                 </TableCell>
                 <TableCell>
                   <div
-                    className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                     className={cn(
+                      "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
                       getPriorityClass(task.priority),
                       "text-white"
                     )}

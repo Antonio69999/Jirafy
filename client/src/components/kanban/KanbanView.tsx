@@ -17,6 +17,7 @@ interface KanbanViewProps {
   handleAddTask: (columnId: string) => void;
   handleCancelAdd: () => void;
   handleSaveTask: (columnId: string) => void;
+  onTaskSuccess?: () => void;
 }
 
 export function KanbanView({

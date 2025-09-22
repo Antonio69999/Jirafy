@@ -6,6 +6,7 @@ use App\Models\Auth\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Database\Seeders\TicketingReferenceSeeder;
+use Database\Seeders\LabelSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,5 +22,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
         $this->call(TicketingReferenceSeeder::class);
+        $this->call(LabelSeeder::class);
     }
 }

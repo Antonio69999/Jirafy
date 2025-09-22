@@ -28,6 +28,7 @@ interface LabelSelectorProps {
   availableLabels: Label[];
   label: string;
   error?: string;
+  disabled?: boolean;
 }
 
 export function LabelSelector({
@@ -36,6 +37,7 @@ export function LabelSelector({
   availableLabels,
   label,
   error,
+  disabled = false,
 }: LabelSelectorProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -52,27 +54,15 @@ export function LabelSelector({
     onLabelsChange(updated);
   };
 
-  const getLabelClass = (labelId: string) => {
-    const label = availableLabels.find((l) => l.id === labelId);
-    if (!label) return "";
+  const getLabelStyle = (labelId: string) => {
+    const labelData = availableLabels.find((l) => l.id === labelId);
+    if (!labelData) return {};
 
-    return (
-      {
-        red: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-        blue: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-        green:
-          "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-        purple:
-          "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-        pink: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300",
-        yellow:
-          "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
-        indigo:
-          "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
-        orange:
-          "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
-      }[label.color] || ""
-    );
+    return {
+      backgroundColor: labelData.color,
+      color: "#ffffff",
+      borderColor: labelData.color,
+    };
   };
 
   return (
@@ -80,69 +70,78 @@ export function LabelSelector({
       <FormLabel>{label}</FormLabel>
       <div className="mb-2">
         {selectedLabels.map((labelId) => {
-          const label = availableLabels.find((l) => l.id === labelId);
+          const labelData = availableLabels.find((l) => l.id === labelId);
           return (
             <Badge
               key={labelId}
-              className={cn("mr-1 mb-1", getLabelClass(labelId))}
+              className="mr-1 mb-1 cursor-pointer"
+              style={getLabelStyle(labelId)}
               onClick={() => removeLabel(labelId)}
             >
-              {label?.name}
-              <span className="ml-1 cursor-pointer">×</span>
+              {labelData?.name}
+              <span className="ml-1">×</span>
             </Badge>
           );
         })}
       </div>
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-        <DropdownMenuTrigger asChild>
-          <FormControl>
-            <Button
-              type="button"
-              variant="outline"
-              role="combobox"
-              className={cn(
-                "w-full justify-between",
-                !selectedLabels.length && "text-muted-foreground",
-                `focus-visible:ring-[var(--theme-primary)] focus-visible:border-[var(--theme-primary)] hover:border-[var(--hover-border)]`
-              )}
-            >
-              <span>{t("dashboard.addTask.addLabels") || "Add labels"}</span>
-              <Tag className="ml-auto h-4 w-4 opacity-50" />
-            </Button>
-          </FormControl>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="start"
-          className="p-0 bg-background"
-          sideOffset={4}
-          side="bottom"
-        >
-          <div className="p-2">
-            {availableLabels.map((label) => (
-              <button
-                key={label.id}
+
+      {disabled ? (
+        <div className="text-sm text-muted-foreground">
+          {t("dashboard.addTask.selectProjectFirst") ||
+            "Sélectionnez d'abord un projet"}
+        </div>
+      ) : (
+        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+          <DropdownMenuTrigger asChild>
+            <FormControl>
+              <Button
                 type="button"
+                variant="outline"
+                role="combobox"
                 className={cn(
-                  "flex items-center w-full p-2 rounded-md cursor-pointer hover:bg-muted text-left",
-                  selectedLabels.includes(label.id) && "bg-muted"
+                  "w-full justify-between",
+                  !selectedLabels.length && "text-muted-foreground"
                 )}
-                onClick={() => {
-                  addLabel(label.id);
-                  setIsOpen(false);
-                }}
               >
-                <div
-                  className={cn(
-                    "w-2 h-2 rounded-full mr-2",
-                    `bg-${label.color}-500`
-                  )}
-                />
-                <span>{label.name}</span>
-              </button>
-            ))}
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
+                <span>{t("dashboard.addTask.addLabels") || "Add labels"}</span>
+                <Tag className="ml-auto h-4 w-4 opacity-50" />
+              </Button>
+            </FormControl>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="p-0 bg-background">
+            <div className="p-2">
+              {availableLabels.length === 0 ? (
+                <div className="p-2 text-sm text-muted-foreground">
+                  {t("dashboard.addTask.noLabels") ||
+                    "Aucune étiquette disponible"}
+                </div>
+              ) : (
+                availableLabels.map((labelData) => (
+                  <button
+                    key={labelData.id}
+                    type="button"
+                    className={cn(
+                      "flex items-center w-full p-2 rounded-md cursor-pointer hover:bg-muted text-left",
+                      selectedLabels.includes(labelData.id) && "bg-muted"
+                    )}
+                    onClick={() => {
+                      addLabel(labelData.id);
+                      setIsOpen(false);
+                    }}
+                  >
+                    <div
+                      className="w-3 h-3 rounded-full mr-2"
+                      style={{ backgroundColor: labelData.color }}
+                    />
+                    <span>{labelData.name}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+
       {error && <FormMessage>{error}</FormMessage>}
     </FormItem>
   );

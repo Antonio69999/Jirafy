@@ -29,6 +29,7 @@ interface UserSelectorProps {
   availableUsers: UserType[];
   label: string;
   error?: string;
+  maxUsers?: number;
 }
 
 export function UserSelector({
@@ -37,6 +38,7 @@ export function UserSelector({
   availableUsers,
   label,
   error,
+  maxUsers,
 }: UserSelectorProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);

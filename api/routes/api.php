@@ -2,7 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\Ticketing\{ProjectController, IssueController};
+use App\Http\Controllers\Ticketing\Metadata\{LabelController, IssueMetadataController};
 
 // Routes d'authentification - pas d'authentification requise
 Route::prefix('auth')->group(function () {
@@ -15,16 +17,22 @@ Route::prefix('auth')->group(function () {
 
 // Routes protégées par authentification
 Route::middleware('auth:api')->group(function () {
-    
+
+    // Users
+    Route::get('users', [UserController::class, 'index']);
+
+    // Labels globaux
+    Route::get('labels', [LabelController::class, 'index']);
+
     // Routes des projets
     Route::prefix('projects')->group(function () {
         Route::get('/', [ProjectController::class, 'index']);
         Route::get('/{project}', [ProjectController::class, 'show']);
-        
+
         Route::middleware('check.role:project_create')->group(function () {
             Route::post('/', [ProjectController::class, 'store']);
         });
-        
+
         Route::middleware('check.role:admin')->group(function () {
             Route::put('/{project}', [ProjectController::class, 'update']);
             Route::delete('/{project}', [ProjectController::class, 'destroy']);
@@ -32,6 +40,14 @@ Route::middleware('auth:api')->group(function () {
 
         // Issues d'un projet spécifique
         Route::get('/{project}/issues', [IssueController::class, 'projectIssues']);
+
+        // Labels spécifiques à un projet
+        Route::get('/{project}/labels', [LabelController::class, 'projectLabels']);
+
+        // Issue metadata
+        Route::get('issue-types', [IssueMetadataController::class, 'types']);
+        Route::get('statuses', [IssueMetadataController::class, 'statuses']);
+        Route::get('priorities', [IssueMetadataController::class, 'priorities']);
     });
 
     // Routes des issues

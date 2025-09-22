@@ -11,6 +11,8 @@ use App\Services\Auth\RegisterService;
 use App\Services\Auth\PasswordService;
 use App\Interfaces\Ticketing\ProjectServiceInterface;
 use App\Services\Ticketing\ProjectService;
+use App\Interfaces\Ticketing\IssueServiceInterface;
+use App\Services\Ticketing\IssueService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RegisterServiceInterface::class, RegisterService::class);
         $this->app->bind(PasswordServiceInterface::class, PasswordService::class);
         $this->app->bind(ProjectServiceInterface::class, ProjectService::class);
+        $this->app->bind(IssueServiceInterface::class, IssueService::class);
     }
 
     /**
