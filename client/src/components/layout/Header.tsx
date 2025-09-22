@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { CreateModal } from "@/components/modals/CreateModal";
 import { useLogout } from "@/hooks/useLogout";
 import { useAuthStore } from "@/store/authStore";
+import CreateTaskModal from "../modals/CreateTaskModal";
 
 export function Header({ className }: { className?: string }) {
   const { t } = useTranslation();
@@ -126,7 +126,7 @@ export function Header({ className }: { className?: string }) {
       </header>
 
       {/* Add the CreateModal component */}
-      <CreateModal
+      <CreateTaskModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         colorTheme={colorTheme}

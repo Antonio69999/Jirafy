@@ -11,7 +11,7 @@ class Project extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['team_id', 'key', 'name', 'description', 'lead_user_id'];
+    protected $fillable = ['team_id', 'key', 'name', 'description', 'lead_user_id', 'issue_seq'];
 
     public function team()
     {
@@ -46,6 +46,7 @@ class Project extends Model
     protected $casts = [
         'team_id' => 'integer',
         'lead_user_id' => 'integer',
+        'issue_seq' => 'integer',
     ];
     protected $attributes = [
         'issue_seq' => 0, // valeur par défaut au niveau modèle

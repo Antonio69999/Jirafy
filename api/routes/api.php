@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Ticketing\ProjectController;
+use App\Http\Controllers\Ticketing\{ProjectController, IssueController};
 
 // Routes d'authentification - pas d'authentification requise
 Route::prefix('auth')->group(function () {
@@ -16,6 +16,7 @@ Route::prefix('auth')->group(function () {
 // Routes protégées par authentification
 Route::middleware('auth:api')->group(function () {
     
+    // Routes des projets
     Route::prefix('projects')->group(function () {
         Route::get('/', [ProjectController::class, 'index']);
         Route::get('/{project}', [ProjectController::class, 'show']);
@@ -28,8 +29,20 @@ Route::middleware('auth:api')->group(function () {
             Route::put('/{project}', [ProjectController::class, 'update']);
             Route::delete('/{project}', [ProjectController::class, 'destroy']);
         });
+
+        // Issues d'un projet spécifique
+        Route::get('/{project}/issues', [IssueController::class, 'projectIssues']);
     });
-    // Autres routes protégées par authentification
+
+    // Routes des issues
+    Route::prefix('issues')->group(function () {
+        Route::get('/', [IssueController::class, 'index']);
+        Route::post('/', [IssueController::class, 'store']);
+        Route::get('/key/{key}', [IssueController::class, 'showByKey']);
+        Route::get('/{issue}', [IssueController::class, 'show']);
+        Route::put('/{issue}', [IssueController::class, 'update']);
+        Route::delete('/{issue}', [IssueController::class, 'destroy']);
+    });
 });
 
 Route::fallback(function () {

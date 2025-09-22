@@ -25,6 +25,7 @@ export interface User {
       role: "owner" | "admin" | "member";
     };
   }[];
+  avatar?: string | null;
 }
 
 export interface AuthResponse {

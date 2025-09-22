@@ -12,6 +12,7 @@ import { ListView } from "@/components/kanban/ListView";
 import { PlaceholderView } from "@/components/kanban/PlaceholderView";
 import { ProjectHeader } from "@/components/kanban/ProjectHeader";
 import { useProject } from "@/hooks/useProject";
+import { useProjectIssues } from "@/hooks/useIssue";
 
 type TabType =
   | "summary"
@@ -35,7 +36,18 @@ export function Dashboard() {
     error: projectError,
   } = useProject(projectId ? parseInt(projectId) : undefined);
 
-  // État pour le projet actuel (basé sur les données API)
+  // Récupération des issues du projet
+  const { 
+    data: issuesData, 
+    loading: issuesLoading, 
+    error: issuesError,
+    refetch: refetchIssues 
+  } = useProjectIssues(
+    projectId ? parseInt(projectId) : 0,
+    { per_page: 50 }
+  );
+
+  // État pour le projet actuel
   const [currentProject, setCurrentProject] = useState<{
     id: string;
     name: string;
@@ -45,8 +57,15 @@ export function Dashboard() {
     lead: string;
   } | null>(null);
 
+  // État pour les tâches transformées
+  const [tasks, setTasks] = useState<Task[]>([]);
+
   // Gestion des onglets
   const [activeTab, setActiveTab] = useState<TabType>("board");
+
+  // États pour l'ajout de tâches
+  const [editingColumn, setEditingColumn] = useState<string | null>(null);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
 
   // Mettre à jour le projet actuel quand les données arrivent
   useEffect(() => {
@@ -56,7 +75,7 @@ export function Dashboard() {
         name: projectData.name,
         key: projectData.key,
         description: projectData.description || "",
-        color: "#3b82f6", // Couleur par défaut, vous pouvez ajouter un champ color au modèle Project
+        color: "#3b82f6", // Couleur par défaut
         lead: projectData.lead?.name || "Non assigné",
       });
     } else {
@@ -83,7 +102,64 @@ export function Dashboard() {
     }
   }, [searchParams]);
 
-  // Changer d'onglet
+  // Transformer les issues API vers le format Task
+  useEffect(() => {
+    if (issuesData?.data) {
+      const transformedTasks: Task[] = issuesData.data.map(issue => ({
+        id: issue.issue_key,
+        title: issue.title,
+        description: issue.description || undefined,
+        status: mapStatusToTaskStatus(issue.status?.key || 'TODO'),
+        priority: mapPriorityToTaskPriority(issue.priority?.key || 'MEDIUM'),
+        labels: issue.labels?.map(label => label.name) || [],
+        assignee: issue.assignee ? {
+          id: String(issue.assignee.id),
+          name: issue.assignee.name,
+          email: issue.assignee.email
+        } : undefined,
+        dueDate: issue.due_date || undefined,
+        projectId: String(issue.project_id),
+      }));
+      setTasks(transformedTasks);
+    } else {
+      setTasks([]);
+    }
+  }, [issuesData]);
+
+  // Fonctions de mapping
+  const mapStatusToTaskStatus = (statusKey: string): TaskStatus => {
+    switch (statusKey) {
+      case 'TODO':
+        return 'todo';
+      case 'IN_PROGRESS':
+        return 'in-progress';
+      case 'DONE':
+        return 'done';
+      default:
+        return 'todo';
+    }
+  };
+
+  const mapPriorityToTaskPriority = (priorityKey: string): string => {
+    switch (priorityKey) {
+      case 'LOW':
+        return 'low';
+      case 'MEDIUM':
+        return 'medium';
+      case 'HIGH':
+        return 'high';
+      case 'URGENT':
+        return 'urgent';
+      default:
+        return 'medium';
+    }
+  };
+
+  // Handlers
+  const handleTaskSuccess = () => {
+    refetchIssues();
+  };
+
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     const newSearchParams = new URLSearchParams(searchParams);
@@ -91,14 +167,6 @@ export function Dashboard() {
     setSearchParams(newSearchParams);
   };
 
-  // États pour les tâches
-  const [editingColumn, setEditingColumn] = useState<string | null>(null);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-
-  // Fonction pour générer un ID unique
-  const generateId = () => `task-${Math.floor(Math.random() * 10000)}`;
-
-  // Fonctions pour gérer l'ajout de tâche
   const handleAddTask = (columnId: string) => {
     setEditingColumn(columnId);
     setNewTaskTitle("");
@@ -106,6 +174,7 @@ export function Dashboard() {
 
   const handleCancelAdd = () => {
     setEditingColumn(null);
+    setNewTaskTitle("");
   };
 
   const handleSaveTask = (columnId: string) => {
@@ -114,34 +183,18 @@ export function Dashboard() {
       return;
     }
 
-    // Créer une nouvelle tâche
-    const newTask: Task = {
-      id: generateId(),
-      title: newTaskTitle.trim(),
-      status: columnId as TaskStatus,
-      priority: "medium", // Valeur par défaut
-      labels: [],
-    };
-
-    // Mise à jour des tâches
-    setTasks((prevTasks) => [...prevTasks, newTask]);
-    setEditingColumn(null);
+    // TODO: Implémenter la création d'issue via l'API
+    // Pour l'instant, on annule juste l'édition
+    handleCancelAdd();
   };
 
-  // État pour les tâches (vide par défaut)
-  const [tasks, setTasks] = useState<Task[]>([]);
-
-  // Définition des colonnes
+  // Configuration
   const columns = [
     { id: "todo", title: t("dashboard.kanban.todo") || "To Do" },
-    {
-      id: "in-progress",
-      title: t("dashboard.kanban.inProgress") || "In Progress",
-    },
+    { id: "in-progress", title: t("dashboard.kanban.inProgress") || "In Progress" },
     { id: "done", title: t("dashboard.kanban.done") || "Done" },
   ];
 
-  // Fonction pour obtenir la classe de priorité
   const getPriorityClass = (priority?: string) => {
     switch (priority) {
       case "high":
@@ -157,6 +210,26 @@ export function Dashboard() {
 
   // Rendu du contenu selon l'onglet actif
   const renderTabContent = () => {
+    if (issuesLoading) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">
+            {t("common.loading") || "Chargement des tâches..."}
+          </p>
+        </div>
+      );
+    }
+
+    if (issuesError) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-red-500">
+            {issuesError.message || "Erreur lors du chargement des tâches"}
+          </p>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case "board":
         return (
@@ -171,6 +244,7 @@ export function Dashboard() {
             handleAddTask={handleAddTask}
             handleCancelAdd={handleCancelAdd}
             handleSaveTask={handleSaveTask}
+            onTaskSuccess={handleTaskSuccess}
           />
         );
       case "list":
@@ -179,6 +253,7 @@ export function Dashboard() {
             tasks={tasks}
             colorTheme={colorTheme}
             getPriorityClass={getPriorityClass}
+            onTaskSuccess={handleTaskSuccess}
           />
         );
       case "summary":
@@ -210,14 +285,14 @@ export function Dashboard() {
   if (projectId && projectLoading) {
     return (
       <PageContainer
-        title={t("app.common.loading") || "Chargement..."}
+        title={t("common.loading") || "Chargement..."}
         compact
         className="p-0 sm:p-2"
       >
         <div className="flex items-center justify-center h-[calc(100vh-10rem)]">
           <div className="text-center">
             <p className="text-muted-foreground">
-              {t("app.common.loading") || "Chargement du projet..."}
+              {t("common.loading") || "Chargement du projet..."}
             </p>
           </div>
         </div>
@@ -228,14 +303,14 @@ export function Dashboard() {
   if (projectId && projectError) {
     return (
       <PageContainer
-        title={t("app.common.error") || "Erreur"}
+        title={t("common.error") || "Erreur"}
         compact
         className="p-0 sm:p-2"
       >
         <div className="flex items-center justify-center h-[calc(100vh-10rem)]">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2 text-red-500">
-              {t("app.common.error") || "Erreur"}
+              {t("common.error") || "Erreur"}
             </h2>
             <p className="text-muted-foreground">
               {projectError.message || "Impossible de charger le projet"}
@@ -246,7 +321,7 @@ export function Dashboard() {
     );
   }
 
-  // Si aucun projet n'est sélectionné, afficher un message
+  // Si aucun projet n'est sélectionné
   if (!projectId || !currentProject) {
     return (
       <PageContainer
@@ -280,7 +355,7 @@ export function Dashboard() {
       {/* Tabs de navigation */}
       <DashboardTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {/* Contenu principal selon l'onglet */}
+      {/* Contenu principal */}
       <ScrollArea className="h-[calc(100vh-15rem)]">
         {renderTabContent()}
       </ScrollArea>
