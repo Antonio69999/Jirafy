@@ -1,58 +1,43 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { type Task } from "@/types/task";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Clock, MessageSquare, SquarePen } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Calendar, MoreHorizontal } from "lucide-react";
 import { EditTaskModal } from "@/components/modals/EditTaskModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 interface TaskCardProps {
   task: Task;
   colorTheme: string;
   getPriorityClass: (priority?: string) => string;
+  onTaskUpdate?: () => void;
 }
 
 export function TaskCard({
   task,
   colorTheme,
   getPriorityClass,
+  onTaskUpdate,
 }: TaskCardProps) {
-  // State pour contrôler l'ouverture/fermeture de la modal
+  const { t } = useTranslation();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Function to get initials from a name
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2);
+  const handleEditClick = () => {
+    setIsEditModalOpen(true);
   };
 
-  // Get label color based on label name
-  const getLabelClass = (label: string) => {
-    switch (label.toLowerCase()) {
-      case "bug":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-      case "feature":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-      case "enhancement":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
-      case "documentation":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
-      case "design":
-        return "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300";
-      case "testing":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
-      case "database":
-        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300";
-      case "security":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-      case "devops":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300";
+  const handleEditSuccess = () => {
+    setIsEditModalOpen(false);
+    if (onTaskUpdate) {
+      onTaskUpdate();
     }
   };
 
@@ -60,143 +45,109 @@ export function TaskCard({
     <>
       <div
         className={cn(
-          "bg-background mb-2 p-3 rounded-md border shadow-sm relative group",
-          `theme-${colorTheme}`,
-          "hover:border-[var(--hover-border)]"
+          "bg-background rounded-lg border p-3 mb-2 shadow-sm",
+          "hover:shadow-md transition-shadow cursor-pointer",
+          `theme-${colorTheme}`
         )}
+        onClick={handleEditClick}
       >
-        {/* Header with priority indicator and title */}
-        <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex items-start justify-between mb-2">
+          <h4 className="font-medium text-sm leading-tight flex-1 pr-2">
+            {task.title}
+          </h4>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreHorizontal className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditClick();
+                }}
+              >
+                {t("task.actions.edit") || "Modifier"}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // TODO: Implémenter la suppression
+                }}
+              >
+                {t("task.actions.delete") || "Supprimer"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {task.description && (
+          <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+            {task.description}
+          </p>
+        )}
+
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div
               className={cn(
                 "w-2 h-2 rounded-full",
                 getPriorityClass(task.priority)
               )}
-              title={`Priority: ${task.priority}`}
             />
-            <h4 className="font-medium text-sm">{task.title}</h4>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5 ml-1"
-              onClick={() => setIsEditModalOpen(true)}
-            >
-              <SquarePen className="h-3 w-3" />
-              <span className="sr-only">Edit task</span>
-            </Button>
+            <span className="text-xs text-muted-foreground">{task.id}</span>
           </div>
 
-          {/* Task ID or reference */}
-          <div className="text-xs text-muted-foreground">
-            #{task.id.split("-")[1]}
-          </div>
-        </div>
-
-        {/* Description */}
-        {task.description && (
-          <p className="text-xs text-muted-foreground mb-3">
-            {task.description}
-          </p>
-        )}
-
-        {/* Task image if available */}
-        {task.image && (
-          <div className="mb-3 rounded-md overflow-hidden">
-            <img
-              src={task.image}
-              alt="Task attachment"
-              className="w-full h-auto object-cover"
-              style={{ maxHeight: "120px" }}
-            />
-          </div>
-        )}
-
-        {/* Footer with metadata */}
-        <div className="mt-2 flex flex-col gap-2">
-          {/* Labels if available */}
-          {task.labels && task.labels.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {task.labels.map((label, index) => (
-                <span
-                  key={index}
-                  className={cn(
-                    "text-xs px-2 py-0.5 rounded-full",
-                    getLabelClass(label)
-                  )}
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Task metadata and assignees */}
-          <div className="flex items-center justify-between mt-1">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              {task.comments && (
-                <div
-                  className="flex items-center mr-2"
-                  title={`${task.comments} comments`}
-                >
-                  <MessageSquare className="h-3 w-3 mr-1" />
-                  {task.comments}
-                </div>
-              )}
-              {task.dueDate && (
-                <div
-                  className="flex items-center"
-                  title={`Due: ${task.dueDate}`}
-                >
-                  <Clock className="h-3 w-3 mr-1" />
-                  {new Date(task.dueDate).toLocaleDateString()}
-                </div>
-              )}
-            </div>
-
-            {/* Assignees */}
-            {task.assignees && task.assignees.length > 0 && (
-              <div className="flex -space-x-2">
-                {task.assignees.slice(0, 3).map((assignee, index) => (
-                  <Avatar
-                    key={index}
-                    className="h-5 w-5 border-2 border-background"
-                  >
-                    <AvatarImage src={assignee.avatar} alt={assignee.name} />
-                    <AvatarFallback className="text-[8px]">
-                      {getInitials(assignee.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
-                {task.assignees.length > 3 && (
-                  <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[8px] font-medium border-2 border-background">
-                    +{task.assignees.length - 3}
-                  </div>
-                )}
+          <div className="flex items-center gap-2">
+            {task.dueDate && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Calendar className="h-3 w-3" />
+                <span>{new Date(task.dueDate).toLocaleDateString()}</span>
               </div>
             )}
-
-            {/* Single assignee */}
-            {task.assignee && !task.assignees && (
-              <Avatar className="h-5 w-5">
-                <AvatarImage
-                  src={task.assignee.avatar}
-                  alt={task.assignee.name}
-                />
-                <AvatarFallback className="text-[8px]">
-                  {getInitials(task.assignee.name)}
+            {task.assignee && (
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={task.assignee.avatar} />
+                <AvatarFallback className="text-xs">
+                  {task.assignee.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             )}
           </div>
         </div>
+
+        {task.labels && task.labels.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {task.labels.slice(0, 3).map((label, index) => (
+              <Badge
+                key={index}
+                variant="secondary"
+                className="text-xs px-1 py-0"
+              >
+                {label}
+              </Badge>
+            ))}
+            {task.labels.length > 3 && (
+              <Badge variant="outline" className="text-xs px-1 py-0">
+                +{task.labels.length - 3}
+              </Badge>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Modal d'édition de tâche */}
       <EditTaskModal
         task={task}
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
+        onSuccess={handleEditSuccess}
         colorTheme={colorTheme}
       />
     </>

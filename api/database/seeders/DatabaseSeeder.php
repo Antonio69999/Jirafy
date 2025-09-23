@@ -7,6 +7,7 @@ use App\Models\Auth\User;
 use Illuminate\Database\Seeder;
 use Database\Seeders\TicketingReferenceSeeder;
 use Database\Seeders\LabelSeeder;
+use Database\Factories\UserFactory;
 
 class DatabaseSeeder extends Seeder
 {

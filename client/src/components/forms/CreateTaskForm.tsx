@@ -32,12 +32,13 @@ import { useCreateIssue, useUpdateIssue } from "@/hooks/useIssue";
 import { useProjects } from "@/hooks/useProject";
 import { useAuthStore } from "@/store/authStore";
 import type { Issue } from "@/types/issue";
-import { useProjectLabels } from "@/hooks/useLabel"; // Utiliser useProjectLabels au lieu de useLabels
+import { useProjectLabels } from "@/hooks/useLabel";
 import {
   useIssueTypes,
   useIssueStatuses,
   useIssuePriorities,
 } from "@/hooks/useIssueMetadata";
+import { useQuickUpdateIssue } from "@/hooks/useQuickUpdateIssue";
 
 const taskFormSchema = z.object({
   title: z.string().min(2, {
@@ -81,6 +82,7 @@ export default function CreateTaskForm({
   const { data: issueTypesData } = useIssueTypes();
   const { data: issueStatusesData } = useIssueStatuses();
   const { data: issuePrioritiesData } = useIssuePriorities();
+  const { quickUpdate, isUpdating } = useQuickUpdateIssue();
 
   const loading = createLoading || updateLoading;
   const error = createError || updateError;
@@ -147,59 +149,79 @@ export default function CreateTaskForm({
     }
 
     try {
-      // Mapper les données du formulaire vers le format API
       const priority = issuePriorities.find(
         (p) => p.key.toLowerCase() === data.priority.toLowerCase()
       );
       const issueType = issueTypes.find((t) => t.key === "TASK");
       const status = issueStatuses.find((s) => s.key === "TODO");
 
-      const issueData = {
-        project_id: parseInt(data.project),
-        type_id: issueType?.id || 3,
-        status_id: status?.id || 1,
-        priority_id: priority?.id || 2,
-        reporter_id: user.id,
-        assignee_id: data.assignee ? parseInt(data.assignee) : undefined,
-        title: data.title,
-        description: data.description || null,
-        story_points: null,
-        due_date: data.dueDate
-          ? data.dueDate.toISOString().split("T")[0]
-          : null,
-        labels: selectedLabels.map((id) => parseInt(id)),
-      };
-
-      let result: Issue | null = null;
-
       if (isEditing) {
-        toast.info("Édition d'issue pas encore implémentée");
-        return;
+        // Mode édition - utiliser quickUpdate
+        if (!initialData?.issueId) {
+          toast.error("ID de la tâche manquant pour l'édition");
+          return;
+        }
+
+        const result = await quickUpdate({
+          issueId: initialData.issueId,
+          updates: {
+            title: data.title,
+            description: data.description || "",
+            priorityKey: priority?.key || "MEDIUM",
+            assigneeId: data.assignee ? parseInt(data.assignee) : undefined,
+            dueDate: data.dueDate
+              ? data.dueDate.toISOString().split("T")[0]
+              : undefined,
+          },
+        });
+
+        if (result) {
+          toast.success(
+            t("dashboard.editTask.success") || "Tâche mise à jour avec succès"
+          );
+          if (onSuccess) {
+            onSuccess(result);
+          }
+        }
       } else {
-        result = await create(issueData);
+        // Mode création - utiliser create existant
+        const issueData = {
+          project_id: parseInt(data.project),
+          type_id: issueType?.id || 3,
+          status_id: status?.id || 1,
+          priority_id: priority?.id || 2,
+          reporter_id: user.id,
+          assignee_id: data.assignee ? parseInt(data.assignee) : undefined,
+          title: data.title,
+          description: data.description || null,
+          story_points: null,
+          due_date: data.dueDate
+            ? data.dueDate.toISOString().split("T")[0]
+            : null,
+          labels: selectedLabels.map((id) => parseInt(id)),
+        };
+
+        const result = await create(issueData);
+
+        if (result) {
+          toast.success(
+            t("dashboard.addTask.success") || "Tâche créée avec succès"
+          );
+          form.reset();
+          setSelectedLabels([]);
+          setSelectedAssignee(undefined);
+
+          if (onSuccess) {
+            onSuccess(result);
+          }
+        }
       }
 
-      if (result) {
-        toast.success(
-          isEditing
-            ? t("dashboard.editTask.success") || "Tâche mise à jour avec succès"
-            : t("dashboard.addTask.success") || "Tâche créée avec succès"
-        );
-
-        form.reset();
-        setSelectedLabels([]);
-        setSelectedAssignee(undefined);
-
-        if (onSuccess) {
-          onSuccess(result);
-        }
-
-        if (onClose) {
-          onClose();
-        }
+      if (onClose) {
+        onClose();
       }
     } catch (err) {
-      // L'erreur est déjà gérée dans le hook
+      // L'erreur est déjà gérée dans les hooks
     }
   }
 
@@ -412,26 +434,26 @@ export default function CreateTaskForm({
               type="button"
               variant="outline"
               onClick={onClose}
-              disabled={loading}
+              disabled={loading || isUpdating}
             >
               {t("dashboard.addTask.cancel") || "Annuler"}
             </Button>
           )}
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || isUpdating}
             className={cn(
               `theme-${colorTheme}`,
               "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90"
             )}
           >
-            {loading
+            {loading || isUpdating
               ? isEditing
                 ? t("dashboard.editTask.updating") || "Mise à jour..."
                 : t("dashboard.addTask.creating") || "Création..."
               : isEditing
-              ? t("dashboard.editTask.submit") || "Mettre à jour"
-              : t("dashboard.addTask.submit") || "Créer la tâche"}
+              ? t("dashboard.editTask.update") || "Mettre à jour"
+              : t("dashboard.addTask.create") || "Créer la tâche"}
           </Button>
         </div>
       </form>

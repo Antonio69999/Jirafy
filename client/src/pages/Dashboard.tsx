@@ -13,6 +13,7 @@ import { PlaceholderView } from "@/components/kanban/PlaceholderView";
 import { ProjectHeader } from "@/components/kanban/ProjectHeader";
 import { useProject } from "@/hooks/useProject";
 import { useProjectIssues } from "@/hooks/useIssue";
+import { useQuickCreateIssue } from "@/hooks/useQuickCreateIssue";
 
 type TabType =
   | "summary"
@@ -43,6 +44,8 @@ export function Dashboard() {
     error: issuesError,
     refetch: refetchIssues,
   } = useProjectIssues(projectId ? parseInt(projectId) : 0, { per_page: 50 });
+
+  const { quickCreate, isCreating } = useQuickCreateIssue();
 
   // État pour le projet actuel
   const [currentProject, setCurrentProject] = useState<{
@@ -156,6 +159,19 @@ export function Dashboard() {
     }
   };
 
+  const getStatusKeyFromColumn = (columnId: string): string => {
+    switch (columnId) {
+      case "todo":
+        return "TODO";
+      case "in-progress":
+        return "IN_PROGRESS";
+      case "done":
+        return "DONE";
+      default:
+        return "TODO";
+    }
+  };
+
   // Handlers
   const handleTaskSuccess = () => {
     refetchIssues();
@@ -174,19 +190,36 @@ export function Dashboard() {
   };
 
   const handleCancelAdd = () => {
-    setEditingColumn(null);
-    setNewTaskTitle("");
+    if (!isCreating) {
+      setEditingColumn(null);
+      setNewTaskTitle("");
+    }
   };
-
-  const handleSaveTask = () => {
-    if (newTaskTitle.trim() === "") {
-      handleCancelAdd();
+  const handleSaveTask = async (columnId: string, title: string) => {
+    if (!projectId || !currentProject) {
+      toast.error("Aucun projet sélectionné");
       return;
     }
 
-    // TODO: Implémenter la création d'issue via l'API
-    // Pour l'instant, on annule juste l'édition
-    handleCancelAdd();
+    try {
+      const statusKey = getStatusKeyFromColumn(columnId);
+      const result = await quickCreate({
+        title,
+        projectId: parseInt(projectId),
+        statusKey,
+      });
+
+      if (result) {
+        // Réinitialiser l'état
+        setEditingColumn(null);
+        setNewTaskTitle("");
+
+        // Rafraîchir les données
+        handleTaskSuccess();
+      }
+    } catch (error) {
+      // L'erreur est déjà gérée dans le hook
+    }
   };
 
   // Configuration
@@ -249,6 +282,7 @@ export function Dashboard() {
             handleCancelAdd={handleCancelAdd}
             handleSaveTask={handleSaveTask}
             onTaskSuccess={handleTaskSuccess}
+            isCreatingTask={isCreating}
           />
         );
       case "list":

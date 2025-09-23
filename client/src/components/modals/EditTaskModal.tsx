@@ -15,6 +15,7 @@ interface EditTaskModalProps {
   task: Task;
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
   colorTheme: string;
 }
 
@@ -22,9 +23,17 @@ export function EditTaskModal({
   task,
   isOpen,
   onClose,
+  onSuccess,
   colorTheme,
 }: EditTaskModalProps) {
   const { t } = useTranslation();
+
+  const handleSuccess = () => {
+    if (onSuccess) {
+      onSuccess();
+    }
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -36,11 +45,11 @@ export function EditTaskModal({
       >
         <DialogHeader className="mb-4">
           <DialogTitle className="text-xl font-semibold">
-            {t("dashboard.editTask.title") || "Edit Task"}
+            {t("dashboard.editTask.title") || "Modifier la tâche"}
           </DialogTitle>
           <DialogDescription className="text-sm opacity-80">
             {t("dashboard.editTask.description") ||
-              "Make changes to this task. Click save when you're done."}
+              "Apportez des modifications à cette tâche. Cliquez sur sauvegarder quand vous avez terminé."}
           </DialogDescription>
         </DialogHeader>
 
@@ -54,36 +63,52 @@ export function EditTaskModal({
                   description: task.description || "",
                   priority: task.priority || "medium",
                   dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
-                  assignee:
-                    task.assignees && task.assignees.length > 0
-                      ? String(task.assignees[0].id)
-                      : task.assignee?.id
-                      ? String(task.assignee.id)
-                      : undefined,
+                  assignee: task.assignee
+                    ? String(task.assignee.id)
+                    : undefined,
                   labels: task.labels || [],
                   project: task.projectId || "1",
                 }}
                 onClose={onClose}
+                onSuccess={handleSuccess}
               />
             </div>
 
-            {/* Additional content area - takes 2/5 of the space on large screens */}
+            {/* Panneau latéral avec informations supplémentaires */}
             <div className="lg:col-span-2 space-y-4">
-              {/* Placeholder for additional components */}
               <div className="rounded-md border border-[var(--hover-border)] p-4 bg-card/30">
                 <h3 className="text-base font-medium mb-2">
-                  Additional Details
+                  {t("dashboard.editTask.info.title") ||
+                    "Informations de la tâche"}
                 </h3>
-                <div className="text-sm opacity-70">
-                  Future components can be placed here
+                <div className="text-sm space-y-2">
+                  <div>
+                    <span className="text-muted-foreground">ID: </span>
+                    <span className="font-mono">{task.id}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Statut: </span>
+                    <span className="capitalize">
+                      {task.status.replace("-", " ")}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Priorité: </span>
+                    <span className="capitalize">{task.priority}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Another placeholder section */}
               <div className="rounded-md border border-[var(--hover-border)] p-4 bg-card/30">
-                <h3 className="text-base font-medium mb-2">Related Items</h3>
-                <div className="text-sm opacity-70">
-                  Links, attachments, or other task metadata
+                <h3 className="text-base font-medium mb-2">
+                  {t("dashboard.editTask.guidelines.title") ||
+                    "Conseils d'édition"}
+                </h3>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>• Mettez à jour le titre pour refléter l'état actuel</p>
+                  <p>• Ajoutez des détails dans la description</p>
+                  <p>• Ajustez la priorité selon l'urgence</p>
+                  <p>• Assignez la tâche à la bonne personne</p>
                 </div>
               </div>
             </div>

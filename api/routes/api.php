@@ -24,6 +24,11 @@ Route::middleware('auth:api')->group(function () {
     // Labels globaux
     Route::get('labels', [LabelController::class, 'index']);
 
+    // Issue metadata
+    Route::get('issue-types', [IssueMetadataController::class, 'types']);
+    Route::get('statuses', [IssueMetadataController::class, 'statuses']);
+    Route::get('priorities', [IssueMetadataController::class, 'priorities']);
+
     // Routes des projets
     Route::prefix('projects')->group(function () {
         Route::get('/', [ProjectController::class, 'index']);
@@ -43,11 +48,6 @@ Route::middleware('auth:api')->group(function () {
 
         // Labels spécifiques à un projet
         Route::get('/{project}/labels', [LabelController::class, 'projectLabels']);
-
-        // Issue metadata
-        Route::get('issue-types', [IssueMetadataController::class, 'types']);
-        Route::get('statuses', [IssueMetadataController::class, 'statuses']);
-        Route::get('priorities', [IssueMetadataController::class, 'priorities']);
     });
 
     // Routes des issues

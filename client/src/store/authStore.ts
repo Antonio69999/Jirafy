@@ -9,9 +9,10 @@ interface AuthState {
   setAuth: (user: User, token: string) => void;
   clearAuth: () => void;
   setLoading: (loading: boolean) => void;
+  initializeAuth: () => void;
 }
 
-export const useAuthStore = create<AuthState>()((set) => ({
+export const useAuthStore = create<AuthState>()((set, get) => ({
   user: null,
   token: null,
   isAuthenticated: false,
@@ -27,4 +28,18 @@ export const useAuthStore = create<AuthState>()((set) => ({
     set({ user: null, token: null, isAuthenticated: false });
   },
   setLoading: (loading) => set({ isLoading: loading }),
+  initializeAuth: () => {
+    const token = sessionStorage.getItem("auth_token");
+    const userStr = sessionStorage.getItem("user");
+
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        set({ user, token, isAuthenticated: true });
+      } catch (error) {
+        console.error("Error parsing user from sessionStorage:", error);
+        get().clearAuth();
+      }
+    }
+  },
 }));

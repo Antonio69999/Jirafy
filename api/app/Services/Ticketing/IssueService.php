@@ -13,8 +13,11 @@ class IssueService implements IssueServiceInterface
     {
         return DB::transaction(function () use ($data) {
             $project = Project::findOrFail($data['project_id']);
-            
-            $nextNumber = $project->increment('issue_seq');
+
+            $project->increment('issue_seq');
+            $project->refresh(); 
+            $nextNumber = $project->issue_seq;
+
             $issueKey = $this->generateIssueKey($project->id);
 
             /** @var Issue $issue */

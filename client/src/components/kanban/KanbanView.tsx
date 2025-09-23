@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { TaskCard } from "@/components/kanban/TaskCard";
 import { type Task, type TaskStatus } from "@/types/task";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface KanbanViewProps {
@@ -16,8 +16,9 @@ interface KanbanViewProps {
   setNewTaskTitle: (title: string) => void;
   handleAddTask: (columnId: string) => void;
   handleCancelAdd: () => void;
-  handleSaveTask: (columnId: string) => void;
+  handleSaveTask: (columnId: string, title: string) => Promise<void>;
   onTaskSuccess?: () => void;
+  isCreatingTask?: boolean;
 }
 
 export function KanbanView({
@@ -31,11 +32,27 @@ export function KanbanView({
   handleAddTask,
   handleCancelAdd,
   handleSaveTask,
+  isCreatingTask = false,
 }: KanbanViewProps) {
   const { t } = useTranslation();
 
   const getTasksByStatus = (status: TaskStatus) => {
     return tasks.filter((task) => task.status === status);
+  };
+
+  const handleSaveClick = async (columnId: string) => {
+    if (newTaskTitle.trim() === "") {
+      handleCancelAdd();
+      return;
+    }
+
+    await handleSaveTask(columnId, newTaskTitle.trim());
+  };
+
+  const handleTaskUpdate = () => {
+    if (onTaskSuccess) {
+      onTaskSuccess();
+    }
   };
 
   return (
@@ -61,6 +78,7 @@ export function KanbanView({
                   task={task}
                   colorTheme={colorTheme}
                   getPriorityClass={getPriorityClass}
+                  onTaskUpdate={handleTaskUpdate}
                 />
               ))}
 
@@ -76,12 +94,17 @@ export function KanbanView({
                     onChange={(e) => setNewTaskTitle(e.target.value)}
                     autoFocus
                     rows={2}
+                    disabled={isCreatingTask}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
-                        handleSaveTask(column.id);
+                        if (!isCreatingTask) {
+                          handleSaveClick(column.id);
+                        }
                       } else if (e.key === "Escape") {
-                        handleCancelAdd();
+                        if (!isCreatingTask) {
+                          handleCancelAdd();
+                        }
                       }
                     }}
                   />
@@ -91,18 +114,27 @@ export function KanbanView({
                       size="sm"
                       onClick={handleCancelAdd}
                       className="h-7 px-2 text-xs"
+                      disabled={isCreatingTask}
                     >
                       {t("dashboard.addTask.cancel") || "Annuler"}
                     </Button>
                     <Button
                       size="sm"
-                      onClick={() => handleSaveTask(column.id)}
+                      onClick={() => handleSaveClick(column.id)}
                       className={cn(
                         "h-7 px-3 text-xs ml-1",
                         `theme-${colorTheme}`
                       )}
+                      disabled={isCreatingTask || !newTaskTitle.trim()}
                     >
-                      {t("dashboard.addTask.create") || "Ajouter"}
+                      {isCreatingTask ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          {t("dashboard.addTask.creating") || "Création..."}
+                        </>
+                      ) : (
+                        t("dashboard.addTask.create") || "Ajouter"
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -116,6 +148,7 @@ export function KanbanView({
                     `theme-${colorTheme}`
                   )}
                   onClick={() => handleAddTask(column.id)}
+                  disabled={isCreatingTask}
                 >
                   <Plus className="h-3.5 w-3.5" />
                   {t("dashboard.addTask.title") || "Add Task"}
