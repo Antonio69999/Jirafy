@@ -35,8 +35,9 @@ export function usePermissions() {
     return false;
   };
 
-  const canDeleteProject = (project?: any) => {
+  const canDeleteProject = () => {
     if (!user) return false;
+    
 
     // Seuls les super_admin et admin peuvent supprimer
     return user.role === "super_admin" || user.role === "admin";

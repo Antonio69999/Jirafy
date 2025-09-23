@@ -108,7 +108,7 @@ export default function Projects() {
   const toggleStar = (id: string) => console.log(`Toggle star ${id}`);
 
   const handleDelete = (project: ApiProject) => {
-    if (canDeleteProject(project)) {
+    if (canDeleteProject()) {
       // TODO: delete API
       console.log("Suppression projet:", project.id);
       refetch();
@@ -242,7 +242,7 @@ export default function Projects() {
                           {t("app.common.edit") || "Modifier"}
                         </Button>
                       )}
-                      {canDeleteProject(project.originalData) && (
+                      {canDeleteProject() && (
                         <Button
                           onClick={() => handleDelete(project.originalData)}
                           variant="destructive"

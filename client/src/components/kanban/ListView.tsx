@@ -17,11 +17,7 @@ interface ListViewProps {
   onTaskSuccess?: () => void;
 }
 
-export function ListView({
-  tasks,
-  colorTheme,
-  getPriorityClass,
-}: ListViewProps) {
+export function ListView({ tasks, getPriorityClass }: ListViewProps) {
   const { t } = useTranslation();
 
   // Fonction pour obtenir le statut en français

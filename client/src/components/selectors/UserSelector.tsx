@@ -38,7 +38,6 @@ export function UserSelector({
   availableUsers,
   label,
   error,
-  maxUsers,
 }: UserSelectorProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);

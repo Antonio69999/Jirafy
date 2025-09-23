@@ -37,15 +37,12 @@ export function Dashboard() {
   } = useProject(projectId ? parseInt(projectId) : undefined);
 
   // Récupération des issues du projet
-  const { 
-    data: issuesData, 
-    loading: issuesLoading, 
+  const {
+    data: issuesData,
+    loading: issuesLoading,
     error: issuesError,
-    refetch: refetchIssues 
-  } = useProjectIssues(
-    projectId ? parseInt(projectId) : 0,
-    { per_page: 50 }
-  );
+    refetch: refetchIssues,
+  } = useProjectIssues(projectId ? parseInt(projectId) : 0, { per_page: 50 });
 
   // État pour le projet actuel
   const [currentProject, setCurrentProject] = useState<{
@@ -105,18 +102,20 @@ export function Dashboard() {
   // Transformer les issues API vers le format Task
   useEffect(() => {
     if (issuesData?.data) {
-      const transformedTasks: Task[] = issuesData.data.map(issue => ({
+      const transformedTasks: Task[] = issuesData.data.map((issue) => ({
         id: issue.issue_key,
         title: issue.title,
         description: issue.description || undefined,
-        status: mapStatusToTaskStatus(issue.status?.key || 'TODO'),
-        priority: mapPriorityToTaskPriority(issue.priority?.key || 'MEDIUM'),
-        labels: issue.labels?.map(label => label.name) || [],
-        assignee: issue.assignee ? {
-          id: String(issue.assignee.id),
-          name: issue.assignee.name,
-          email: issue.assignee.email
-        } : undefined,
+        status: mapStatusToTaskStatus(issue.status?.key || "TODO"),
+        priority: mapPriorityToTaskPriority(issue.priority?.key || "MEDIUM"),
+        labels: issue.labels?.map((label) => label.name) || [],
+        assignee: issue.assignee
+          ? {
+              id: String(issue.assignee.id),
+              name: issue.assignee.name,
+              email: issue.assignee.email,
+            }
+          : undefined,
         dueDate: issue.due_date || undefined,
         projectId: String(issue.project_id),
       }));
@@ -129,29 +128,31 @@ export function Dashboard() {
   // Fonctions de mapping
   const mapStatusToTaskStatus = (statusKey: string): TaskStatus => {
     switch (statusKey) {
-      case 'TODO':
-        return 'todo';
-      case 'IN_PROGRESS':
-        return 'in-progress';
-      case 'DONE':
-        return 'done';
+      case "TODO":
+        return "todo";
+      case "IN_PROGRESS":
+        return "in-progress";
+      case "DONE":
+        return "done";
       default:
-        return 'todo';
+        return "todo";
     }
   };
 
-  const mapPriorityToTaskPriority = (priorityKey: string): string => {
+  const mapPriorityToTaskPriority = (
+    priorityKey: string
+  ): "low" | "medium" | "high" => {
     switch (priorityKey) {
-      case 'LOW':
-        return 'low';
-      case 'MEDIUM':
-        return 'medium';
-      case 'HIGH':
-        return 'high';
-      case 'URGENT':
-        return 'urgent';
+      case "LOW":
+        return "low";
+      case "MEDIUM":
+        return "medium";
+      case "HIGH":
+        return "high";
+      case "URGENT":
+        return "high";
       default:
-        return 'medium';
+        return "medium";
     }
   };
 
@@ -177,7 +178,7 @@ export function Dashboard() {
     setNewTaskTitle("");
   };
 
-  const handleSaveTask = (columnId: string) => {
+  const handleSaveTask = () => {
     if (newTaskTitle.trim() === "") {
       handleCancelAdd();
       return;
@@ -191,7 +192,10 @@ export function Dashboard() {
   // Configuration
   const columns = [
     { id: "todo", title: t("dashboard.kanban.todo") || "To Do" },
-    { id: "in-progress", title: t("dashboard.kanban.inProgress") || "In Progress" },
+    {
+      id: "in-progress",
+      title: t("dashboard.kanban.inProgress") || "In Progress",
+    },
     { id: "done", title: t("dashboard.kanban.done") || "Done" },
   ];
 

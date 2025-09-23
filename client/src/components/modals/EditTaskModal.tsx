@@ -54,10 +54,12 @@ export function EditTaskModal({
                   description: task.description || "",
                   priority: task.priority || "medium",
                   dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
-                  assignees:
-                    task.assignees?.map((a) => a.id) || task.assignee?.id
-                      ? [task.assignee?.id as string]
-                      : [],
+                  assignee:
+                    task.assignees && task.assignees.length > 0
+                      ? String(task.assignees[0].id)
+                      : task.assignee?.id
+                      ? String(task.assignee.id)
+                      : undefined,
                   labels: task.labels || [],
                   project: task.projectId || "1",
                 }}

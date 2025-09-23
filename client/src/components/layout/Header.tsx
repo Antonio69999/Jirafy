@@ -129,7 +129,6 @@ export function Header({ className }: { className?: string }) {
       <CreateTaskModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        colorTheme={colorTheme}
       />
     </>
   );

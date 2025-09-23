@@ -190,8 +190,8 @@ export function useDeleteProject() {
   const [error, setError] = useState<Error>(null);
   const { canDeleteProject } = usePermissions();
 
-  const remove = async (id: number, project?: Project): Promise<boolean> => {
-    if (!canDeleteProject(project)) {
+  const remove = async (id: number): Promise<boolean> => {
+    if (!canDeleteProject()) {
       setError({
         message: "Vous n'avez pas les permissions pour supprimer ce projet",
         status: 403,

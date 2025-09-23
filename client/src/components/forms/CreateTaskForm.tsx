@@ -75,11 +75,7 @@ export default function CreateTaskForm({
     loading: createLoading,
     error: createError,
   } = useCreateIssue();
-  const {
-    update,
-    loading: updateLoading,
-    error: updateError,
-  } = useUpdateIssue();
+  const { loading: updateLoading, error: updateError } = useUpdateIssue();
   const { data: projectsData } = useProjects({ per_page: 50 });
   const { data: usersData } = useUsers();
   const { data: issueTypesData } = useIssueTypes();
@@ -383,7 +379,7 @@ export default function CreateTaskForm({
         <FormField
           control={form.control}
           name="labels"
-          render={({ field }) => (
+          render={() => (
             <LabelSelector
               selectedLabels={selectedLabels}
               onLabelsChange={handleLabelsChange}
@@ -398,14 +394,14 @@ export default function CreateTaskForm({
         <FormField
           control={form.control}
           name="assignee"
-          render={({ field }) => (
+          render={() => (
             <UserSelector
               selectedUsers={selectedAssignee ? [selectedAssignee] : []}
               onUsersChange={handleAssigneeChange}
               availableUsers={availableUsers}
               label={t("dashboard.addTask.assignee") || "Assigné à"}
               error={form.formState.errors.assignee?.message}
-              maxUsers={1} // Limiter à un seul utilisateur pour l'assigné
+              maxUsers={1}
             />
           )}
         />
