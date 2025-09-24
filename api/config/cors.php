@@ -3,14 +3,13 @@ return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
     'allowed_origins' => [
-        'http://localhost:5175',
-        'http://127.0.0.1:5175',
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
+        'jirafyapi.garage404.com', // Votre domaine client
+        'http://localhost:5173', // Pour le dev local
+        'http://localhost:5175', // Votre port Vite
     ],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
     'max_age' => 0,
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 ];
