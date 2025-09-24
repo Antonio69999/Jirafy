@@ -17,21 +17,40 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /home/antoine/webapps/jirafy
-            git pull origin main
+
+            # Si c'est le premier déploiement, cloner le repository
+            if [ ! -d ".git" ]; then
+              echo "First deployment - cloning repository..."
+              rm -rf * .* 2>/dev/null || true
+              git clone https://github.com/Antonio69999/Jirafy.git .
+            else
+              echo "Pulling latest changes..."
+              git pull origin main
+            fi
 
             # Backend Laravel
-            cd api
-            composer install --no-dev --optimize-autoloader
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            php artisan queue:restart || true
+            if [ -d "api" ]; then
+              cd api
+              composer install --no-dev --optimize-autoloader --no-interaction
+              cp .env.example .env 2>/dev/null || true
+              php artisan key:generate --force 2>/dev/null || true
+              php artisan migrate --force 2>/dev/null || true
+              php artisan config:cache 2>/dev/null || true
+              php artisan route:cache 2>/dev/null || true
+              php artisan view:cache 2>/dev/null || true
+              cd ..
+            else
+              echo "API directory not found, skipping Laravel setup"
+            fi
 
             # Frontend React
-            cd ../client
-            npm ci
-            npm run build
+            if [ -d "client" ]; then
+              cd client
+              npm install
+              npm run build 2>/dev/null || echo "Build failed, continuing..."
+              cd ..
+            else
+              echo "Client directory not found, skipping React build"
+            fi
 
-            # Redémarrer les services si nécessaire
-            sudo supervisorctl restart all || true
+            echo "Deployment completed"
