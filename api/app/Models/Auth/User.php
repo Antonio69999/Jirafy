@@ -5,6 +5,7 @@ namespace App\Models\Auth;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Database\Factories\UserFactory;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -41,7 +42,7 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-     // Constantes pour les rôles globaux
+    // Constantes pour les rôles globaux
     public const ROLE_SUPER_ADMIN = 'super_admin';
     public const ROLE_ADMIN = 'admin';
     public const ROLE_USER = 'user';
@@ -69,5 +70,13 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(\App\Models\Ticketing\Project::class, 'project_users')
             ->withPivot('role')
             ->withTimestamps();
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return UserFactory::new();
     }
 }
