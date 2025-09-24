@@ -9,6 +9,7 @@ import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
 import type { Issue, IssueUpdate } from "@/types/issue";
 import type { Task } from "@/types/task";
+import { issueService } from "@/api/services/issueService";
 
 export function useQuickUpdateIssue() {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -121,12 +122,14 @@ export function useQuickUpdateIssue() {
     issueKey: string
   ): Promise<number | null> => {
     try {
-      // Vous devrez implémenter cette logique selon votre API
-      // Pour l'instant, supposons qu'on puisse extraire l'ID du context
-      // ou faire un appel API pour récupérer l'issue par sa clé
-      return null; // À implémenter
+      const issue = await issueService.getByKey(issueKey);
+      return issue.id;
     } catch (error) {
-      console.error("Erreur lors de la récupération de l'ID:", error);
+      console.error(
+        "Erreur lors de la récupération de l'issue par clé:",
+        error
+      );
+      toast.error(`Impossible de trouver l'issue ${issueKey}`);
       return null;
     }
   };
