@@ -56,7 +56,7 @@ type TaskFormValues = z.infer<typeof taskFormSchema>;
 
 interface CreateTaskFormProps {
   isEditing?: boolean;
-  initialData?: Partial<TaskFormValues>;
+  initialData?: Partial<TaskFormValues & { issueId?: number }>; // Ajouter issueId
   onClose?: () => void;
   onSuccess?: (issue: Issue) => void;
 }
@@ -159,8 +159,11 @@ export default function CreateTaskForm({
         // Mode édition - utiliser quickUpdate
         if (!initialData?.issueId) {
           toast.error("ID de la tâche manquant pour l'édition");
+          console.error("initialData:", initialData); // Debug
           return;
         }
+
+        console.log("Updating issue with ID:", initialData.issueId); // Debug
 
         const result = await quickUpdate({
           issueId: initialData.issueId,
@@ -221,6 +224,7 @@ export default function CreateTaskForm({
         onClose();
       }
     } catch (err) {
+      console.error("Erreur dans onSubmit:", err); // Debug
       // L'erreur est déjà gérée dans les hooks
     }
   }

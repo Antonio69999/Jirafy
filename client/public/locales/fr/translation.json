@@ -156,7 +156,19 @@
             "title": "Modifier la tâche",
             "description": "Modifier les détails de la tâche",
             "cancel": "Annuler",
-            "submit": "Valider"
+            "submit": "Valider",
+            "delete": "Supprimer la tâche",
+            "update": "Mettre à jour la tâche",
+            "info": {
+                "title": "Informations sur la tâche"
+            },
+            "guidelines": {
+                "title": "Bonnes pratiques",
+                "item1": "Utilise un titre clair et orienté vers l'action",
+                "item2": "Inclue des détails pertinents dans la description",
+                "item3": "Assigne des étiquettes appropriées pour un filtrage facile",
+                "item4": "Fixe des dates d'échéance réalistes"
+            }
         },
         "kanban": {
             "todo": "À faire",

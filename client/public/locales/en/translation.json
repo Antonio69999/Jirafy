@@ -154,7 +154,18 @@
             "title": "Edit task",
             "description": "Edit task details",
             "cancel": "Cancel",
-            "submit": "Submit"
+            "submit": "Submit",
+            "delete": "Delete Task",
+            "update": "Update Task",
+            "info": {
+                "title": "Task Info",
+                "created": "Created",
+                "updated": "Last updated",
+                "by": "by"
+            },
+            "guidelines": {
+                "title": "Guidelines"
+            }
         },
         "kanban": {
             "todo": "To Do",

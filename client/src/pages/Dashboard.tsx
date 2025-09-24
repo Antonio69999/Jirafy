@@ -14,6 +14,7 @@ import { ProjectHeader } from "@/components/kanban/ProjectHeader";
 import { useProject } from "@/hooks/useProject";
 import { useProjectIssues } from "@/hooks/useIssue";
 import { useQuickCreateIssue } from "@/hooks/useQuickCreateIssue";
+import { toast } from "sonner";
 
 type TabType =
   | "summary"
@@ -251,7 +252,7 @@ export function Dashboard() {
       return (
         <div className="flex items-center justify-center h-64">
           <p className="text-muted-foreground">
-            {t("common.loading") || "Chargement des tâches..."}
+            {t("app.common.loading") || "Chargement des tâches..."}
           </p>
         </div>
       );
@@ -323,14 +324,14 @@ export function Dashboard() {
   if (projectId && projectLoading) {
     return (
       <PageContainer
-        title={t("common.loading") || "Chargement..."}
+        title={t("app.common.loading") || "Chargement..."}
         compact
         className="p-0 sm:p-2"
       >
         <div className="flex items-center justify-center h-[calc(100vh-10rem)]">
           <div className="text-center">
             <p className="text-muted-foreground">
-              {t("common.loading") || "Chargement du projet..."}
+              {t("app.common.loading") || "Chargement du projet..."}
             </p>
           </div>
         </div>

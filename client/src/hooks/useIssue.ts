@@ -45,12 +45,16 @@ export function useUpdateIssue() {
     id: number,
     payload: IssueUpdate
   ): Promise<Issue | null> => {
+    console.log("useUpdateIssue.update called with:", id, payload); // Debug
+
     setLoading(true);
     setError(null);
     try {
       const result = await issueService.update(id, payload);
+      console.log("Update result:", result); // Debug
       return result;
     } catch (err: any) {
+      console.error("Error in useUpdateIssue.update:", err); // Debug
       setError({
         message: err.message || "Erreur lors de la mise à jour de l'issue",
         status: err.status,

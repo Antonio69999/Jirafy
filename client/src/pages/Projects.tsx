@@ -150,7 +150,7 @@ export default function Projects() {
     return (
       <PageContainer title={t("app.sidebar.projects") || "Projects"}>
         <div className="flex justify-center items-center h-64 text-muted-foreground">
-          {t("common.loading") || "Chargement..."}
+          {t("app.common.loading") || "Chargement..."}
         </div>
       </PageContainer>
     );

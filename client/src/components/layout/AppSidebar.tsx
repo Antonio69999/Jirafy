@@ -177,7 +177,7 @@ export function AppSidebar() {
                             {/* Liste des projets récents */}
                             {loading ? (
                               <div className="px-2 py-3 text-center text-muted-foreground text-sm">
-                                {t("common.loading") || "Chargement..."}
+                                {t("app.common.loading") || "Chargement..."}
                               </div>
                             ) : recentProjects.length > 0 ? (
                               recentProjects.map((project) => (

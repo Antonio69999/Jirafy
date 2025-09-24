@@ -31,6 +31,7 @@ export function KanbanView({
   setNewTaskTitle,
   handleAddTask,
   handleCancelAdd,
+  onTaskSuccess,
   handleSaveTask,
   isCreatingTask = false,
 }: KanbanViewProps) {

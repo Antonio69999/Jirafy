@@ -31,6 +31,8 @@ export function useQuickUpdateIssue() {
       dueDate: string;
     }>;
   }): Promise<Issue | null> => {
+    console.log("quickUpdate called with params:", params); // Debug
+
     if (!user) {
       toast.error("Vous devez être connecté pour modifier une tâche");
       return null;
@@ -56,14 +58,18 @@ export function useQuickUpdateIssue() {
       }
 
       if (params.updates.statusKey) {
-        const status = issueStatuses.find((s) => s.key === params.updates.statusKey);
+        const status = issueStatuses.find(
+          (s) => s.key === params.updates.statusKey
+        );
         if (status) {
           updateData.status_id = status.id;
         }
       }
 
       if (params.updates.priorityKey) {
-        const priority = issuePriorities.find((p) => p.key === params.updates.priorityKey);
+        const priority = issuePriorities.find(
+          (p) => p.key === params.updates.priorityKey
+        );
         if (priority) {
           updateData.priority_id = priority.id;
         }
@@ -76,6 +82,8 @@ export function useQuickUpdateIssue() {
       if (params.updates.dueDate !== undefined) {
         updateData.due_date = params.updates.dueDate || null;
       }
+
+      console.log("Calling update with:", params.issueId, updateData); // Debug
 
       const result = await update(params.issueId, updateData);
 
@@ -109,7 +117,9 @@ export function useQuickUpdateIssue() {
   };
 
   // Fonction helper pour récupérer l'ID depuis la clé
-  const getIssueIdFromKey = async (issueKey: string): Promise<number | null> => {
+  const getIssueIdFromKey = async (
+    issueKey: string
+  ): Promise<number | null> => {
     try {
       // Vous devrez implémenter cette logique selon votre API
       // Pour l'instant, supposons qu'on puisse extraire l'ID du context
