@@ -16,45 +16,71 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            set -e
             cd /home/antoine/webapps/jirafy
 
-            # Si c'est le premier déploiement, cloner le repository
-            if [ ! -d ".git" ]; then
-              echo "First deployment - cloning repository..."
-              rm -rf * .* 2>/dev/null || true
-              git clone https://github.com/Antonio69999/Jirafy.git .
-            else
-              echo "Pulling latest changes..."
-              git pull origin main
-            fi
+            echo "=== Pulling latest changes ==="
+            git pull origin main
 
-            # Backend Laravel - attendre que PHP soit mis à jour sur Runcloud
-            if [ -d "api" ]; then
-              echo "Checking PHP version..."
-              php -v
-              cd api
-              # Utiliser --ignore-platform-reqs temporairement si PHP pas encore mis à jour
-              composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs || composer install --no-dev --optimize-autoloader --no-interaction
-              cp .env.example .env 2>/dev/null || true
-              php artisan key:generate --force 2>/dev/null || true
-              php artisan migrate --force 2>/dev/null || true
-              php artisan config:cache 2>/dev/null || true
-              php artisan route:cache 2>/dev/null || true
-              php artisan view:cache 2>/dev/null || true
-              cd ..
-            else
-              echo "API directory not found, skipping Laravel setup"
+            echo "=== Backend Laravel Setup ==="
+            cd api
+            
+            # Nettoyer complètement les caches Laravel
+            echo "Clearing all Laravel caches..."
+            php artisan cache:clear || true
+            php artisan config:clear || true
+            php artisan route:clear || true
+            php artisan view:clear || true
+            php artisan optimize:clear || true
+            
+            # Supprimer les fichiers de cache générés
+            rm -rf bootstrap/cache/*.php || true
+            rm -rf storage/framework/cache/data/* || true
+            rm -rf storage/framework/sessions/* || true
+            rm -rf storage/framework/views/* || true
+            
+            # Réinstaller Composer avec cache vidé
+            echo "Reinstalling Composer dependencies..."
+            composer clear-cache
+            rm -rf vendor/
+            composer install --no-dev --optimize-autoloader --no-interaction
+            
+            # Configuration Laravel
+            if [ ! -f ".env" ]; then
+              cp .env.example .env
+              php artisan key:generate --force
             fi
+            
+            # Vérifier les extensions PHP
+            echo "Checking PHP extensions..."
+            php -m | grep -E "(reflection|json|mbstring|openssl|pdo|tokenizer|xml)"
+            
+            # Optimisation Laravel
+            echo "Optimizing Laravel..."
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            
+            # Migration (attention en production)
+            php artisan migrate --force || echo "Migration skipped"
 
-            # Frontend React - ignorer les erreurs TypeScript temporairement
-            if [ -d "client" ]; then
-              cd client
-              npm install
-              # Build avec option pour ignorer les erreurs TypeScript
-              CI=false npm run build 2>/dev/null || echo "Build completed with warnings"
-              cd ..
-            else
-              echo "Client directory not found, skipping React build"
-            fi
+            cd ..
 
-            echo "Deployment completed successfully!"
+            echo "=== Frontend React Setup ==="
+            cd client
+            
+            # Nettoyer le cache npm
+            npm cache clean --force || true
+            rm -rf node_modules/ || true
+            rm -rf dist/ || true
+            
+            # Réinstaller les dépendances
+            npm install
+            
+            # Build avec gestion d'erreurs
+            echo "Building React application..."
+            CI=false npm run build
+            
+            cd ..
+
+            echo "🎉 Deployment completed successfully!"
