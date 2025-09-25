@@ -138,6 +138,7 @@
             "addLabels": "Ajouter une étiquette",
             "pickDate": "Choisir une date",
             "addMembers": "Ajouter des membres",
+            "assignee": "Responsable",
             "members": "Membres",
             "submit": "Valider",
             "priorities": {
@@ -312,6 +313,16 @@
             "deleteTeam": "Supprimer l'équipe",
             "addMember": "Ajouter un membre",
             "removeMember": "Supprimer le membre"
+        }
+    },
+    "task": {
+        "actions": {
+            "edit": "Modifier la tâche",
+            "create": "Créer une tâche",
+            "title": "Titre",
+            "description": "Description",
+            "delete": "Supprimer",
+            "deleting": "Suppresion"
         }
     }
 }

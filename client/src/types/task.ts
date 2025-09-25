@@ -11,13 +11,21 @@ export interface Task {
   title: string;
   description?: string;
   status: TaskStatus;
-  priority?: "low" | "medium" | "high";
-  image?: string;
+  priority?: "low" | "medium" | "high" | "urgent";
   labels?: string[];
-  assignee?: User;
-  assignees?: User[];
+  assignee?: {
+    id: number;
+    name: string;
+    avatar?: string;
+  };
   dueDate?: string;
-  comments?: number;
-  attachments?: number;
   projectId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface KanbanColumn {
+  id: TaskStatus;
+  title: string;
+  tasks: Task[];
 }

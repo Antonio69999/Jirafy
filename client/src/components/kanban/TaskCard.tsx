@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { useDeleteIssue } from "@/hooks/useIssue";
+import { issueService } from "@/api/services/issueService";
+import { toast } from "sonner";
 
 interface TaskCardProps {
   task: Task;
@@ -29,6 +32,9 @@ export function TaskCard({
 }: TaskCardProps) {
   const { t } = useTranslation();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const { remove: deleteIssue, loading: deleteLoading } = useDeleteIssue();
 
   const handleEditClick = () => {
     setIsEditModalOpen(true);
@@ -41,13 +47,49 @@ export function TaskCard({
     }
   };
 
+  const handleDeleteClick = async () => {
+    const confirmed = window.confirm(
+      t("task.actions.deleteConfirm") ||
+        "Êtes-vous sûr de vouloir supprimer cette tâche ? Cette action est irréversible."
+    );
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      // Récupérer l'ID numérique de l'issue
+      const issue = await issueService.getByKey(task.id);
+      const success = await deleteIssue(issue.id);
+
+      if (success) {
+        toast.success(
+          t("task.actions.deleteSuccess") || "Tâche supprimée avec succès"
+        );
+        if (onTaskUpdate) {
+          onTaskUpdate();
+        }
+      }
+    } catch (error: any) {
+      toast.error(
+        error.message ||
+          t("task.actions.deleteError") ||
+          "Erreur lors de la suppression de la tâche"
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const isProcessing = isDeleting || deleteLoading;
+
   return (
     <>
       <div
         className={cn(
           "bg-background rounded-lg border p-3 mb-2 shadow-sm",
-          "hover:shadow-md transition-shadow cursor-pointer",
-          `theme-${colorTheme}`
+          "hover:shadow-md transition-shadow cursor-pointer group",
+          `theme-${colorTheme}`,
+          isProcessing && "opacity-50 pointer-events-none"
         )}
         onClick={handleEditClick}
       >
@@ -62,6 +104,7 @@ export function TaskCard({
                 size="sm"
                 className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
                 onClick={(e) => e.stopPropagation()}
+                disabled={isProcessing}
               >
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
@@ -72,17 +115,21 @@ export function TaskCard({
                   e.stopPropagation();
                   handleEditClick();
                 }}
+                disabled={isProcessing}
               >
                 {t("task.actions.edit") || "Modifier"}
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="text-destructive"
+                className="text-destructive focus:text-destructive"
                 onClick={(e) => {
                   e.stopPropagation();
-                  // TODO: Implémenter la suppression
+                  handleDeleteClick();
                 }}
+                disabled={isProcessing}
               >
-                {t("task.actions.delete") || "Supprimer"}
+                {isProcessing
+                  ? t("task.actions.deleting") || "Suppression..."
+                  : t("task.actions.delete") || "Supprimer"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

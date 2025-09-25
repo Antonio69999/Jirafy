@@ -39,6 +39,7 @@ import {
   useIssuePriorities,
 } from "@/hooks/useIssueMetadata";
 import { useQuickUpdateIssue } from "@/hooks/useQuickUpdateIssue";
+import { useAvailableStatuses } from "@/hooks/useStatus";
 
 const taskFormSchema = z.object({
   title: z.string().min(2, {
@@ -80,7 +81,7 @@ export default function CreateTaskForm({
   const { data: projectsData } = useProjects({ per_page: 50 });
   const { data: usersData } = useUsers();
   const { data: issueTypesData } = useIssueTypes();
-  const { data: issueStatusesData } = useIssueStatuses();
+  const { data: issueStatusesData } = useAvailableStatuses();
   const { data: issuePrioritiesData } = useIssuePriorities();
   const { quickUpdate, isUpdating } = useQuickUpdateIssue();
 

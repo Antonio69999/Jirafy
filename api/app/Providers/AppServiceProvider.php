@@ -13,6 +13,8 @@ use App\Interfaces\Ticketing\ProjectServiceInterface;
 use App\Services\Ticketing\ProjectService;
 use App\Interfaces\Ticketing\IssueServiceInterface;
 use App\Services\Ticketing\IssueService;
+use App\Interfaces\Ticketing\StatusServiceInterface;
+use App\Services\Ticketing\StatusService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PasswordServiceInterface::class, PasswordService::class);
         $this->app->bind(ProjectServiceInterface::class, ProjectService::class);
         $this->app->bind(IssueServiceInterface::class, IssueService::class);
+        $this->app->bind(StatusServiceInterface::class, StatusService::class);
     }
 
     /**

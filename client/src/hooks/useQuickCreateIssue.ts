@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { useCreateIssue } from "./useIssue";
-import {
-  useIssueTypes,
-  useIssueStatuses,
-  useIssuePriorities,
-} from "./useIssueMetadata";
+import { useIssueTypes, useIssuePriorities } from "./useIssueMetadata";
+import { useAvailableStatuses } from "./useStatus"; // Nouveau hook
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
 import type { Issue } from "@/types/issue";
@@ -16,7 +13,7 @@ export function useQuickCreateIssue() {
 
   // Récupérer les métadonnées nécessaires
   const { data: issueTypes } = useIssueTypes();
-  const { data: issueStatuses } = useIssueStatuses();
+  const { data: issueStatuses } = useAvailableStatuses(); // Utiliser le nouveau hook
   const { data: issuePriorities } = useIssuePriorities();
 
   const quickCreate = async (params: {
@@ -30,6 +27,11 @@ export function useQuickCreateIssue() {
     }
 
     if (!issueTypes || !issueStatuses || !issuePriorities) {
+      console.log("Metadata not loaded:", {
+        issueTypes,
+        issueStatuses,
+        issuePriorities,
+      }); // Debug
       toast.error("Impossible de charger les métadonnées");
       return null;
     }
@@ -42,6 +44,11 @@ export function useQuickCreateIssue() {
       const defaultPriority = issuePriorities.find((p) => p.key === "MEDIUM");
 
       if (!taskType || !status || !defaultPriority) {
+        console.error("Metadata missing:", {
+          taskType,
+          status,
+          defaultPriority,
+        }); // Debug
         toast.error("Configuration des métadonnées incomplète");
         return null;
       }

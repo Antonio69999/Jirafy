@@ -136,7 +136,7 @@
             "addLabels": "Add a label",
             "pickDate": "Pick a date",
             "addAssignees": "Add assignees",
-            "assignees": "Assignees",
+            "assignee": "Assignees",
             "submit": "Submit",
             "priorities": {
                 "title": "Priority",
@@ -149,7 +149,7 @@
             "cancel": "Cancel",
             "titlePlaceholder": "What needs to be done?",
             "selectProject": "Select a project",
-            "addAssignee" : ""
+            "addAssignee": ""
         },
         "editTask": {
             "title": "Edit task",
@@ -310,6 +310,16 @@
             "deleteTeam": "Delete Team",
             "addMember": "Add Member",
             "removeMember": "Remove Member"
+        }
+    },
+    "task": {
+        "actions": {
+            "edit": "Update task",
+            "create": "Créer une tâche",
+            "title": "Titre",
+            "description": "Description",
+            "delete": "Delete",
+            "deleting": "Deletion"
         }
     }
 }

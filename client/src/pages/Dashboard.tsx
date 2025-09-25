@@ -178,6 +178,10 @@ export function Dashboard() {
     refetchIssues();
   };
 
+  const handleTasksUpdate = (updatedTasks: Task[]) => {
+    setTasks(updatedTasks);
+  };
+
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     const newSearchParams = new URLSearchParams(searchParams);
@@ -283,6 +287,7 @@ export function Dashboard() {
             handleCancelAdd={handleCancelAdd}
             handleSaveTask={handleSaveTask}
             onTaskSuccess={handleTaskSuccess}
+            onTaskUpdate={handleTasksUpdate}
             isCreatingTask={isCreating}
           />
         );

@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { useUpdateIssue } from "./useIssue";
-import {
-  useIssueTypes,
-  useIssueStatuses,
-  useIssuePriorities,
-} from "./useIssueMetadata";
+import { useIssueTypes, useIssuePriorities } from "./useIssueMetadata";
+import { useAvailableStatuses } from "./useStatus"; // Nouveau hook
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
 import type { Issue, IssueUpdate } from "@/types/issue";
@@ -18,7 +15,7 @@ export function useQuickUpdateIssue() {
 
   // Récupérer les métadonnées nécessaires
   const { data: issueTypes } = useIssueTypes();
-  const { data: issueStatuses } = useIssueStatuses();
+  const { data: issueStatuses } = useAvailableStatuses(); // Utiliser le nouveau hook
   const { data: issuePriorities } = useIssuePriorities();
 
   const quickUpdate = async (params: {
@@ -40,6 +37,11 @@ export function useQuickUpdateIssue() {
     }
 
     if (!issueTypes || !issueStatuses || !issuePriorities) {
+      console.log("Metadata not loaded:", {
+        issueTypes,
+        issueStatuses,
+        issuePriorities,
+      }); // Debug
       toast.error("Impossible de charger les métadonnées");
       return null;
     }
@@ -64,6 +66,13 @@ export function useQuickUpdateIssue() {
         );
         if (status) {
           updateData.status_id = status.id;
+        } else {
+          console.error(
+            "Status not found:",
+            params.updates.statusKey,
+            "Available:",
+            issueStatuses
+          ); // Debug
         }
       }
 

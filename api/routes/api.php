@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\Ticketing\{ProjectController, IssueController};
 use App\Http\Controllers\Ticketing\Metadata\{LabelController, IssueMetadataController};
+use App\Http\Controllers\Ticketing\StatusController;
 
 // Routes d'authentification - pas d'authentification requise
 Route::prefix('auth')->group(function () {
@@ -29,6 +30,20 @@ Route::middleware('auth:api')->group(function () {
     Route::get('issue-types', [IssueMetadataController::class, 'types']);
     Route::get('statuses', [IssueMetadataController::class, 'statuses']);
     Route::get('priorities', [IssueMetadataController::class, 'priorities']);
+
+    // Route status
+    Route::prefix('statuses')->group(function () {
+        Route::get('/', [StatusController::class, 'index']);
+        Route::get('/available', [StatusController::class, 'available']);
+        Route::get('/key/{key}', [StatusController::class, 'showByKey']);
+        Route::get('/{status}', [StatusController::class, 'show']);
+
+        Route::middleware('check.role:admin')->group(function () {
+            Route::post('/', [StatusController::class, 'store']);
+            Route::put('/{status}', [StatusController::class, 'update']);
+            Route::delete('/{status}', [StatusController::class, 'destroy']);
+        });
+    });
 
     // Routes des projets
     Route::prefix('projects')->group(function () {
