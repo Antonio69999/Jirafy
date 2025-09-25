@@ -1,13 +1,16 @@
 FROM php:8.3-apache
 
-# Installer les extensions PHP nécessaires
+# Installer les extensions PHP et PostgreSQL client
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     libzip-dev \
     zip \
     unzip \
     git \
-    && docker-php-ext-install pdo pdo_pgsql zip
+    postgresql-client \
+    && docker-php-ext-install pdo pdo_pgsql zip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Activer le module Apache rewrite
 RUN a2enmod rewrite
@@ -22,13 +25,15 @@ COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 WORKDIR /var/www/html
 COPY . .
 
-# Installer les dépendances
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Copier et rendre exécutable le script wait-for-db
+COPY wait-for-db.sh /usr/local/bin/wait-for-db.sh
+RUN chmod +x /usr/local/bin/wait-for-db.sh
+
+# Installer les dépendances (avec les dépendances dev pour Faker)
+RUN composer install --optimize-autoloader --no-interaction
 
 # Permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
-
-CMD ["apache2-foreground"]

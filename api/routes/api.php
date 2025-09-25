@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\Ticketing\{ProjectController, IssueController};
@@ -59,6 +60,15 @@ Route::middleware('auth:api')->group(function () {
         Route::put('/{issue}', [IssueController::class, 'update']);
         Route::delete('/{issue}', [IssueController::class, 'destroy']);
     });
+});
+
+
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now(),
+        'database' => 'connected'
+    ]);
 });
 
 Route::fallback(function () {

@@ -1,0 +1,49 @@
+name: jirafy-debug
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: jirafy
+      POSTGRES_USER: jirafy_user
+      POSTGRES_PASSWORD: mot_de_passe_securise_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data_debug:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  app:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=jirafy
+      - DB_USERNAME=jirafy_user
+      - DB_PASSWORD=mot_de_passe_securise_123
+      - APP_KEY=base64:c0QPWZvC0c5ofCq2vtO8NJI4qDkacmaE4H09t3wSI5I=
+      - APP_ENV=production
+      - APP_DEBUG=false
+    depends_on:
+      - db
+    volumes:
+      - ./api/storage:/var/www/html/storage
+    restart: unless-stopped
+    # Version simplifiée : démarrer Apache directement pour tester
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        sleep 15 &&
+        echo 'Running migrations...' &&
+        php artisan migrate --force &&
+        echo 'Starting Apache without seeders...' &&
+        apache2-foreground
+      "
+
+volumes:
+  db_data_debug:

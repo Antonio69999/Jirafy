@@ -5,6 +5,7 @@ return [
     'allowed_origins' => [
         'jirafyapi.garage404.com',
         'https://jirafy.garage404.com', // Votre domaine client
+        'https://jirafy.cda6.garage404.com',
         'http://localhost:5173', // Pour le dev local
         'http://localhost:5175', // Votre port Vite
     ],

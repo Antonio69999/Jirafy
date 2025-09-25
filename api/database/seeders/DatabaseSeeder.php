@@ -3,26 +3,39 @@
 namespace Database\Seeders;
 
 use App\Models\Auth\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Database\Seeders\TicketingReferenceSeeder;
 use Database\Seeders\LabelSeeder;
-use Database\Factories\UserFactory;
+use Database\Seeders\ProjectSeeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        User::factory()->count(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Créer des utilisateurs test sans factory pour éviter les problèmes
+        User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@jirafy.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'admin',
         ]);
-        $this->call(TicketingReferenceSeeder::class);
-        $this->call(LabelSeeder::class);
+
+        User::create([
+            'name' => 'Test User',
+            'email' => 'test@jirafy.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+            'role' => 'user',
+        ]);
+
+        // Seeders de base
+        $this->call([
+            TicketingReferenceSeeder::class,
+            ProjectSeeder::class,
+            LabelSeeder::class,
+        ]);
+
+        $this->command->info('Database seeded successfully!');
     }
 }

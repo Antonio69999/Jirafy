@@ -22,7 +22,7 @@ jobs:
         run: |
           cd client
           # Configuration pour pointer vers l'API (remplacez par votre vrai domaine API)
-          echo "VITE_API_URL=https://jirafy.garage404.com/" > .env.production
+          echo "VITE_API_URL=jirafy.cda6.garage404.com" > .env.production
           npm ci
           npm run build
 

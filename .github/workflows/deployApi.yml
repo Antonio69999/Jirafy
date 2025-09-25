@@ -1,9 +1,9 @@
-name: Deploy API to Runcloud
+name: Deploy API with Database to Runcloud
 
 on:
   push:
     branches: [main]
-    paths: ["api/**"]
+    paths: ["api/**", "docker-compose.yml", ".env.production"]
 
 jobs:
   deploy-api:
@@ -17,78 +17,38 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /home/antoine/webapps/jirafy_api
+            cd /home/antoine/webapps/jirafy-api
 
-            # Nettoyer le dossier existant (enlever l'index.html)
-            rm -f index.html
-
-            # Premier déploiement : cloner et copier seulement le dossier api
+            # Cloner ou mettre à jour le code
             if [ ! -d ".git" ]; then
-              echo "=== First API deployment ==="
-              # Cloner dans un dossier temporaire
-              cd /tmp
-              rm -rf jirafy-temp
-              git clone https://github.com/Antonio69999/Jirafy.git jirafy-temp
-              
-              # Copier tout le contenu du dossier api
-              cp -r jirafy-temp/api/* /home/antoine/webapps/jirafy_api/
-              cp jirafy-temp/api/.env.example /home/antoine/webapps/jirafy_api/ 2>/dev/null || true
-              cp jirafy-temp/api/.gitignore /home/antoine/webapps/jirafy_api/ 2>/dev/null || true
-              
-              # Initialiser Git dans le dossier API
-              cd /home/antoine/webapps/jirafy_api
-              git init
-              git remote add origin https://github.com/Antonio69999/Jirafy.git
-              git fetch origin main
-              git checkout -b main origin/main
-              
-              # Nettoyer
-              rm -rf /tmp/jirafy-temp
+              echo "=== First deployment ==="
+              git clone https://github.com/Antonio69999/Jirafy.git .
             else
-              echo "=== Updating API ==="
-              git stash || true
+              echo "=== Updating code ==="
               git pull origin main
-              git stash pop || true
             fi
 
-            echo "=== Installing PHP dependencies ==="
-            composer install --no-dev --optimize-autoloader --no-interaction
+            # Copier le fichier d'environnement
+            cp .env.production .env
 
-            echo "=== Laravel Configuration ==="
-            # Configuration .env pour production
-            if [ ! -f ".env" ]; then
-              cp .env.example .env
-              php artisan key:generate --force
-              
-              # Configuration de base
-              sed -i 's/APP_ENV=local/APP_ENV=production/' .env
-              sed -i 's/APP_DEBUG=true/APP_DEBUG=false/' .env
-              sed -i "s|APP_URL=http://localhost|APP_URL=https://jirafy-api.votre-domaine.com|" .env
-              
-              # Configuration base de données (à adapter selon vos paramètres)
-              sed -i 's/DB_CONNECTION=sqlite/DB_CONNECTION=mysql/' .env
-              sed -i 's/# DB_HOST=127.0.0.1/DB_HOST=127.0.0.1/' .env
-              sed -i 's/# DB_PORT=3306/DB_PORT=3306/' .env
-              sed -i 's/# DB_DATABASE=laravel/DB_DATABASE=jirafy/' .env
-              sed -i 's/# DB_USERNAME=root/DB_USERNAME=votre_user_db/' .env
-              sed -i 's/# DB_PASSWORD=/DB_PASSWORD=votre_password_db/' .env
+            # Générer une clé APP_KEY si elle n'existe pas
+            if ! grep -q "APP_KEY=base64:" .env; then
+              echo "Generating APP_KEY..."
+              docker-compose run --rm app php artisan key:generate --force
             fi
 
-            echo "=== Laravel Optimizations ==="
-            php artisan config:clear
-            php artisan route:clear
-            php artisan view:clear
-            php artisan cache:clear
+            # Arrêter les conteneurs existants
+            docker-compose down
 
-            php artisan config:cache
-            php artisan route:cache  
-            php artisan view:cache
+            # Construire et démarrer les services
+            echo "=== Building and starting services ==="
+            docker-compose up -d --build
 
-            echo "=== Database Migration ==="
-            php artisan migrate --force || echo "Migration skipped - check DB config"
+            # Attendre que les services soient prêts
+            echo "=== Waiting for services to be ready ==="
+            sleep 30
 
-            echo "=== Setting Permissions ==="
-            chmod -R 775 storage bootstrap/cache
-            chown -R antoine:antoine storage bootstrap/cache || true
+            # Vérifier que tout fonctionne
+            docker-compose ps
 
-            echo "✅ API deployment completed!"
+            echo "✅ API deployment with database completed!"

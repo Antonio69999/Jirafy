@@ -1,60 +1,88 @@
 name: jirafy
 
 services:
-  # API Laravel
-  api:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-jirafy}
+      POSTGRES_USER: ${DB_USERNAME:-jirafy_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mot_de_passe_securise_123}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - jirafy-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USERNAME:-jirafy_user} -d ${DB_DATABASE:-jirafy}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
     build:
       context: ./api
       dockerfile: Dockerfile
     ports:
       - "8000:80"
-    environment:
-      - APP_ENV=production
-      - APP_DEBUG=false
-      - DB_CONNECTION=pgsql
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_DATABASE=jirafy
-      - DB_USERNAME=jirafy_user
-      - DB_PASSWORD=${DB_PASSWORD}
-      - APP_KEY=${APP_KEY}
+    env_file:
+      - ./api/.env.production
     depends_on:
-      - postgres
+      db:
+        condition: service_healthy
     networks:
       - jirafy-network
     volumes:
       - ./api/storage:/var/www/html/storage
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        /usr/local/bin/wait-for-db.sh &&
+        echo 'Running migrations...' &&
+        php artisan migrate --force &&
+        echo 'Creating admin user...' &&
+        php artisan tinker --execute=\"
+          if (!\App\Models\Auth\User::where('email', 'admin@jirafy.com')->exists()) {
+            \App\Models\Auth\User::create([
+              'name' => 'Admin User',
+              'email' => 'admin@jirafy.com', 
+              'password' => bcrypt('admin123'),
+              'email_verified_at' => now(),
+              'role' => 'admin'
+            ]);
+            echo 'Admin user created successfully';
+          }
+        \" &&
+        echo 'Starting Apache...' &&
+        apache2-foreground
+      "
 
-  # Base de données PostgreSQL
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: jirafy
-      POSTGRES_USER: jirafy_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - jirafy-network
-
-  # phpPgAdmin pour la gestion de la base (optionnel)
   pgadmin:
     image: dpage/pgadmin4:latest
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@jirafy.com
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@jirafy.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
     ports:
       - "8081:80"
     depends_on:
-      - postgres
+      - db
     networks:
       - jirafy-network
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
 
 networks:
   jirafy-network:
     driver: bridge
 
 volumes:
-  postgres-data:
+  db_data:
+  pgadmin_data:

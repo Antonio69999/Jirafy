@@ -148,7 +148,8 @@
             "create": "Create Task",
             "cancel": "Cancel",
             "titlePlaceholder": "What needs to be done?",
-            "selectProject": "Select a project"
+            "selectProject": "Select a project",
+            "addAssignee" : ""
         },
         "editTask": {
             "title": "Edit task",

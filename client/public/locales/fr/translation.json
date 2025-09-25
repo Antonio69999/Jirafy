@@ -150,7 +150,8 @@
             "create": "Créer une tâche",
             "cancel": "Annuler",
             "titlePlaceholder": "Que faut il faire ?",
-            "selectProject": "Sélectionner un projet"
+            "selectProject": "Sélectionner un projet",
+            "addAssignee": "Ajouter un responsable"
         },
         "editTask": {
             "title": "Modifier la tâche",
