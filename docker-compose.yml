@@ -1,0 +1,73 @@
+name: jirafy
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - jirafy-network
+    restart: unless-stopped
+
+  app:
+    image: antoni0699/jirafy-api:latest # ⬅️ Image
+    ports:
+      - "8000:80"
+    environment:
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - APP_KEY=${APP_KEY}
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
+    depends_on:
+      - db
+    networks:
+      - jirafy-network
+    volumes:
+      - ./api/storage:/var/www/html/storage
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo '=== Waiting for database ===' &&
+        sleep 15 &&
+        echo '=== Running migrations ===' &&
+        php artisan migrate --force &&
+        echo '=== Running admin seeder ===' &&
+        php artisan db:seed --class=AdminSeeder --force &&
+        echo '=== Starting Apache ===' &&
+        apache2-foreground
+      "
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGLADMIN_DEFAULT_PASSWORD: ${PGLADMIN_PASSWORD}
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+    networks:
+      - jirafy-network
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
+
+networks:
+  jirafy-network:
+    driver: bridge
+
+volumes:
+  db_data:
+  pgadmin_data:
