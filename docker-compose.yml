@@ -15,16 +15,9 @@ services:
     networks:
       - jirafy-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   app:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
+    image: antoni06999/jirafy-api:latest # ⬅️ Image pré-construite
     ports:
       - "8000:80"
     environment:
@@ -38,8 +31,7 @@ services:
       - APP_ENV=${APP_ENV}
       - APP_DEBUG=${APP_DEBUG}
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     networks:
       - jirafy-network
     volumes:
@@ -48,7 +40,7 @@ services:
     command: >
       sh -c "
         echo '=== Waiting for database ===' &&
-        /usr/local/bin/wait-for-db.sh &&
+        sleep 15 &&
         echo '=== Running migrations ===' &&
         php artisan migrate --force &&
         echo '=== Running admin seeder ===' &&
@@ -61,7 +53,7 @@ services:
     image: dpage/pgadmin4:latest
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGLADMIN_DEFAULT_PASSWORD: ${PGLADMIN_PASSWORD}
     ports:
       - "8081:80"
     depends_on:

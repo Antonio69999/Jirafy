@@ -1,0 +1,69 @@
+name: Build and Deploy to Runcloud
+
+on:
+  push:
+    branches: [main]
+    paths: ["api/**", "docker-compose.yml", ".env.production"]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api
+          file: ./api/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/jirafy-api:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Runcloud server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /home/antoine/webapps/jirafy_api
+
+            # Cloner ou mettre à jour le code
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/Antonio69999/Jirafy.git .
+            else
+              git pull origin main
+            fi
+
+            # Copier la configuration
+            cp .env.production .env
+
+            # Arrêter les anciens conteneurs
+            docker-compose down || true
+
+            # Télécharger la nouvelle image
+            docker-compose pull
+
+            # Démarrer avec la nouvelle image
+            docker-compose up -d
+
+            # Vérifier que ça fonctionne
+            sleep 30
+            docker-compose ps
+            curl -f http://localhost:8000/api/health || echo "API health check failed"
+
+            echo "✅ Deployment completed!"
