@@ -1,41 +1,43 @@
-name: jirafy
+name: jirafy-fullstack
 
 services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: ${DB_DATABASE}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: jirafy
+      POSTGRES_USER: jirafy_user
+      POSTGRES_PASSWORD: Password1234!
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-    networks:
-      - jirafy-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jirafy_user -d jirafy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  app:
-    image: antoni0699/jirafy-api:latest # ⬅️ Image
+  api:
+    image: antoni0699/jirafy-api:latest
     ports:
       - "8000:80"
     environment:
-      - DB_CONNECTION=${DB_CONNECTION}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - APP_KEY=${APP_KEY}
-      - APP_ENV=${APP_ENV}
-      - APP_DEBUG=${APP_DEBUG}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=jirafy
+      - DB_USERNAME=jirafy_user
+      - DB_PASSWORD=Password1234!
+      - APP_KEY=base64:c0QPWZvC0c5ofCq2vtO8NJI4qDkacmaE4H09t3wSI5I=
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=https://jirafy.cda6.garage404.com
+      - APP_FRONTEND_URL=https://jirafy.cda6.garage404.com
     depends_on:
-      - db
-    networks:
-      - jirafy-network
-    volumes:
-      - ./api/storage:/var/www/html/storage
+      db:
+        condition: service_healthy
     restart: unless-stopped
     command: >
       sh -c "
@@ -49,25 +51,29 @@ services:
         apache2-foreground
       "
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGLADMIN_DEFAULT_PASSWORD: ${PGLADMIN_PASSWORD}
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
     ports:
-      - "8081:80"
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=https://jirafy.cda6.garage404.com/api
     depends_on:
-      - db
-    networks:
-      - jirafy-network
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
+      - api
     restart: unless-stopped
 
-networks:
-  jirafy-network:
-    driver: bridge
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api
+      - client
+    restart: unless-stopped
 
 volumes:
   db_data:
-  pgadmin_data:

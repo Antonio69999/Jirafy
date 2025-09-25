@@ -1,0 +1,67 @@
+name: Deploy Fullstack to Runcloud
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-push-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api
+          file: ./api/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/jirafy-api:latest
+
+  deploy:
+    needs: build-and-push-api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Runcloud server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /home/antoine/webapps/jirafy.cda6.garage404.com
+
+            # Mettre à jour le code
+            echo "=== Updating code ==="
+            git pull origin main
+
+            # Arrêter les anciens conteneurs
+            echo "=== Stopping containers ==="
+            docker-compose down || true
+
+            # Construire et démarrer tous les services
+            echo "=== Building and starting fullstack ==="
+            docker-compose up -d --build
+
+            # Attendre que tout soit prêt
+            echo "=== Waiting for services ==="
+            sleep 60
+
+            # Vérifier le statut
+            echo "=== Checking status ==="
+            docker-compose ps
+
+            # Tests
+            echo "=== Testing services ==="
+            curl -f http://localhost:8000/api/health || echo "❌ API failed"
+            curl -f http://localhost:3000 || echo "❌ Client failed"
+            curl -f http://localhost || echo "❌ Nginx failed"
+
+            echo "✅ Fullstack deployment completed!"
