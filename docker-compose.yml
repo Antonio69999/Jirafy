@@ -4,9 +4,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-jirafy}
-      POSTGRES_USER: ${DB_USERNAME:-jirafy_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-mot_de_passe_securise_123}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
@@ -16,11 +16,7 @@ services:
       - jirafy-network
     restart: unless-stopped
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${DB_USERNAME:-jirafy_user} -d ${DB_DATABASE:-jirafy}",
-        ]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,8 +27,16 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:80"
-    env_file:
-      - ./api/.env.production
+    environment:
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - APP_KEY=${APP_KEY}
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
     depends_on:
       db:
         condition: service_healthy
@@ -43,32 +47,21 @@ services:
     restart: unless-stopped
     command: >
       sh -c "
-        echo 'Waiting for database...' &&
+        echo '=== Waiting for database ===' &&
         /usr/local/bin/wait-for-db.sh &&
-        echo 'Running migrations...' &&
+        echo '=== Running migrations ===' &&
         php artisan migrate --force &&
-        echo 'Creating admin user...' &&
-        php artisan tinker --execute=\"
-          if (!\App\Models\Auth\User::where('email', 'admin@jirafy.com')->exists()) {
-            \App\Models\Auth\User::create([
-              'name' => 'Admin User',
-              'email' => 'admin@jirafy.com', 
-              'password' => bcrypt('admin123'),
-              'email_verified_at' => now(),
-              'role' => 'admin'
-            ]);
-            echo 'Admin user created successfully';
-          }
-        \" &&
-        echo 'Starting Apache...' &&
+        echo '=== Running admin seeder ===' &&
+        php artisan db:seed --class=AdminSeeder --force &&
+        echo '=== Starting Apache ===' &&
         apache2-foreground
       "
 
   pgadmin:
     image: dpage/pgadmin4:latest
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@jirafy.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
       - "8081:80"
     depends_on:
