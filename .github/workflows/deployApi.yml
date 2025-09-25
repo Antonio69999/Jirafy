@@ -1,0 +1,56 @@
+name: Deploy API with Database to Runcloud
+
+on:
+  push:
+    branches: [main]
+    paths: ["api/**", "docker-compose.yml", ".env"]
+
+jobs:
+  deploy-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy API to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /home/antoine/webapps/jirafy_api
+
+            # Cloner ou mettre à jour le code
+            if [ ! -d ".git" ]; then
+              echo "=== First deployment ==="
+              git clone https://github.com/Antonio69999/Jirafy.git .
+            else
+              echo "=== Updating code ==="
+              git pull origin main
+            fi
+
+            # Vérifier les fichiers présents
+            echo "=== Files in directory ==="
+            ls -la
+
+            # Vérifier que docker-compose.yml existe
+            if [ ! -f "docker-compose.yml" ]; then
+              echo "❌ docker-compose.yml not found!"
+              exit 1
+            fi
+
+            # Arrêter les conteneurs existants
+            docker-compose down || true
+
+            # Construire et démarrer les services
+            echo "=== Building and starting services ==="
+            docker-compose up -d --build
+
+            # Attendre que les services soient prêts
+            echo "=== Waiting for services to be ready ==="
+            sleep 30
+
+            # Vérifier que tout fonctionne
+            docker-compose ps
+            docker-compose logs --tail=20 app
+
+            echo "✅ API deployment completed!"
