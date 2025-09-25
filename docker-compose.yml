@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
 
   app:
-    image: antoni0699/jirafy-api:latest # ⬅️ Image pré-construite
+    image: antoni0699/jirafy-api:latest # ⬅️ Image
     ports:
       - "8000:80"
     environment:
