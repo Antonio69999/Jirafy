@@ -16,7 +16,8 @@ import { toast } from "sonner";
 
 export function useDragAndDrop(
   tasks: Task[],
-  onTasksUpdate: (tasks: Task[]) => void
+  onTasksUpdate: (tasks: Task[]) => void,
+  onRefreshData?: () => void
 ) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const { updateTaskStatus, isUpdating } = useQuickUpdateIssue();
@@ -68,7 +69,6 @@ export function useDragAndDrop(
     onTasksUpdate(updatedTasks);
 
     try {
-      // Mapper le status vers la clé API
       const statusKeyMapping: Record<TaskStatus, string> = {
         todo: "TODO",
         "in-progress": "IN_PROGRESS",
@@ -77,17 +77,18 @@ export function useDragAndDrop(
 
       const statusKey = statusKeyMapping[newStatus];
 
-      // Mettre à jour via l'API
       const result = await updateTaskStatus(draggedTask, statusKey);
 
       if (result) {
         toast.success("Statut de la tâche mis à jour");
+
+        if (onRefreshData) {
+          onRefreshData();
+        }
       } else {
-        // Rollback en cas d'erreur
         onTasksUpdate(tasks);
       }
     } catch (error) {
-      // Rollback en cas d'erreur
       onTasksUpdate(tasks);
       toast.error("Erreur lors de la mise à jour du statut");
     }

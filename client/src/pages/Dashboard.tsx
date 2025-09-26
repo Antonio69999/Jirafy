@@ -182,6 +182,10 @@ export function Dashboard() {
     setTasks(updatedTasks);
   };
 
+  const handleRefreshData = () => {
+    refetchIssues();
+  };
+
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     const newSearchParams = new URLSearchParams(searchParams);
@@ -288,6 +292,7 @@ export function Dashboard() {
             handleSaveTask={handleSaveTask}
             onTaskSuccess={handleTaskSuccess}
             onTaskUpdate={handleTasksUpdate}
+            onRefreshData={handleRefreshData}
             isCreatingTask={isCreating}
           />
         );

@@ -22,6 +22,7 @@ interface KanbanViewProps {
   handleSaveTask: (columnId: string, title: string) => Promise<void>;
   onTaskSuccess?: () => void;
   onTasksUpdate?: (tasks: Task[]) => void;
+  onRefreshData?: () => void;
   isCreatingTask?: boolean;
 }
 
@@ -211,6 +212,7 @@ export function KanbanView({
   onTaskSuccess,
   handleSaveTask,
   onTasksUpdate,
+  onRefreshData,
   isCreatingTask = false,
 }: KanbanViewProps) {
   const { t } = useTranslation();
@@ -225,7 +227,7 @@ export function KanbanView({
     DndContext,
     DragOverlay,
     closestCorners,
-  } = useDragAndDrop(tasks, onTasksUpdate || (() => {}));
+  } = useDragAndDrop(tasks, onTasksUpdate || (() => {}), onRefreshData);
 
   const getTasksByStatus = (status: TaskStatus) => {
     return tasks.filter((task) => task.status === status);
