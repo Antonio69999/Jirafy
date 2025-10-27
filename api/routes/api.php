@@ -7,6 +7,8 @@ use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\Ticketing\{ProjectController, IssueController};
 use App\Http\Controllers\Ticketing\Metadata\{LabelController, IssueMetadataController};
 use App\Http\Controllers\Ticketing\StatusController;
+use App\Http\Controllers\Teams\TeamController;
+
 
 // Routes d'authentification - pas d'authentification requise
 Route::prefix('auth')->group(function () {
@@ -22,6 +24,26 @@ Route::middleware('auth:api')->group(function () {
 
     // Users
     Route::get('users', [UserController::class, 'index']);
+
+    // Routes des équipes
+    Route::prefix('teams')->group(function () {
+        Route::get('/', [TeamController::class, 'index']);
+        Route::get('/{team}', [TeamController::class, 'show']);
+
+        Route::middleware('check.role:admin')->group(function () {
+            Route::post('/', [TeamController::class, 'store']);
+            Route::put('/{team}', [TeamController::class, 'update']);
+            Route::delete('/{team}', [TeamController::class, 'destroy']);
+        });
+
+        // Gestion des membres
+        Route::post('/{team}/members', [TeamController::class, 'addMember'])
+            ->middleware('check.role:admin');
+        Route::delete('/{team}/members/{userId}', [TeamController::class, 'removeMember'])
+            ->middleware('check.role:admin');
+        Route::put('/{team}/members/{userId}', [TeamController::class, 'updateMemberRole'])
+            ->middleware('check.role:admin');
+    });
 
     // Labels globaux
     Route::get('labels', [LabelController::class, 'index']);

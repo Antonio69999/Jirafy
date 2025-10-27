@@ -33,11 +33,7 @@ import { useProjects } from "@/hooks/useProject";
 import { useAuthStore } from "@/store/authStore";
 import type { Issue } from "@/types/issue";
 import { useProjectLabels } from "@/hooks/useLabel";
-import {
-  useIssueTypes,
-  useIssueStatuses,
-  useIssuePriorities,
-} from "@/hooks/useIssueMetadata";
+import { useIssueTypes, useIssuePriorities } from "@/hooks/useIssueMetadata";
 import { useQuickUpdateIssue } from "@/hooks/useQuickUpdateIssue";
 import { useAvailableStatuses } from "@/hooks/useStatus";
 

@@ -115,9 +115,10 @@ export function Dashboard() {
         labels: issue.labels?.map((label) => label.name) || [],
         assignee: issue.assignee
           ? {
-              id: String(issue.assignee.id),
+              id: String(issue.assignee.id), // Conversion en string
               name: issue.assignee.name,
-              email: issue.assignee.email,
+              email: issue.assignee.email, // Ajout de l'email
+              avatar: undefined, // Pas d'avatar dans l'API pour l'instant
             }
           : undefined,
         dueDate: issue.due_date || undefined,

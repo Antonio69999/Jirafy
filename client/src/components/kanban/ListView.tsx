@@ -115,11 +115,7 @@ export function ListView({ tasks, getPriorityClass }: ListViewProps) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  {task.assignee
-                    ? task.assignee.name
-                    : task.assignees
-                    ? `${task.assignees.length} assignés`
-                    : "-"}
+                  {task.assignee ? task.assignee.name : "-"}{" "}
                 </TableCell>
                 <TableCell className="text-right text-muted-foreground">
                   {task.dueDate

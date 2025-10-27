@@ -1,4 +1,13 @@
 {
+    "common": {
+        "createdBy": "Créé par",
+        "by": "par",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "loading": "Chargement...",
+        "error": "Erreur",
+        "close": "Fermer"
+    },
     "app": {
         "title": "Jirafy",
         "sidebar": {
@@ -28,14 +37,6 @@
                 "settings": "Paramètres",
                 "logout": "Déconnexion"
             }
-        },
-        "common": {
-            "createdBy": "Créé par",
-            "by": "par",
-            "edit": "Modifier",
-            "delete": "Supprimer",
-            "loading": "Chargement...",
-            "error": "Erreur"
         },
         "quickStart": {
             "title": "Démarrage rapide",
@@ -306,13 +307,25 @@
     },
     "teams": {
         "title": "Équipes",
+        "search": "Rechercher une équipe...",
         "description": "Gérez vos équipes et leurs membres",
         "actions": {
             "addTeam": "Ajouter une équipe",
             "editTeam": "Modifier l'équipe",
             "deleteTeam": "Supprimer l'équipe",
             "addMember": "Ajouter un membre",
-            "removeMember": "Supprimer le membre"
+            "removeMember": "Supprimer le membre",
+            "create": "Créer une équipe",
+            "members": "Membres"
+        },
+        "table": {
+            "name": "Nom",
+            "members": "Membres",
+            "projects": "Projets",
+            "actions": "Actions",
+            "caption": "Liste des équipes",
+            "empty": "Aucune équipe trouvée",
+            "slug": "Slug"
         }
     },
     "task": {
@@ -323,6 +336,53 @@
             "description": "Description",
             "delete": "Supprimer",
             "deleting": "Suppresion"
+        }
+    },
+    "team": {
+        "actions": {
+            "create": "Créer une équipe",
+            "createSuccess": "Équipe créée avec succès",
+            "updateSuccess": "Équipe mise à jour avec succès",
+            "deleteSuccess": "Équipe supprimée avec succès",
+            "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette équipe ?"
+        },
+        "edit": {
+            "title": "Modifier l'équipe",
+            "description": "Modifiez les informations de l'équipe.",
+            "info": {
+                "title": "Informations"
+            }
+        },
+        "create": {
+            "title": "Créer une équipe",
+            "description": "Renseignez les informations pour créer une nouvelle équipe.",
+            "guidelines": {
+                "title": "Bonnes pratiques",
+                "item1": "Utilisez un slug court et mémorable (ex: dev, design, ops)",
+                "item2": "Donnez un nom clair et descriptif",
+                "item3": "Ajoutez une description pour expliquer le rôle de l'équipe",
+                "item4": "Désignez un owner pour gérer l'équipe"
+            },
+            "info": {
+                "title": "À propos des équipes",
+                "description": "Les équipes permettent d'organiser les projets et de gérer les permissions. Vous pourrez ajouter des membres après la création."
+            }
+        },
+        "form": {
+            "slug": "Slug",
+            "name": "Nom",
+            "description": "Description",
+            "cancel": "Annuler",
+            "create": "Créer",
+            "update": "Mettre à jour",
+            "saving": "Enregistrement...",
+            "createSuccess": "Équipe créée avec succès",
+            "updateSuccess": "Équipe mise à jour avec succès"
+        },
+        "members": {
+            "title": "Gérer les membres",
+            "add": "Ajouter un membre",
+            "current": "Membres actuels"
         }
     }
 }

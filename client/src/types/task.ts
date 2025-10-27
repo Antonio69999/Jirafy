@@ -14,9 +14,10 @@ export interface Task {
   priority?: "low" | "medium" | "high" | "urgent";
   labels?: string[];
   assignee?: {
-    id: number;
+    id: string; 
     name: string;
     avatar?: string;
+    email?: string; 
   };
   dueDate?: string;
   projectId?: string;
