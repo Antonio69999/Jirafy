@@ -6,7 +6,9 @@
         "delete": "Supprimer",
         "loading": "Chargement...",
         "error": "Erreur",
-        "close": "Fermer"
+        "close": "Fermer",
+        "save": "Enregistrer",
+        "cancel": "Annuler"
     },
     "app": {
         "title": "Jirafy",
@@ -240,6 +242,37 @@
             "assignee": "Assigné à",
             "dueDate": "Date d'échéance"
         },
+        "summary": {
+            "title": "Résumé du projet",
+            "description": "Aperçu rapide des statistiques et de l'état du projet",
+            "totalTasks": "Total des tâches",
+            "completedTasks": "Tâches terminées",
+            "pendingTasks": "Tâches en attente",
+            "overdueTasks": "Tâches en retard",
+            "completed": "Terminé",
+            "progress": "Progrès"
+        },
+        "timeline": {
+            "title": "Chronologie du projet",
+            "description": "Visualisez les tâches et les jalons du projet dans une chronologie",
+            "noTasks": "Aucune tâche à afficher dans la chronologie"
+        },
+        "calendar": {
+            "title": "Calendrier du projet",
+            "description": "Affichez les tâches et les événements du projet dans un calendrier",
+            "noTasks": "Aucune tâche à afficher dans le calendrier"
+        },
+        "settings": {
+            "title": "Paramètres du projet",
+            "name": "Nom du projet",
+            "color": "Couleur du projet",
+            "description": "Gérez les paramètres et configurations de votre projet"
+        },
+        "reports": {
+            "title": "Rapports du projet",
+            "description": "Générez des rapports et des analyses pour votre projet",
+            "noData": "Aucune donnée de rapport disponible"
+        },
         "noProject": "Aucun projet sélectionné",
         "selectProject": "Sélectionnez un projet pour afficher les tâches",
         "selectProjectDescription": "Choisissez un projet dans la barre latérale pour commencer à gérer les tâches."
@@ -279,10 +312,34 @@
         "actions": {
             "archive": "Archiver",
             "delete": "Supprimer",
-            "create": "Créer un projet"
+            "create": "Créer un projet",
+            "members": "Membres"
+        },
+        "members": {
+            "title": "Ajouter un membre",
+            "add": "Ajouter",
+            "current": "Membres"
         },
         "search": {
             "placeholder": "Rechercher un projet..."
+        },
+        "edit": {
+            "title": "Modifier le projet",
+            "description": "Modifiez les informations du projet.",
+            "info": {
+                "title": "Informations",
+                "item1": "La clé du projet ne peut pas être modifiée.",
+                "item2": "Le changement de team peut affecter les permissions.",
+                "item3": "Le lead peut être modifié à tout moment.",
+                "item4": "Les modifications sont appliquées immédiatement."
+            },
+            "members": {
+                "title": "Membres",
+                "body": "Pour gérer les membres du projet, utilisez le bouton 'Membres' dans la liste des projets."
+            },
+            "current": {
+                "title": "Projet actuel"
+            }
         },
         "form": {
             "key": "Clé du projet",

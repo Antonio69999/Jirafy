@@ -15,7 +15,7 @@ class Project extends Model
 
     public function team()
     {
-        return $this->belongsTo(Team::class);
+        return $this->belongsTo(Team::class, 'team_id');
     }
 
     public function lead()
@@ -43,12 +43,8 @@ class Project extends Model
             ->orderBy('project_statuses.position');
     }
 
-    protected $casts = [
-        'team_id' => 'integer',
-        'lead_user_id' => 'integer',
-        'issue_seq' => 'integer',
-    ];
-    protected $attributes = [
-        'issue_seq' => 0, // valeur par défaut au niveau modèle
-    ];
+    public function labels()
+    {
+        return $this->hasMany(\App\Models\Ticketing\Label::class);
+    }
 }

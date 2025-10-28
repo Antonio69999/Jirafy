@@ -4,10 +4,11 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\UserController;
-use App\Http\Controllers\Ticketing\{ProjectController, IssueController};
+use App\Http\Controllers\Ticketing\{ProjectController, IssueController, ProjectMemberController};
 use App\Http\Controllers\Ticketing\Metadata\{LabelController, IssueMetadataController};
 use App\Http\Controllers\Ticketing\StatusController;
 use App\Http\Controllers\Teams\TeamController;
+
 
 
 // Routes d'authentification - pas d'authentification requise
@@ -76,8 +77,11 @@ Route::middleware('auth:api')->group(function () {
             Route::post('/', [ProjectController::class, 'store']);
         });
 
-        Route::middleware('check.role:admin')->group(function () {
+        Route::middleware('check.project:edit')->group(function () {
             Route::put('/{project}', [ProjectController::class, 'update']);
+        });
+
+        Route::middleware('check.role:admin')->group(function () {
             Route::delete('/{project}', [ProjectController::class, 'destroy']);
         });
 
@@ -86,6 +90,17 @@ Route::middleware('auth:api')->group(function () {
 
         // Labels spécifiques à un projet
         Route::get('/{project}/labels', [LabelController::class, 'projectLabels']);
+
+        // Gestion des membres de projet
+        Route::prefix('/{project}/members')->middleware('check.project:view')->group(function () {
+            Route::get('/', [ProjectMemberController::class, 'index']);
+
+            Route::middleware('check.project:manage_members')->group(function () {
+                Route::post('/', [ProjectMemberController::class, 'store']);
+                Route::put('/{userId}', [ProjectMemberController::class, 'update']);
+                Route::delete('/{userId}', [ProjectMemberController::class, 'destroy']);
+            });
+        });
     });
 
     // Routes des issues

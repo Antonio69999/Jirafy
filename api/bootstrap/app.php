@@ -12,9 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Enregistrer les alias de middleware
         $middleware->alias([
             'check.role' => \App\Http\Middleware\CheckRole::class,
+            'check.team' => \App\Http\Middleware\CheckTeamPermission::class,
+            'check.project' => \App\Http\Middleware\CheckProjectPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

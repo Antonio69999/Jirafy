@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/pagination";
 
 import { useTranslation } from "react-i18next";
-import { Plus, Star } from "lucide-react";
+import { Plus, Star, Users } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useColorThemeStore } from "@/store/colorThemeStore";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,7 @@ import { SearchBar } from "@/components/layout/SearchBar";
 import { Button } from "@/components/ui/button";
 import ProjectCreateModal from "@/components/modals/CreateProjectModal";
 import ProjectEditModal from "@/components/modals/EditProjectModal";
+import ProjectMembersModal from "@/components/modals/ProjectMembersModal";
 import { useProjects } from "@/hooks/useProject";
 import type { Project as ApiProject } from "@/types/project";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -56,7 +57,11 @@ export default function Projects() {
   // États modales
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [membersOpen, setMembersOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<ApiProject | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ApiProject | null>(
+    null
+  );
 
   // Récupération API
   const {
@@ -120,6 +125,11 @@ export default function Projects() {
       setEditingProject(project);
       setEditOpen(true);
     }
+  };
+
+  const handleManageMembers = (project: ApiProject) => {
+    setSelectedProject(project);
+    setMembersOpen(true);
   };
 
   const handleCreateSuccess = () => {
@@ -196,7 +206,7 @@ export default function Projects() {
                 <TableHead>{t("project.table.name")}</TableHead>
                 <TableHead>{t("project.table.type")}</TableHead>
                 <TableHead>{t("project.table.lead")}</TableHead>
-                <TableHead className="text-right w-[200px]">
+                <TableHead className="text-right w-[250px]">
                   {t("project.table.actions")}
                 </TableHead>
               </TableRow>
@@ -231,26 +241,38 @@ export default function Projects() {
                     </TableCell>
                     <TableCell>{project.type}</TableCell>
                     <TableCell>{project.lead}</TableCell>
-                    {/* Actions conditionnées */}
-                    <TableCell className="text-right flex gap-2 justify-end">
-                      {canEditProject(project.originalData) && (
+                    {/* Actions */}
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
                         <Button
-                          onClick={() => handleEdit(project.originalData)}
+                          onClick={() =>
+                            handleManageMembers(project.originalData)
+                          }
                           variant="outline"
                           size="sm"
                         >
-                          {t("app.common.edit") || "Modifier"}
+                          <Users className="mr-2 h-4 w-4" />
+                          {t("project.actions.members") || "Membres"}
                         </Button>
-                      )}
-                      {canDeleteProject() && (
-                        <Button
-                          onClick={() => handleDelete(project.originalData)}
-                          variant="destructive"
-                          size="sm"
-                        >
-                          {t("app.common.delete") || "Supprimer"}
-                        </Button>
-                      )}
+                        {canEditProject(project.originalData) && (
+                          <Button
+                            onClick={() => handleEdit(project.originalData)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            {t("app.common.edit") || "Modifier"}
+                          </Button>
+                        )}
+                        {canDeleteProject() && (
+                          <Button
+                            onClick={() => handleDelete(project.originalData)}
+                            variant="destructive"
+                            size="sm"
+                          >
+                            {t("app.common.delete") || "Supprimer"}
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -334,6 +356,16 @@ export default function Projects() {
           }}
           onSuccess={handleEditSuccess}
           project={editingProject}
+        />
+      )}
+      {selectedProject && (
+        <ProjectMembersModal
+          isOpen={membersOpen}
+          onClose={() => {
+            setMembersOpen(false);
+            setSelectedProject(null);
+          }}
+          project={selectedProject}
         />
       )}
     </>

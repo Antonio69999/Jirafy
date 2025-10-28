@@ -14,6 +14,12 @@ import { ProjectHeader } from "@/components/kanban/ProjectHeader";
 import { useProject } from "@/hooks/useProject";
 import { useProjectIssues } from "@/hooks/useIssue";
 import { useQuickCreateIssue } from "@/hooks/useQuickCreateIssue";
+import { CalendarView } from "@/components/kanban/CalendarView";
+import { TimelineView } from "@/components/kanban/TimelineView";
+import { ReportsView } from "@/components/kanban/ReportsView";
+import { SettingsView } from "@/components/kanban/SettingsView";
+import { SummaryView } from "@/components/kanban/SummaryView";
+import ProjectMembersModal from "@/components/modals/ProjectMembersModal";
 import { toast } from "sonner";
 
 type TabType =
@@ -23,7 +29,8 @@ type TabType =
   | "calendar"
   | "reports"
   | "settings"
-  | "timeline";
+  | "timeline"
+  | "members";
 
 export function Dashboard() {
   const { t } = useTranslation();
@@ -308,24 +315,37 @@ export function Dashboard() {
         );
       case "summary":
         return (
-          <PlaceholderView title={t("dashboard.tabs.summary") || "Summary"} />
+          <SummaryView
+            tasksCount={tasks.length}
+            doneCount={tasks.filter((t) => t.status === "done").length}
+          />
         );
       case "calendar":
-        return (
-          <PlaceholderView title={t("dashboard.tabs.calendar") || "Calendar"} />
-        );
+        return <CalendarView tasks={tasks} />;
       case "reports":
-        return (
-          <PlaceholderView title={t("dashboard.tabs.reports") || "Reports"} />
-        );
+        return <ReportsView tasks={tasks} />;
       case "settings":
-        return (
-          <PlaceholderView title={t("dashboard.tabs.settings") || "Settings"} />
-        );
+        return <SettingsView />;
       case "timeline":
-        return (
-          <PlaceholderView title={t("dashboard.tabs.timeline") || "Timeline"} />
-        );
+        return <TimelineView tasks={tasks} />;
+      case "members":
+        return currentProject ? (
+          <div className="px-1 pb-4">
+            <ProjectMembersModal
+              isOpen={true}
+              onClose={() => handleTabChange("board")}
+              project={{
+                id: parseInt(currentProject.id),
+                key: currentProject.key,
+                name: currentProject.name,
+                description: currentProject.description,
+                issue_seq: 1,
+                created_at: "",
+                updated_at: "",
+              }}
+            />
+          </div>
+        ) : null;
       default:
         return <PlaceholderView title={activeTab} />;
     }

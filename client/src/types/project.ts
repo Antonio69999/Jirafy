@@ -12,7 +12,16 @@ export type Project = {
   team?: { id: number; slug: string; name: string } | null;
   lead?: { id: number; name: string; email: string } | null;
   issues_count?: number;
-  
+  members?: ProjectMember[];
+};
+
+export type ProjectMember = {
+  id: number;
+  name: string;
+  email: string;
+  avatar?: string | null;
+  role: 'admin' | 'manager' | 'contributor' | 'viewer';
+  source: 'project' | 'team'; 
 };
 
 export type ProjectCreate = {
