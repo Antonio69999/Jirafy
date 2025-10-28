@@ -6,24 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-      Schema::create('issue_label', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('issue_id')->constrained('issues')->cascadeOnDelete();
-    $table->foreignId('label_id')->constrained('labels')->cascadeOnDelete();
-    $table->timestamps();
-    $table->unique(['issue_id', 'label_id']);
-});
+        Schema::create('issue_labels', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('issue_id')->constrained('issues')->onDelete('cascade');
+            $table->foreignId('label_id')->constrained('labels')->onDelete('cascade');
+            $table->timestamps();
 
+            // Index unique pour éviter les doublons
+            $table->unique(['issue_id', 'label_id']);
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('issue_labels');

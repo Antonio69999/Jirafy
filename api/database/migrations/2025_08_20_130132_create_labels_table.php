@@ -6,25 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-     Schema::create('labels', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('project_id')->constrained()->cascadeOnDelete();
-    $table->string('name', 50);
-    $table->string('color', 7)->default('#888888');
-    $table->timestamps();
-    $table->unique(['project_id', 'name']);
-});
+        Schema::create('labels', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 100);
+            $table->string('color', 7)->default('#3b82f6'); // Format hexa #RRGGBB
+            $table->text('description')->nullable();
+            $table->foreignId('project_id')->nullable()->constrained('projects')->onDelete('cascade');
+            $table->timestamps();
 
+            // Index pour améliorer les performances
+            $table->index(['project_id', 'name']);
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('labels');

@@ -11,6 +11,7 @@ use App\Http\Controllers\Teams\TeamController;
 
 
 
+
 // Routes d'authentification - pas d'authentification requise
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -44,6 +45,21 @@ Route::middleware('auth:api')->group(function () {
             ->middleware('check.role:admin');
         Route::put('/{team}/members/{userId}', [TeamController::class, 'updateMemberRole'])
             ->middleware('check.role:admin');
+    });
+    
+      Route::prefix('labels')->group(function () {
+        Route::get('/', [LabelController::class, 'index']);
+        Route::post('/', [LabelController::class, 'store']);
+        Route::get('/{label}', [LabelController::class, 'show']);
+        Route::put('/{label}', [LabelController::class, 'update']);
+        Route::patch('/{label}', [LabelController::class, 'update']);
+        Route::delete('/{label}', [LabelController::class, 'destroy']);
+    });
+
+    // Labels d'un projet
+    Route::prefix('projects/{project}/labels')->group(function () {
+        Route::get('/', [LabelController::class, 'projectLabels']);
+        Route::get('/available', [LabelController::class, 'availableForProject']);
     });
 
     // Labels globaux
@@ -90,6 +106,8 @@ Route::middleware('auth:api')->group(function () {
 
         // Labels spécifiques à un projet
         Route::get('/{project}/labels', [LabelController::class, 'projectLabels']);
+
+        
 
         // Gestion des membres de projet
         Route::prefix('/{project}/members')->middleware('check.project:view')->group(function () {

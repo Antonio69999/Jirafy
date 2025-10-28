@@ -17,8 +17,11 @@ use App\Services\Ticketing\IssueService;
 use App\Interfaces\Ticketing\StatusServiceInterface;
 use App\Services\Ticketing\StatusService;
 use App\Interfaces\Teams\TeamServiceInterface;
+use App\Interfaces\Ticketing\LabelServiceInterface;
 use App\Services\Permission\PermissionService;
 use App\Services\Teams\TeamService;
+use App\Services\Ticketing\LabelService;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(StatusServiceInterface::class, StatusService::class);
         $this->app->bind(TeamServiceInterface::class, TeamService::class);
         $this->app->bind(PermissionServiceInterface::class, PermissionService::class);
+        $this->app->bind(LabelServiceInterface::class, LabelService::class);
     }
 
     /**
