@@ -4,16 +4,24 @@ namespace App\Http\Controllers\Ticketing;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ticketing\{ProjectStoreRequest, ProjectUpdateRequest};
+use App\Interfaces\Permission\PermissionServiceInterface;
 use App\Models\Ticketing\Project;
 use Illuminate\Http\Request;
 use App\Interfaces\Ticketing\ProjectServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
-    public function __construct(private ProjectServiceInterface $service) {}
+    public function __construct(
+        private ProjectServiceInterface $service,
+        private PermissionServiceInterface $permissionService
+    ) {}
 
+    /**
+     * Lister tous les projets
+     */
     public function index(Request $request): JsonResponse
     {
         $filters = [
@@ -33,8 +41,21 @@ class ProjectController extends Controller
         ]);
     }
 
+    /**
+     * Afficher un projet
+     */
     public function show(Project $project): JsonResponse
     {
+        $user = Auth::user();
+
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'project.view', $project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de voir ce projet'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $project->load(['team:id,slug,name', 'lead:id,name,email'])
             ->loadCount('issues');
 
@@ -45,8 +66,29 @@ class ProjectController extends Controller
         ]);
     }
 
+    /**
+     * Créer un projet
+     */
     public function store(ProjectStoreRequest $request): JsonResponse
     {
+        /** @var User $user */
+        $user = Auth::user();
+
+        // Vérifier si l'utilisateur peut créer des projets
+        if (!$user->isSuperAdmin() && !$user->isAdmin()) {
+            // Vérifier s'il est owner d'au moins une équipe
+            $isTeamOwner = $user->teams()
+                ->wherePivot('role', 'owner')
+                ->exists();
+
+            if (!$isTeamOwner) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vous n\'avez pas la permission de créer un projet'
+                ], Response::HTTP_FORBIDDEN);
+            }
+        }
+
         $project = $this->service->createProject($request->validated());
 
         return response()->json([
@@ -56,8 +98,21 @@ class ProjectController extends Controller
         ], Response::HTTP_CREATED);
     }
 
+    /**
+     * Mettre à jour un projet
+     */
     public function update(ProjectUpdateRequest $request, Project $project): JsonResponse
     {
+        $user = Auth::user();
+
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'project.update', $project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de modifier ce projet'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $updated = $this->service->updateProject($project, $request->validated());
 
         return response()->json([
@@ -67,14 +122,27 @@ class ProjectController extends Controller
         ]);
     }
 
+    /**
+     * Supprimer un projet
+     */
     public function destroy(Project $project): JsonResponse
     {
+        $user = Auth::user();
+
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'project.delete', $project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de supprimer ce projet'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $this->service->deleteProject($project);
 
         return response()->json([
             'success' => true,
             'data' => null,
             'message' => 'Project deleted successfully'
-        ], 204);
+        ], Response::HTTP_NO_CONTENT);
     }
 }

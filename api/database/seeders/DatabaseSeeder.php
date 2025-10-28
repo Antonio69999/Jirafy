@@ -4,15 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\Auth\User;
 use Illuminate\Database\Seeder;
-use Database\Seeders\TicketingReferenceSeeder;
-use Database\Seeders\LabelSeeder;
-use Database\Seeders\ProjectSeeder;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Créer des utilisateurs test sans factory pour éviter les problèmes
+        // Créer des utilisateurs test
         User::create([
             'name' => 'Admin User',
             'email' => 'admin@jirafy.com',
@@ -31,11 +28,12 @@ class DatabaseSeeder extends Seeder
 
         // Seeders de base
         $this->call([
+            PermissionSeeder::class,
             TicketingReferenceSeeder::class,
             ProjectSeeder::class,
             LabelSeeder::class,
         ]);
 
-        $this->command->info('Database seeded successfully!');
+        $this->command->info('✅ Database seeded successfully!');
     }
 }

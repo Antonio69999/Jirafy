@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Interfaces\Auth\LoginServiceInterface;
 use App\Interfaces\Auth\RegisterServiceInterface;
 use App\Interfaces\Auth\PasswordServiceInterface;
+use App\Interfaces\Permission\PermissionServiceInterface;
 use App\Services\Auth\LoginService;
 use App\Services\Auth\RegisterService;
 use App\Services\Auth\PasswordService;
@@ -16,6 +17,7 @@ use App\Services\Ticketing\IssueService;
 use App\Interfaces\Ticketing\StatusServiceInterface;
 use App\Services\Ticketing\StatusService;
 use App\Interfaces\Teams\TeamServiceInterface;
+use App\Services\Permission\PermissionService;
 use App\Services\Teams\TeamService;
 
 class AppServiceProvider extends ServiceProvider
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(IssueServiceInterface::class, IssueService::class);
         $this->app->bind(StatusServiceInterface::class, StatusService::class);
         $this->app->bind(TeamServiceInterface::class, TeamService::class);
+        $this->app->bind(PermissionServiceInterface::class, PermissionService::class);
     }
 
     /**

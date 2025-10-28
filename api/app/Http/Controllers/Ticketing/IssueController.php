@@ -4,15 +4,20 @@ namespace App\Http\Controllers\Ticketing;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ticketing\{IssueStoreRequest, IssueUpdateRequest};
-use App\Models\Ticketing\Issue;
+use App\Models\Ticketing\{Issue, Project};
 use Illuminate\Http\Request;
 use App\Interfaces\Ticketing\IssueServiceInterface;
+use App\Interfaces\Permission\PermissionServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class IssueController extends Controller
 {
-    public function __construct(private IssueServiceInterface $service) {}
+    public function __construct(
+        private IssueServiceInterface $service,
+        private PermissionServiceInterface $permissionService
+    ) {}
 
     /**
      * Lister toutes les issues (avec filtres optionnels)
@@ -45,6 +50,17 @@ class IssueController extends Controller
      */
     public function projectIssues(Request $request, int $projectId): JsonResponse
     {
+        $user = Auth::user();
+        $project = Project::findOrFail($projectId);
+
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'project.view', $project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de voir ce projet'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $filters = [
             'status_id' => $request->query('status_id'),
             'type_id' => $request->query('type_id'),
@@ -70,6 +86,20 @@ class IssueController extends Controller
      */
     public function show(Issue $issue): JsonResponse
     {
+        $user = Auth::user();
+
+        if (!$issue->relationLoaded('project')) {
+            $issue->load('project');
+        }
+
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'issue.view', $issue->project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de voir cette issue'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $issue->load([
             'project:id,key,name',
             'type:id,key,name',
@@ -93,6 +123,7 @@ class IssueController extends Controller
      */
     public function showByKey(string $key): JsonResponse
     {
+        $user = Auth::user();
         $issue = $this->service->getIssueByKey($key);
 
         if (!$issue) {
@@ -101,6 +132,18 @@ class IssueController extends Controller
                 'data' => null,
                 'message' => 'Issue not found'
             ], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$issue->relationLoaded('project')) {
+            $issue->load('project');
+        }
+
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'issue.view', $issue->project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de voir cette issue'
+            ], Response::HTTP_FORBIDDEN);
         }
 
         return response()->json([
@@ -115,6 +158,17 @@ class IssueController extends Controller
      */
     public function store(IssueStoreRequest $request): JsonResponse
     {
+        $user = Auth::user();
+        $project = Project::findOrFail($request->validated()['project_id']);
+
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'issue.create', $project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de créer une issue dans ce projet'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $issue = $this->service->createIssue($request->validated());
 
         return response()->json([
@@ -129,6 +183,20 @@ class IssueController extends Controller
      */
     public function update(IssueUpdateRequest $request, Issue $issue): JsonResponse
     {
+        $user = Auth::user();
+
+        if (!$issue->relationLoaded('project')) {
+            $issue->load('project');
+        }
+
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'issue.update', $issue->project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de modifier cette issue'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $updated = $this->service->updateIssue($issue, $request->validated());
 
         return response()->json([
@@ -143,6 +211,20 @@ class IssueController extends Controller
      */
     public function destroy(Issue $issue): JsonResponse
     {
+        $user = Auth::user();
+
+        if (!$issue->relationLoaded('project')) {
+            $issue->load('project');
+        }
+
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'issue.delete', $issue->project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de supprimer cette issue'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $this->service->deleteIssue($issue);
 
         return response()->json([

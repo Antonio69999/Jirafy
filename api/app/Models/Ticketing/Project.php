@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Auth\User;
 use App\Models\Teams\Team;
+use Database\Factories\ProjectFactory;
 
 class Project extends Model
 {
@@ -46,5 +47,17 @@ class Project extends Model
     public function labels()
     {
         return $this->hasMany(\App\Models\Ticketing\Label::class);
+    }
+
+    public function availableStatuses()
+    {
+        return $this->belongsToMany(Status::class, 'project_statuses')
+            ->withPivot(['position', 'is_default'])
+            ->orderBy('project_statuses.position');
+    }
+
+     protected static function newFactory()
+    {
+        return ProjectFactory::new();
     }
 }

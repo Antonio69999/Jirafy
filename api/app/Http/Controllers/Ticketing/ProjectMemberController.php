@@ -3,23 +3,35 @@
 namespace App\Http\Controllers\Ticketing;
 
 use App\Http\Controllers\Controller;
+use App\Interfaces\Permission\PermissionServiceInterface;
 use App\Models\Ticketing\Project;
-use App\Services\Ticketing\ProjectMemberService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectMemberController extends Controller
 {
-    public function __construct(private ProjectMemberService $service) {}
+    public function __construct(
+        private PermissionServiceInterface $permissionService
+    ) {}
 
     /**
-     * Liste tous les membres du projet
+     * Lister les membres d'un projet
      */
     public function index(Project $project): JsonResponse
     {
-        $project->load('team');
+        $user = Auth::user();
 
-        $members = $this->service->getAllMembers($project);
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'project.view', $project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de voir ce projet'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $members = $project->members()->get();
 
         return response()->json([
             'success' => true,
@@ -33,42 +45,69 @@ class ProjectMemberController extends Controller
      */
     public function store(Request $request, Project $project): JsonResponse
     {
+        $user = Auth::user();
+
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'project.manage_members', $project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de gérer les membres de ce projet'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $validated = $request->validate([
             'user_id' => ['required', 'integer', 'exists:users,id'],
-            'role' => ['required', 'string', 'in:admin,manager,contributor,viewer'],
+            'role' => ['required', 'string', 'in:admin,manager,contributor,viewer']
         ]);
 
-        $this->service->addMember(
-            $project,
-            $validated['user_id'],
-            $validated['role']
-        );
+        // Vérifier si le membre existe déjà
+        if ($project->members()->where('user_id', $validated['user_id'])->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cet utilisateur est déjà membre du projet'
+            ], Response::HTTP_CONFLICT);
+        }
 
-        // Recharger le projet avec les relations
-        $project->load('team');
-        $members = $this->service->getAllMembers($project);
+        $project->members()->attach($validated['user_id'], ['role' => $validated['role']]);
+
+        $members = $project->members()->get();
 
         return response()->json([
             'success' => true,
             'data' => $members,
             'message' => 'Member added successfully'
-        ]);
+        ], Response::HTTP_CREATED);
     }
 
     /**
-     * Modifier le rôle d'un membre
+     * Mettre à jour le rôle d'un membre
      */
     public function update(Request $request, Project $project, int $userId): JsonResponse
     {
+        $user = Auth::user();
+
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'project.manage_members', $project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de gérer les membres de ce projet'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $validated = $request->validate([
-            'role' => ['required', 'string', 'in:admin,manager,contributor,viewer'],
+            'role' => ['required', 'string', 'in:admin,manager,contributor,viewer']
         ]);
 
-        $this->service->updateMemberRole($project, $userId, $validated['role']);
+        if (!$project->members()->where('user_id', $userId)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cet utilisateur n\'est pas membre du projet'
+            ], Response::HTTP_NOT_FOUND);
+        }
 
-        // Recharger le projet avec les relations
-        $project->load('team');
-        $members = $this->service->getAllMembers($project);
+        $project->members()->updateExistingPivot($userId, ['role' => $validated['role']]);
+
+        $members = $project->members()->get();
 
         return response()->json([
             'success' => true,
@@ -82,11 +121,26 @@ class ProjectMemberController extends Controller
      */
     public function destroy(Project $project, int $userId): JsonResponse
     {
-        $this->service->removeMember($project, $userId);
+        $user = Auth::user();
 
-        // Recharger le projet avec les relations
-        $project->load('team');
-        $members = $this->service->getAllMembers($project);
+        // Vérifier les permissions
+        if (!$this->permissionService->userCanOnProject($user, 'project.manage_members', $project)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'avez pas la permission de gérer les membres de ce projet'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        if (!$project->members()->where('user_id', $userId)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cet utilisateur n\'est pas membre du projet'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $project->members()->detach($userId);
+
+        $members = $project->members()->get();
 
         return response()->json([
             'success' => true,
