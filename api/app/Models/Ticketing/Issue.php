@@ -1,63 +1,134 @@
 <?php
+// filepath: api/app/Models/Ticketing/Issue.php
 
 namespace App\Models\Ticketing;
 
-use App\Models\Auth\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Auth\User;
+use Illuminate\Support\Facades\DB;
 
 class Issue extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'project_id','type_id','status_id','priority_id',
-        'reporter_id','assignee_id',
-        'number','issue_key','title','description','story_points','due_date'
-        // si tu gardes plus tard: 'epic_id','parent_id'
+        'project_id',
+        'type_id',
+        'status_id',
+        'priority_id',
+        'reporter_id',
+        'assignee_id',
+        'parent_id',
+        'epic_id',
+        'sprint_id',
+        'number',
+        'key',
+        'title',
+        'description',
+        'story_points',
+        'original_estimate',
+        'remaining_estimate',
+        'time_spent',
+        'due_date',
+        'resolution',
+        'environment',
     ];
 
     protected $casts = [
-        'due_date' => 'date',
-        'story_points' => 'float',
+        'story_points' => 'decimal:2',
+        'original_estimate' => 'integer',
+        'remaining_estimate' => 'integer',
+        'time_spent' => 'integer',
+        'due_date' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
-    public function project()  { return $this->belongsTo(Project::class); }
-    public function type()     { return $this->belongsTo(IssueType::class, 'type_id'); }
-    public function status()   { return $this->belongsTo(Status::class, 'status_id'); }
-    public function priority() { return $this->belongsTo(Priority::class, 'priority_id'); }
-
-    public function reporter() { return $this->belongsTo(User::class, 'reporter_id'); }
-    public function assignee() { return $this->belongsTo(User::class, 'assignee_id'); }
-
-    // réactive quand tu ajoutes les colonnes
-    // public function epic()   { return $this->belongsTo(self::class, 'epic_id'); }
-    // public function parent() { return $this->belongsTo(self::class, 'parent_id'); }
-    // public function children(){ return $this->hasMany(self::class, 'parent_id'); }
-
-    public function labels()   { return $this->belongsToMany(Label::class, 'issue_label')->withTimestamps(); }
-    public function comments() { return $this->hasMany(Comment::class); }
-    public function attachments(){ return $this->hasMany(Attachment::class); }
-
-    // Scope de recherche plein-texte (utilise la colonne tsvector "search")
-    public function scopeSearch($query, ?string $term)
+    /**
+     * ✅ Générer automatiquement le numéro séquentiel à la création
+     */
+    protected static function booted(): void
     {
-        if (!$term) return $query;
-        return $query->whereRaw("search @@ plainto_tsquery('simple', ?)", [$term]);
+        static::creating(function (Issue $issue) {
+            if (empty($issue->number)) {
+                // Récupérer le prochain numéro pour ce projet
+                $maxNumber = DB::table('issues')
+                    ->where('project_id', $issue->project_id)
+                    ->max('number');
+
+                $issue->number = ($maxNumber ?? 0) + 1;
+            }
+
+            // Générer la clé (ex: WEB-1, WEB-2)
+            if (empty($issue->key) && $issue->project_id) {
+                $project = Project::find($issue->project_id);
+                if ($project) {
+                    $issue->key = "{$project->key}-{$issue->number}";
+                }
+            }
+        });
     }
 
-    // Projection pratique pour le dashboard (lookup joints)
-    public function scopeWithLookups($query)
+    // Relations
+    public function project(): BelongsTo
     {
-        return $query
-            ->leftJoin('issue_types as it', 'it.id', '=', 'issues.type_id')
-            ->leftJoin('statuses as s', 's.id', '=', 'issues.status_id')
-            ->leftJoin('priorities as p', 'p.id', '=', 'issues.priority_id')
-            ->select([
-                'issues.*',
-                'it.name as type_name', 'it.key as type_key',
-                's.name as status_name', 's.key as status_key', 's.category as status_category',
-                'p.name as priority_name', 'p.key as priority_key', 'p.weight as priority_weight',
-            ]);
+        return $this->belongsTo(Project::class);
+    }
+
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(IssueType::class, 'type_id');
+    }
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(Status::class);
+    }
+
+    public function priority(): BelongsTo
+    {
+        return $this->belongsTo(Priority::class);
+    }
+
+    public function reporter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reporter_id');
+    }
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assignee_id');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Issue::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Issue::class, 'parent_id');
+    }
+
+    public function epic(): BelongsTo
+    {
+        return $this->belongsTo(Issue::class, 'epic_id');
+    }
+
+    public function labels(): BelongsToMany
+    {
+        return $this->belongsToMany(Label::class, 'issue_labels', 'issue_id', 'label_id')
+            ->withTimestamps();
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(Attachment::class);
     }
 }

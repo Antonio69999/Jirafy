@@ -62,8 +62,11 @@ class LabelService implements LabelServiceInterface
      */
     public function getAvailableLabelsForProject(int $projectId): array
     {
-        return Label::availableForProject($projectId)
-            ->select(['id', 'name', 'color', 'project_id'])
+        return Label::where(function ($query) use ($projectId) {
+            $query->whereNull('project_id')
+                ->orWhere('project_id', $projectId);
+        })
+            ->select(['id', 'name', 'color', 'project_id', 'description'])
             ->orderBy('name')
             ->get()
             ->toArray();

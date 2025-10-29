@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router-dom";
 import logo from "@/assets/logo.png";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useMemo } from "react";
 
 import {
   Sidebar,
@@ -36,7 +38,6 @@ import {
 import { useEffect, useState } from "react";
 import { useProjects } from "@/hooks/useProject";
 
-// Type pour les projets récents
 type RecentProject = {
   id: string;
   name: string;
@@ -48,16 +49,18 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const location = useLocation();
 
+  // ✅ Hook de permissions
+  const { canViewTeams, canViewDashboard, user } = usePermissions();
+
   // Récupération des projets récents
   const { data: projectsData, loading } = useProjects({
-    per_page: 5, // Limiter aux 5 projets les plus récents
+    per_page: 5,
     order_by: "created_at",
     order_dir: "desc",
   });
 
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
 
-  // Conversion des données API vers le format local
   useEffect(() => {
     if (projectsData?.data) {
       const convertedProjects: RecentProject[] = projectsData.data.map(
@@ -71,26 +74,85 @@ export function AppSidebar() {
     }
   }, [projectsData]);
 
-  const items = [
-    { title: t("app.sidebar.home"), url: "/", icon: CircleUser },
-    { title: t("app.sidebar.recent"), url: "/?tab=viewed", icon: Clock },
-    { title: t("app.sidebar.favourites"), url: "/?tab=starred", icon: Star },
-    // Projet est défini ici mais implémenté séparément
-    {
+  // ✅ Menu dynamique selon le rôle
+  const items = useMemo(() => {
+    const baseItems = [];
+
+    // ✅ Pour les CLIENTS uniquement
+    if (user?.role === "customer") {
+      return [
+        {
+          title: t("app.sidebar.myTickets") || "Mes Tickets",
+          url: "/my-tickets",
+          icon: CircleUser,
+        },
+        {
+          title: t("app.sidebar.settings") || "Paramètres",
+          url: "/settings",
+          icon: Settings,
+        },
+      ];
+    }
+
+    // ✅ Pour les UTILISATEURS INTERNES (admin, user)
+    baseItems.push(
+      { title: t("app.sidebar.home") || "Accueil", url: "/", icon: CircleUser },
+      {
+        title: t("app.sidebar.recent") || "Récents",
+        url: "/?tab=viewed",
+        icon: Clock,
+      },
+      {
+        title: t("app.sidebar.favourites") || "Favoris",
+        url: "/?tab=starred",
+        icon: Star,
+      }
+    );
+
+    // Projects : visible pour tous (mais filtré par backend)
+    baseItems.push({
       title: t("app.sidebar.projects") || "Projects",
       url: "#",
       icon: Rocket,
       isDropdown: true,
-    },
-    { title: t("app.sidebar.teams"), url: "/teams", icon: Users },
-    {
-      title: t("app.sidebar.dashboard"),
-      url: "/dashboard",
-      icon: LayoutDashboard,
-    },
-    { title: t("app.sidebar.workflows"), url: "/workflow", icon: Workflow },
-    { title: t("app.sidebar.settings"), url: "/settings", icon: Settings },
-  ];
+    });
+
+    // ✅ Dashboard : masqué pour les clients
+    if (canViewDashboard()) {
+      baseItems.push({
+        title: t("app.sidebar.dashboard") || "Dashboard",
+        url: "/dashboard",
+        icon: LayoutDashboard,
+      });
+    }
+
+    // ✅ Teams : masqué pour les clients
+    if (canViewTeams()) {
+      baseItems.push({
+        title: t("app.sidebar.teams") || "Équipes",
+        url: "/teams",
+        icon: Users,
+      });
+    }
+
+    // ✅ Workflows : masqué pour les clients
+    if (user?.role !== "customer") {
+      baseItems.push({
+        title: t("app.sidebar.workflows") || "Workflows",
+        url: "/workflow",
+        icon: Workflow,
+      });
+    }
+
+    // Settings : visible pour tous
+    baseItems.push({
+      title: t("app.sidebar.settings") || "Paramètres",
+      url: "/settings",
+      icon: Settings,
+    });
+
+    return baseItems;
+  }, [t, canViewTeams, canViewDashboard, user]);
 
   const isProjectActive = () => {
     return (
@@ -122,7 +184,6 @@ export function AppSidebar() {
           </div>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
-              {/* Autres éléments du menu */}
               {items.map((item) => {
                 const isActive = () => {
                   if (item.url.startsWith("/?tab=")) {
@@ -174,7 +235,6 @@ export function AppSidebar() {
                           sideOffset={0}
                         >
                           <div className="space-y-2">
-                            {/* Liste des projets récents */}
                             {loading ? (
                               <div className="px-2 py-3 text-center text-muted-foreground text-sm">
                                 {t("app.common.loading") || "Chargement..."}
@@ -212,7 +272,6 @@ export function AppSidebar() {
                               </div>
                             )}
 
-                            {/* Lien vers la page des projets */}
                             <NavLink
                               to="/projects"
                               style={{ textDecoration: "none" }}

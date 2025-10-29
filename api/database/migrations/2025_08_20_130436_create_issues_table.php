@@ -1,4 +1,5 @@
 <?php
+// filepath: api/database/migrations/2025_08_20_130436_create_issues_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -6,46 +7,41 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-       Schema::create('issues', function (Blueprint $table) {
-    $table->id();
+        Schema::create('issues', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
+            $table->foreignId('type_id')->constrained('issue_types');
+            $table->foreignId('status_id')->constrained('statuses');
+            $table->foreignId('priority_id')->constrained('priorities');
+            $table->foreignId('reporter_id')->constrained('users');
+            $table->foreignId('assignee_id')->nullable()->constrained('users');
+            $table->foreignId('parent_id')->nullable()->constrained('issues')->onDelete('set null');
+            $table->foreignId('epic_id')->nullable()->constrained('issues')->onDelete('set null');
 
-    $table->foreignId('project_id')->constrained()->cascadeOnDelete();
+            $table->integer('number')->nullable();
+            $table->string('key')->unique();
 
-    $table->foreignId('type_id')->constrained('issue_types')->restrictOnDelete();
-    $table->foreignId('status_id')->constrained('statuses')->restrictOnDelete();
-    $table->foreignId('priority_id')->constrained('priorities')->restrictOnDelete();
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->decimal('story_points', 5, 2)->nullable();
+            $table->integer('original_estimate')->nullable();
+            $table->integer('remaining_estimate')->nullable();
+            $table->integer('time_spent')->nullable();
+            $table->timestamp('due_date')->nullable();
+            $table->text('resolution')->nullable();
+            $table->text('environment')->nullable();
+            $table->timestamps();
 
-    $table->foreignId('reporter_id')->constrained('users')->restrictOnDelete();
-    $table->foreignId('assignee_id')->nullable()->constrained('users')->nullOnDelete();
-
-    $table->foreignId('epic_id')->nullable()->constrained('issues')->nullOnDelete();
-    $table->foreignId('parent_id')->nullable()->constrained('issues')->nullOnDelete();
-
-    $table->unsignedInteger('number');         // séquence locale projet
-    $table->string('issue_key', 50)->unique(); // OPS-123
-
-    $table->string('title', 255);
-    $table->text('description')->nullable();
-    $table->decimal('story_points', 5, 2)->nullable();
-    $table->date('due_date')->nullable();
-
-    $table->timestamps();
-
-    $table->unique(['project_id', 'number']);
-    $table->index(['project_id', 'status_id']);
-    $table->index('assignee_id');
-});
-
+            // Index
+            $table->index(['project_id', 'number']);
+            $table->index('assignee_id');
+            $table->index('reporter_id');
+            $table->index('status_id');
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('issues');

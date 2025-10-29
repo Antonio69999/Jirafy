@@ -23,7 +23,8 @@
             "projects": "Projets",
             "workflows": "Flux de travail",
             "recent": "Récents",
-            "noRecentProjects": "Aucun projet récent"
+            "noRecentProjects": "Aucun projet récent",
+            "myTickets": "Mes tickets"
         },
         "search": {
             "placeholder": "Rechercher..."
@@ -141,9 +142,13 @@
             "addLabels": "Ajouter une étiquette",
             "pickDate": "Choisir une date",
             "addMembers": "Ajouter des membres",
+            "addAssignees": "Ajouter un responsable",
             "assignee": "Responsable",
             "members": "Membres",
             "submit": "Valider",
+            "selectProjectFirst": "Veuillez choisir un projet",
+            "selectPriority": "Veuillez choisir une priorité",
+            "noLabels": "Aucun label",
             "priorities": {
                 "title": "Priorité",
                 "low": "Basse",
@@ -442,6 +447,18 @@
             "title": "Gérer les membres",
             "add": "Ajouter un membre",
             "current": "Membres actuels"
+        }
+    },
+    "customer": {
+        "myTickets": {
+            "title": "Mes tickets",
+            "description": "Consultez et gérez vos demandes de support.",
+            "create": "Créer un ticket",
+            "empty": "Aucun ticket pour le moment",
+            "createFirst": "Créer votre premier ticket",
+            "comments": "commentaires",
+            "createdAt": "Créé le",
+            "assignedTo": "Assigné à"
         }
     }
 }

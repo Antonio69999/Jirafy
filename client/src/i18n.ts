@@ -7,12 +7,13 @@ i18n
   // Load translations from /public/locales
   .use(Backend)
   // Detect user language
-  .use(LanguageDetector)
+  // .use(LanguageDetector)
   // Pass the i18n instance to react-i18next
   .use(initReactI18next)
   // Initialize i18next
   .init({
-    fallbackLng: "en",
+    fallbackLng: "fr",
+    lng: "fr",
     debug: import.meta.env.DEV,
 
     interpolation: {

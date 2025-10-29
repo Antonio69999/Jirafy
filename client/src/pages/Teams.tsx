@@ -30,6 +30,7 @@ import CreateTeamModal from "@/components/modals/CreateTeamModal";
 import EditTeamModal from "@/components/modals/EditTeamModal";
 import TeamMembersModal from "@/components/modals/TeamMembersModal";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function Teams() {
   const { t } = useTranslation();
@@ -138,6 +139,9 @@ export default function Teams() {
     return pages;
   };
 
+  const { canCreateTeam, canEditTeam, canDeleteTeam, canManageTeamMembers } =
+    usePermissions();
+
   if (loading && !teams.length) {
     return (
       <PageContainer title={t("app.sidebar.teams") || "Teams"}>
@@ -172,16 +176,18 @@ export default function Teams() {
           <SearchBar
             placeholder={t("teams.search") || "Rechercher une équipe..."}
           />
-          <Button
-            onClick={() => setCreateOpen(true)}
-            className={cn(
-              "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)]",
-              `theme-${colorTheme}`
-            )}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            {t("teams.actions.create") || "Créer une équipe"}
-          </Button>
+          {canCreateTeam() && (
+            <Button
+              onClick={() => setCreateOpen(true)}
+              className={cn(
+                "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)]",
+                `theme-${colorTheme}`
+              )}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {t("teams.actions.create") || "Créer une équipe"}
+            </Button>
+          )}
         </div>
 
         <ScrollArea className="h-[calc(100vh-20rem)]">
@@ -226,30 +232,38 @@ export default function Teams() {
                     </TableCell>
                     <TableCell>{team.members_count || 0}</TableCell>
                     <TableCell>{team.projects_count || 0}</TableCell>
-                    <TableCell className="text-right flex gap-2 justify-end">
-                      <Button
-                        onClick={() => handleManageMembers(team)}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <Users className="mr-2 h-4 w-4" />
-                        {t("teams.actions.members") || "Membres"}
-                      </Button>
-                      <Button
-                        onClick={() => handleEdit(team)}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <Settings className="mr-2 h-4 w-4" />
-                        {t("common.edit") || "Modifier"}
-                      </Button>
-                      <Button
-                        onClick={() => handleDelete(team)}
-                        variant="destructive"
-                        size="sm"
-                      >
-                        {t("common.delete") || "Supprimer"}
-                      </Button>
+                   <TableCell className="text-right flex gap-2 justify-end">
+                      {canManageTeamMembers(team) && (
+                        <Button
+                          onClick={() => handleManageMembers(team)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Users className="mr-2 h-4 w-4" />
+                          {t("teams.actions.members") || "Membres"}
+                        </Button>
+                      )}
+
+                      {canEditTeam(team) && (
+                        <Button
+                          onClick={() => handleEdit(team)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Settings className="mr-2 h-4 w-4" />
+                          {t("common.edit") || "Modifier"}
+                        </Button>
+                      )}
+
+                      {canDeleteTeam() && (
+                        <Button
+                          onClick={() => handleDelete(team)}
+                          variant="destructive"
+                          size="sm"
+                        >
+                          {t("common.delete") || "Supprimer"}
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -325,11 +339,12 @@ export default function Teams() {
       </PageContainer>
 
       {/* Modales */}
-      <CreateTeamModal
-        isOpen={createOpen}
-        onClose={setCreateOpen}
-        onSuccess={handleCreateSuccess}
-      />
+     {canCreateTeam() && (
+        <CreateTeamModal
+          isOpen={createOpen}
+          onClose={setCreateOpen}
+          onSuccess={handleSuccess}
+        />
 
       {selectedTeam && (
         <>

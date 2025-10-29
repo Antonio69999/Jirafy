@@ -16,7 +16,7 @@ class PermissionService implements PermissionServiceInterface
     public function userCanOnProject(User $user, string $permission, Project $project): bool
     {
         // Super admin peut tout faire
-        if ($user->isSuperAdmin()) {
+        if ($user->isSuperAdmin() || $user->isAdmin()) {
             return true;
         }
 

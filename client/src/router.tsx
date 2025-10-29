@@ -9,6 +9,7 @@ import Projects from "@/pages/Projects";
 import Teams from "@/pages/Teams";
 import Register from "@/pages/Register";
 import Login from "@/pages/Login";
+import MyTickets from "@/pages/MyTickets";
 
 const router = createBrowserRouter([
   {
@@ -57,6 +58,16 @@ const router = createBrowserRouter([
       <ProtectedRoute>
         <Layout>
           <Teams />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/my-tickets",
+    element: (
+      <ProtectedRoute>
+        <Layout>
+          <MyTickets />
         </Layout>
       </ProtectedRoute>
     ),

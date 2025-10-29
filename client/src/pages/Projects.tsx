@@ -1,4 +1,12 @@
-import { PageContainer } from "@/components/pages/PageContainer";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Plus, Star, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useColorThemeStore } from "@/store/colorThemeStore";
+import { useProjects } from "@/hooks/useProject";
+import { usePermissions } from "@/hooks/usePermissions";
+
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
@@ -9,7 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import {
   Pagination,
   PaginationContent,
@@ -20,21 +27,14 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-import { useTranslation } from "react-i18next";
-import { Plus, Star, Users } from "lucide-react";
-import { useState, useMemo } from "react";
-import { useColorThemeStore } from "@/store/colorThemeStore";
-import { cn } from "@/lib/utils";
-import { SearchBar } from "@/components/layout/SearchBar";
-import { Button } from "@/components/ui/button";
-import ProjectCreateModal from "@/components/modals/CreateProjectModal";
-import ProjectEditModal from "@/components/modals/EditProjectModal";
+import { PageContainer } from "@/components/pages/PageContainer";
+import SearchBar from "@/components/ui/search-bar";
+import CreateProjectModal from "@/components/modals/CreateProjectModal";
+import EditProjectModal from "@/components/modals/EditProjectModal";
 import ProjectMembersModal from "@/components/modals/ProjectMembersModal";
-import { useProjects } from "@/hooks/useProject";
-import type { Project as ApiProject } from "@/types/project";
-import { usePermissions } from "@/hooks/usePermissions";
 
-// Type pour les projets affichés
+import type { Project as ApiProject } from "@/types/project";
+
 type DisplayProject = {
   id: string;
   name: string;
@@ -47,14 +47,18 @@ type DisplayProject = {
 export default function Projects() {
   const { t } = useTranslation();
   const { colorTheme } = useColorThemeStore();
-  const { canCreateProject, canEditProject, canDeleteProject } =
-    usePermissions();
 
-  // Pagination
+  // ✅ Hook de permissions
+  const {
+    canCreateProject,
+    canEditProject,
+    canDeleteProject,
+    canManageProjectMembers,
+  } = usePermissions();
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  // États modales
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
@@ -63,7 +67,6 @@ export default function Projects() {
     null
   );
 
-  // Récupération API
   const {
     data: projectsData,
     loading,
@@ -74,57 +77,38 @@ export default function Projects() {
     per_page: itemsPerPage,
   });
 
-  // Transformation pour affichage
   const projects: DisplayProject[] = useMemo(() => {
     if (!projectsData?.data) return [];
-    return projectsData.data.map((project) => ({
-      id: String(project.id),
-      name: project.name,
-      type: project.key || "-",
-      lead: project.lead?.name || "-",
-      starred: false, // TODO favoris
-      originalData: project,
+    return projectsData.data.map((p) => ({
+      id: String(p.id),
+      name: p.name,
+      type: "Software",
+      lead: p.lead?.name || "Non assigné",
+      starred: false,
+      originalData: p,
     }));
   }, [projectsData]);
 
-  const totalPages = projectsData?.last_page || 1;
+  const totalPages = Math.ceil((projectsData?.total || 0) / itemsPerPage);
   const currentProjects = projects;
 
-  const getPageNumbers = () => {
-    const pageNumbers = [];
-    const maxVisiblePages = 5;
-    pageNumbers.push(1);
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 2; i <= totalPages; i++) pageNumbers.push(i);
-    } else {
-      if (currentPage > 3) pageNumbers.push("ellipsis1");
-      const startPage = Math.max(2, currentPage - 1);
-      const endPage = Math.min(totalPages - 1, currentPage + 1);
-      for (let i = startPage; i <= endPage; i++) pageNumbers.push(i);
-      if (currentPage < totalPages - 2) pageNumbers.push("ellipsis2");
-      if (totalPages > 1) pageNumbers.push(totalPages);
-    }
-
-    return pageNumbers;
+  const toggleStar = (id: string) => {
+    console.log("Toggle star for project:", id);
   };
 
-  // Actions
-  const toggleStar = (id: string) => console.log(`Toggle star ${id}`);
-
-  const handleDelete = (project: ApiProject) => {
-    if (canDeleteProject()) {
-      // TODO: delete API
-      console.log("Suppression projet:", project.id);
-      refetch();
-    }
-  };
+  const starColorClass = () =>
+    `fill-[var(--primary)] text-[var(--primary)] theme-${colorTheme}`;
 
   const handleEdit = (project: ApiProject) => {
-    if (canEditProject(project)) {
-      setEditingProject(project);
-      setEditOpen(true);
+    setEditingProject(project);
+    setEditOpen(true);
+  };
+
+  const handleDelete = async (project: ApiProject) => {
+    if (!confirm(t("project.actions.deleteConfirm") || "Êtes-vous sûr ?")) {
+      return;
     }
+    console.log("Delete project:", project.id);
   };
 
   const handleManageMembers = (project: ApiProject) => {
@@ -132,35 +116,17 @@ export default function Projects() {
     setMembersOpen(true);
   };
 
-  const handleCreateSuccess = () => {
+  const handleSuccess = () => {
     refetch();
     setCreateOpen(false);
-  };
-
-  const handleEditSuccess = () => {
-    refetch();
     setEditOpen(false);
-    setEditingProject(null);
-  };
-
-  const starColorClass = () => {
-    const themeColorMap = {
-      blue: "fill-blue-400 text-blue-400",
-      yellow: "fill-yellow-400 text-yellow-400",
-      purple: "fill-purple-400 text-purple-400",
-      red: "fill-red-400 text-red-400",
-      pink: "fill-pink-400 text-pink-400",
-      orange: "fill-orange-400 text-orange-400",
-      green: "fill-green-400 text-green-400",
-    };
-    return themeColorMap[colorTheme] || "fill-yellow-400 text-yellow-400";
   };
 
   if (loading) {
     return (
       <PageContainer title={t("app.sidebar.projects") || "Projects"}>
-        <div className="flex justify-center items-center h-64 text-muted-foreground">
-          {t("app.common.loading") || "Chargement..."}
+        <div className="flex justify-center items-center h-64">
+          {t("common.loading") || "Chargement..."}
         </div>
       </PageContainer>
     );
@@ -181,6 +147,8 @@ export default function Projects() {
       <PageContainer title={t("app.sidebar.projects") || "Projects"}>
         <div className="flex justify-between items-center mb-4">
           <SearchBar placeholder={t("project.search.placeholder")} />
+
+          {/* ✅ Masquer le bouton "Créer un projet" si pas de permission */}
           {canCreateProject() && (
             <Button
               onClick={() => setCreateOpen(true)}
@@ -215,7 +183,6 @@ export default function Projects() {
               {currentProjects.length > 0 ? (
                 currentProjects.map((project) => (
                   <TableRow key={project.id}>
-                    {/* Favoris */}
                     <TableCell>
                       <button onClick={() => toggleStar(project.id)}>
                         <Star
@@ -228,7 +195,6 @@ export default function Projects() {
                         />
                       </button>
                     </TableCell>
-                    {/* Nom */}
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <img
@@ -241,19 +207,23 @@ export default function Projects() {
                     </TableCell>
                     <TableCell>{project.type}</TableCell>
                     <TableCell>{project.lead}</TableCell>
-                    {/* Actions */}
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
-                        <Button
-                          onClick={() =>
-                            handleManageMembers(project.originalData)
-                          }
-                          variant="outline"
-                          size="sm"
-                        >
-                          <Users className="mr-2 h-4 w-4" />
-                          {t("project.actions.members") || "Membres"}
-                        </Button>
+                        {/* ✅ Bouton "Membres" : toujours visible si l'utilisateur peut voir le projet */}
+                        {canManageProjectMembers(project.originalData) && (
+                          <Button
+                            onClick={() =>
+                              handleManageMembers(project.originalData)
+                            }
+                            variant="outline"
+                            size="sm"
+                          >
+                            <Users className="mr-2 h-4 w-4" />
+                            {t("project.actions.members") || "Membres"}
+                          </Button>
+                        )}
+
+                        {/* ✅ Bouton "Modifier" : masqué si pas de permission */}
                         {canEditProject(project.originalData) && (
                           <Button
                             onClick={() => handleEdit(project.originalData)}
@@ -263,6 +233,8 @@ export default function Projects() {
                             {t("app.common.edit") || "Modifier"}
                           </Button>
                         )}
+
+                        {/* ✅ Bouton "Supprimer" : masqué si pas de permission */}
                         {canDeleteProject() && (
                           <Button
                             onClick={() => handleDelete(project.originalData)}
@@ -298,28 +270,28 @@ export default function Projects() {
                       currentPage > 1 && setCurrentPage(currentPage - 1)
                     }
                     className={cn(
-                      currentPage === 1
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer hover:text-[var(--primary)]",
-                      `theme-${colorTheme}`
+                      currentPage === 1 && "pointer-events-none opacity-50"
                     )}
                   />
                 </PaginationItem>
 
-                {getPageNumbers().map((page, idx) => (
-                  <PaginationItem key={idx}>
-                    {page === "ellipsis1" || page === "ellipsis2" ? (
-                      <PaginationEllipsis />
-                    ) : (
-                      <PaginationLink
-                        onClick={() => setCurrentPage(Number(page))}
-                        isActive={currentPage === page}
-                      >
-                        {page}
-                      </PaginationLink>
-                    )}
-                  </PaginationItem>
-                ))}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) =>
+                    Math.abs(page - currentPage) <= 2 ? (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => setCurrentPage(page)}
+                          isActive={currentPage === page}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ) : page === 1 || page === totalPages ? (
+                      <PaginationItem key={page}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    ) : null
+                )}
 
                 <PaginationItem>
                   <PaginationNext
@@ -328,10 +300,8 @@ export default function Projects() {
                       setCurrentPage(currentPage + 1)
                     }
                     className={cn(
-                      currentPage === totalPages
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer hover:text-[var(--primary)]",
-                      `theme-${colorTheme}`
+                      currentPage === totalPages &&
+                        "pointer-events-none opacity-50"
                     )}
                   />
                 </PaginationItem>
@@ -342,29 +312,27 @@ export default function Projects() {
       </PageContainer>
 
       {/* Modales */}
-      <ProjectCreateModal
-        isOpen={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onSuccess={handleCreateSuccess}
-      />
-      {editingProject && (
-        <ProjectEditModal
+      {canCreateProject() && (
+        <CreateProjectModal
+          isOpen={createOpen}
+          onClose={setCreateOpen}
+          onSuccess={handleSuccess}
+        />
+      )}
+
+      {canEditProject(editingProject || undefined) && (
+        <EditProjectModal
           isOpen={editOpen}
-          onClose={() => {
-            setEditOpen(false);
-            setEditingProject(null);
-          }}
-          onSuccess={handleEditSuccess}
+          onClose={setEditOpen}
+          onSuccess={handleSuccess}
           project={editingProject}
         />
       )}
+
       {selectedProject && (
         <ProjectMembersModal
           isOpen={membersOpen}
-          onClose={() => {
-            setMembersOpen(false);
-            setSelectedProject(null);
-          }}
+          onClose={setMembersOpen}
           project={selectedProject}
         />
       )}
