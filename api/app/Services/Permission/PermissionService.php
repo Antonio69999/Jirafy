@@ -20,19 +20,22 @@ class PermissionService implements PermissionServiceInterface
             return true;
         }
 
-        // Récupérer le rôle de l'utilisateur dans le projet
+        //  Les clients ont des permissions limitées
+        if ($user->isCustomer()) {
+            return $this->customerCanOnProject($user, $permission, $project);
+        }
+
+        // Logique existante pour les utilisateurs internes
         $projectRole = $user->projects()
             ->where('project_id', $project->id)
             ->first()?->pivot->role;
 
         if (!$projectRole) {
-            // Vérifier via l'équipe du projet
             if ($project->team_id) {
                 $teamRole = $user->teams()
                     ->where('team_id', $project->team_id)
                     ->first()?->pivot->role;
 
-                // Mapper les rôles d'équipe aux rôles de projet
                 $projectRole = $this->mapTeamRoleToProjectRole($teamRole);
             }
         }
@@ -41,8 +44,35 @@ class PermissionService implements PermissionServiceInterface
             return false;
         }
 
-        // Vérifier si le rôle a la permission
         return $this->hasPermission($projectRole, $permission, 'project');
+    }
+
+    /**
+     * Permissions spécifiques pour les clients
+     */
+    private function customerCanOnProject(User $user, string $permission, Project $project): bool
+    {
+        // Vérifier que le client a accès au projet via son organisation
+        if (!$user->organization_id) {
+            return false;
+        }
+
+        $hasAccess = DB::table('organization_projects')
+            ->where('organization_id', $user->organization_id)
+            ->where('project_id', $project->id)
+            ->exists();
+
+        if (!$hasAccess) {
+            return false;
+        }
+
+        $allowedPermissions = [
+            'project.view',    
+            'issue.create',   
+            'issue.view',     
+        ];
+
+        return in_array($permission, $allowedPermissions);
     }
 
     /**

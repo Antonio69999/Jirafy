@@ -27,6 +27,36 @@ Route::middleware('auth:api')->group(function () {
     // Users
     Route::get('users', [UserController::class, 'index']);
 
+    // Routes INTERDITES aux clients (uniquement utilisateurs internes)
+    Route::middleware('check.customer')->group(function () {
+        // Teams (clients ne peuvent pas gérer les équipes)
+        Route::apiResource('teams', TeamController::class);
+
+        // Gestion des projets (seuls les admins peuvent créer/modifier/supprimer)
+        Route::post('projects', [ProjectController::class, 'store']);
+        Route::put('projects/{project}', [ProjectController::class, 'update']);
+        Route::delete('projects/{project}', [ProjectController::class, 'destroy']);
+
+        // Gestion des membres de projet
+        Route::apiResource('projects.members', ProjectMemberController::class)->only(['store', 'update', 'destroy']);
+
+        // Workflows, statuts, etc. (gestion interne uniquement)
+        Route::apiResource('statuses', StatusController::class);
+        // Route::apiResource('priorities', PriorityController::class);
+    });
+
+    // Routes AUTORISÉES aux clients (lecture + création de tickets)
+    Route::get('projects', [ProjectController::class, 'index']);
+    Route::get('projects/{project}', [ProjectController::class, 'show']);
+    Route::get('projects/{project}/members', [ProjectMemberController::class, 'index']);
+
+    // Tickets (issues)
+    Route::apiResource('projects.issues', IssueController::class);
+    Route::get('issues/my-tickets', [IssueController::class, 'myTickets']);
+
+    // Comments (clients peuvent commenter leurs tickets)
+    // Route::apiResource('issues.comments', CommentController::class);
+
     // Routes des équipes
     Route::prefix('teams')->group(function () {
         Route::get('/', [TeamController::class, 'index']);
@@ -46,8 +76,8 @@ Route::middleware('auth:api')->group(function () {
         Route::put('/{team}/members/{userId}', [TeamController::class, 'updateMemberRole'])
             ->middleware('check.role:admin');
     });
-    
-      Route::prefix('labels')->group(function () {
+
+    Route::prefix('labels')->group(function () {
         Route::get('/', [LabelController::class, 'index']);
         Route::post('/', [LabelController::class, 'store']);
         Route::get('/{label}', [LabelController::class, 'show']);
@@ -107,7 +137,7 @@ Route::middleware('auth:api')->group(function () {
         // Labels spécifiques à un projet
         Route::get('/{project}/labels', [LabelController::class, 'projectLabels']);
 
-        
+
 
         // Gestion des membres de projet
         Route::prefix('/{project}/members')->middleware('check.project:view')->group(function () {

@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.role' => \App\Http\Middleware\CheckRole::class,
             'check.team' => \App\Http\Middleware\CheckTeamPermission::class,
             'check.project' => \App\Http\Middleware\CheckProjectPermission::class,
+            "check.customer" => \App\Http\Middleware\CheckCustomer::class, 
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

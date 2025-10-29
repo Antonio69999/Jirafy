@@ -1,4 +1,6 @@
 import axios from "axios";
+import { useAuthStore } from "@/store/authStore";
+import { toast } from "sonner";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -24,9 +26,16 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("user");
-      // Redirect to login if needed
+      const { clearAuth } = useAuthStore.getState();
+      clearAuth();
+
+      // Afficher un message clair à l'utilisateur
+      toast.error("Votre session a expiré. Veuillez vous reconnecter.");
+
+      // Rediriger vers la page de login
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }

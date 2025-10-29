@@ -233,4 +233,35 @@ class IssueController extends Controller
             'message' => 'Issue deleted successfully'
         ], Response::HTTP_NO_CONTENT);
     }
+
+    /**
+     * Récupérer uniquement les tickets de l'utilisateur connecté (pour les clients)
+     */
+    public function myTickets(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+
+        if ($user->isCustomer()) {
+            // Les clients ne voient que LEURS tickets
+            $issues = Issue::where('reporter_id', $user->id)
+                ->with(['project:id,key,name', 'status', 'priority', 'assignee', 'reporter'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+        } else {
+            // Les utilisateurs internes voient tous les tickets assignés ou créés par eux
+            $issues = Issue::where(function ($query) use ($user) {
+                $query->where('reporter_id', $user->id)
+                    ->orWhere('assignee_id', $user->id);
+            })
+                ->with(['project:id,key,name', 'status', 'priority', 'assignee', 'reporter'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $issues,
+            'message' => 'Your tickets retrieved successfully'
+        ]);
+    }
 }

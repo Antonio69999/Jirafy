@@ -1,8 +1,16 @@
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Header } from "@/components/layout/Header";
+import { Toaster } from "@/components/ui/sonner";
+import { useSessionCheck } from "@/hooks/useSessionCheck";
 
-export function Layout({ children }: { children: React.ReactNode }) {
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+export function Layout({ children }: LayoutProps) {
+  useSessionCheck();
+
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full overflow-hidden">

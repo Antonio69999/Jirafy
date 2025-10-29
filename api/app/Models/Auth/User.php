@@ -2,34 +2,38 @@
 
 namespace App\Models\Auth;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 use Database\Factories\UserFactory;
+use App\Models\Organizations\Organization;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
+
+    const ROLE_SUPER_ADMIN = 'super_admin';
+    const ROLE_ADMIN = 'admin';
+    const ROLE_USER = 'user';
+    const ROLE_CUSTOMER = 'customer';
 
     protected $fillable = [
         'name',
         'email',
         'password',
-        'avatar',
         'role',
-        'reset_token',
-        'reset_token_expires_at',
+        'organization_id',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
-        'reset_token',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'reset_token_expires_at' => 'datetime',
         'password' => 'hashed',
     ];
 
@@ -40,14 +44,13 @@ class User extends Authenticatable implements JWTSubject
 
     public function getJWTCustomClaims()
     {
-        return [];
+        return [
+            'role' => $this->role,
+            'email' => $this->email,
+        ];
     }
 
-    // Constantes pour les rôles globaux
-    public const ROLE_SUPER_ADMIN = 'super_admin';
-    public const ROLE_ADMIN = 'admin';
-    public const ROLE_USER = 'user';
-
+    // Méthodes de rôle
     public function isSuperAdmin(): bool
     {
         return $this->role === self::ROLE_SUPER_ADMIN;
@@ -58,7 +61,17 @@ class User extends Authenticatable implements JWTSubject
         return in_array($this->role, [self::ROLE_SUPER_ADMIN, self::ROLE_ADMIN]);
     }
 
-    // Relations existantes...
+    public function isCustomer(): bool
+    {
+        return $this->role === self::ROLE_CUSTOMER;
+    }
+
+    public function isInternalUser(): bool
+    {
+        return in_array($this->role, [self::ROLE_SUPER_ADMIN, self::ROLE_ADMIN, self::ROLE_USER]);
+    }
+
+    // Relations existantes
     public function teams()
     {
         return $this->belongsToMany(\App\Models\Teams\Team::class, 'team_users')
@@ -73,9 +86,11 @@ class User extends Authenticatable implements JWTSubject
             ->withTimestamps();
     }
 
-    /**
-     * Create a new factory instance for the model.
-     */
+    public function organization()
+    {
+        return $this->belongsTo(Organization::class);
+    }
+
     protected static function newFactory()
     {
         return UserFactory::new();

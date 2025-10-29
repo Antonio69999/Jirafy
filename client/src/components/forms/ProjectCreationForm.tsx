@@ -26,6 +26,8 @@ import { toast } from "sonner";
 import { useColorThemeStore } from "@/store/colorThemeStore";
 import { cn } from "@/lib/utils";
 import { useCreateProject, useUpdateProject } from "@/hooks/useProject";
+import { useTeamOptions } from "@/hooks/useTeamOptions"; // ✅ NOUVEAU
+import { useUserOptions } from "@/hooks/useUserOptions"; // ✅ NOUVEAU
 import type { ProjectCreate, Project } from "@/types/project";
 
 const projectFormSchema = z.object({
@@ -79,6 +81,10 @@ export default function ProjectCreationForm({
   const loading = createLoading || updateLoading;
   const error = createError || updateError;
 
+  // ✅ UTILISER LES HOOKS OPTIONS
+  const { data: availableTeams, loading: teamsLoading } = useTeamOptions();
+  const { data: availableUsers, loading: usersLoading } = useUserOptions();
+
   const defaultValues: Partial<ProjectFormValues> = {
     key: "",
     name: "",
@@ -99,21 +105,6 @@ export default function ProjectCreationForm({
         }
       : defaultValues,
   });
-
-  // Données mockées pour les équipes et utilisateurs (à remplacer par de vrais appels API)
-  const availableTeams = [
-    { id: 1, name: "Équipe Frontend" },
-    { id: 2, name: "Équipe Backend" },
-    { id: 3, name: "Équipe DevOps" },
-    { id: 4, name: "Équipe Design" },
-  ];
-
-  const availableUsers = [
-    { id: 1, name: "John Doe", email: "john@example.com" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com" },
-    { id: 3, name: "David Miller", email: "david@example.com" },
-    { id: 4, name: "Emma Johnson", email: "emma@example.com" },
-  ];
 
   // Transformer automatiquement la clé en majuscules
   const handleKeyChange = (value: string) => {
@@ -187,6 +178,7 @@ export default function ProjectCreationForm({
                     onChange={(e) => {
                       handleKeyChange(e.target.value);
                     }}
+                    disabled={isEditing} // La clé ne peut pas être changée
                   />
                 </FormControl>
                 <FormMessage />
@@ -205,8 +197,7 @@ export default function ProjectCreationForm({
                 <FormControl>
                   <Input
                     placeholder={
-                      t("project.form.namePlaceholder") ||
-                      "Entrez le nom du projet"
+                      t("project.form.namePlaceholder") || "Mon Super Projet"
                     }
                     className={cn(
                       `theme-${colorTheme}`,
@@ -257,9 +248,12 @@ export default function ProjectCreationForm({
                 <FormLabel>{t("project.form.team") || "Équipe"}</FormLabel>
                 <Select
                   onValueChange={(value) =>
-                    field.onChange(value ? parseInt(value) : undefined)
+                    field.onChange(
+                      value === "none" ? undefined : parseInt(value)
+                    )
                   }
-                  value={field.value ? field.value.toString() : undefined}
+                  value={field.value ? field.value.toString() : "none"}
+                  disabled={teamsLoading}
                 >
                   <FormControl>
                     <SelectTrigger
@@ -270,8 +264,10 @@ export default function ProjectCreationForm({
                     >
                       <SelectValue
                         placeholder={
-                          t("project.form.selectTeam") ||
-                          "Sélectionner une équipe"
+                          teamsLoading
+                            ? t("common.loading") || "Chargement..."
+                            : t("project.form.selectTeam") ||
+                              "Sélectionner une équipe"
                         }
                       />
                     </SelectTrigger>
@@ -302,9 +298,12 @@ export default function ProjectCreationForm({
                 </FormLabel>
                 <Select
                   onValueChange={(value) =>
-                    field.onChange(value ? parseInt(value) : undefined)
+                    field.onChange(
+                      value === "none" ? undefined : parseInt(value)
+                    )
                   }
-                  value={field.value ? field.value.toString() : undefined}
+                  value={field.value ? field.value.toString() : "none"}
+                  disabled={usersLoading}
                 >
                   <FormControl>
                     <SelectTrigger
@@ -315,8 +314,10 @@ export default function ProjectCreationForm({
                     >
                       <SelectValue
                         placeholder={
-                          t("project.form.selectLead") ||
-                          "Sélectionner un chef de projet"
+                          usersLoading
+                            ? t("common.loading") || "Chargement..."
+                            : t("project.form.selectLead") ||
+                              "Sélectionner un chef de projet"
                         }
                       />
                     </SelectTrigger>
@@ -351,19 +352,17 @@ export default function ProjectCreationForm({
           )}
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || teamsLoading || usersLoading}
             className={cn(
               `theme-${colorTheme}`,
-              "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90"
+              "bg-[var(--primary)] hover:bg-[var(--primary-hover)]"
             )}
           >
             {loading
-              ? isEditing
-                ? t("project.form.updating") || "Mise à jour..."
-                : t("project.form.creating") || "Création..."
+              ? t("project.form.saving") || "Enregistrement..."
               : isEditing
               ? t("project.form.update") || "Mettre à jour"
-              : t("project.form.create") || "Créer le projet"}
+              : t("project.form.create") || "Créer"}
           </Button>
         </div>
       </form>

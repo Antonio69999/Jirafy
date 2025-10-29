@@ -21,7 +21,7 @@ class ProjectService implements ProjectServiceInterface
                 "name" => $data['name'],
                 "description" => $data['description'] ?? null,
                 "lead_user_id" => $data['lead_user_id'] ?? null,
-                "issue_seq" => $data['issue_seq'] ?? null
+                "issue_seq" => $data['issue_seq'] ?? 0
             ]);
 
             $defaultsOrder = ['TODO' => 1, 'IN_PROGRESS' => 2, 'DONE' => 3];
