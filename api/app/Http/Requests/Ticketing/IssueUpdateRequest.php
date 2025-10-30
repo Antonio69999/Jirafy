@@ -21,7 +21,7 @@ class IssueUpdateRequest extends FormRequest
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
             'story_points' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:999.99'],
-            'due_date' => ['sometimes', 'nullable', 'date', 'after_or_equal:today'],
+            'due_date' => ['sometimes', 'nullable', 'date'],
         ];
     }
 

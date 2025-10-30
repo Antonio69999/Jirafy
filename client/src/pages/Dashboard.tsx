@@ -114,7 +114,7 @@ export function Dashboard() {
   useEffect(() => {
     if (issuesData?.data) {
       const transformedTasks: Task[] = issuesData.data.map((issue) => ({
-        id: issue.issue_key,
+        id: issue.key,
         title: issue.title,
         description: issue.description || undefined,
         status: mapStatusToTaskStatus(issue.status?.key || "TODO"),
@@ -268,7 +268,7 @@ export function Dashboard() {
       return (
         <div className="flex items-center justify-center h-64">
           <p className="text-muted-foreground">
-            {t("app.common.loading") || "Chargement des tâches..."}
+            {t("common.loading") || "Chargement des tâches..."}
           </p>
         </div>
       );
@@ -355,14 +355,14 @@ export function Dashboard() {
   if (projectId && projectLoading) {
     return (
       <PageContainer
-        title={t("app.common.loading") || "Chargement..."}
+        title={t("common.loading") || "Chargement..."}
         compact
         className="p-0 sm:p-2"
       >
         <div className="flex items-center justify-center h-[calc(100vh-10rem)]">
           <div className="text-center">
             <p className="text-muted-foreground">
-              {t("app.common.loading") || "Chargement du projet..."}
+              {t("common.loading") || "Chargement du projet..."}
             </p>
           </div>
         </div>

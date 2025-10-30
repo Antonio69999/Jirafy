@@ -125,7 +125,7 @@ export default function HistoryTabs() {
       {item.createdBy && item.type === "task" && (
         <div className="flex items-center gap-1.5 ml-3 shrink-0 opacity-70 group-hover:opacity-100">
           <span className="text-xs text-muted-foreground whitespace-nowrap">
-            {t("app.common.by") || "by"}
+            {t("common.by") || "by"}
           </span>
           <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center overflow-hidden">
             {/* Image de profil ou initiales */}

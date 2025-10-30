@@ -7,7 +7,7 @@ export type Issue = {
   reporter_id: number;
   assignee_id?: number | null;
   number: number;
-  issue_key: string;
+  key: string;
   title: string;
   description?: string | null;
   story_points?: number | null;
@@ -38,7 +38,9 @@ export type IssueCreate = {
   due_date?: string | null;
 };
 
-export type IssueUpdate = Partial<Omit<IssueCreate, 'project_id' | 'reporter_id'>>;
+export type IssueUpdate = Partial<
+  Omit<IssueCreate, "project_id" | "reporter_id">
+>;
 
 export type IssueListParams = {
   project_id?: number;

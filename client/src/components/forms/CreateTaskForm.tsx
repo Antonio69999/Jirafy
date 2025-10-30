@@ -53,7 +53,7 @@ type TaskFormValues = z.infer<typeof taskFormSchema>;
 
 interface CreateTaskFormProps {
   isEditing?: boolean;
-  initialData?: Partial<TaskFormValues & { issueId?: number }>; // Ajouter issueId
+  initialData?: Partial<TaskFormValues & { issueId?: number }>; 
   onClose?: () => void;
   onSuccess?: (issue: Issue) => void;
 }

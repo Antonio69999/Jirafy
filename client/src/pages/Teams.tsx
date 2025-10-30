@@ -147,7 +147,7 @@ export default function Teams() {
       <PageContainer title={t("app.sidebar.teams") || "Teams"}>
         <div className="flex items-center justify-center h-64">
           <p className="text-muted-foreground">
-            {t("app.common.loading") || "Chargement..."}
+            {t("common.loading") || "Chargement..."}
           </p>
         </div>
       </PageContainer>
@@ -232,7 +232,7 @@ export default function Teams() {
                     </TableCell>
                     <TableCell>{team.members_count || 0}</TableCell>
                     <TableCell>{team.projects_count || 0}</TableCell>
-                   <TableCell className="text-right flex gap-2 justify-end">
+                    <TableCell className="text-right flex gap-2 justify-end">
                       {canManageTeamMembers(team) && (
                         <Button
                           onClick={() => handleManageMembers(team)}
@@ -339,13 +339,13 @@ export default function Teams() {
       </PageContainer>
 
       {/* Modales */}
-     {canCreateTeam() && (
+      {canCreateTeam() && (
         <CreateTeamModal
           isOpen={createOpen}
           onClose={setCreateOpen}
-          onSuccess={handleSuccess}
+          onSuccess={handleCreateSuccess}
         />
-
+      )}
       {selectedTeam && (
         <>
           <EditTeamModal

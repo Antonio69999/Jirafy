@@ -11,7 +11,7 @@ import CreateTaskForm from "@/components/forms/CreateTaskForm";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { issueService } from "@/api/services/issueService";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface EditTaskModalProps {
   task: Task;
@@ -30,23 +30,25 @@ export function EditTaskModal({
 }: EditTaskModalProps) {
   const { t } = useTranslation();
   const [issueId, setIssueId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Récupérer l'ID numérique de l'issue depuis sa clé
+  // ✅ Récupérer l'ID numérique depuis la clé de l'issue
   useEffect(() => {
     if (isOpen && task.id) {
-      setLoading(true);
-      issueService
-        .getByKey(task.id)
-        .then((issue) => {
+      const fetchIssueId = async () => {
+        setIsLoading(true);
+        try {
+          const issue = await issueService.getByKey(task.id);
           setIssueId(issue.id);
-        })
-        .catch((error) => {
-          console.error("Erreur lors de la récupération de l'issue:", error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+        } catch (error) {
+          console.error("Error fetching issue ID:", error);
+          setIssueId(null);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchIssueId();
     }
   }, [isOpen, task.id]);
 
@@ -57,7 +59,8 @@ export function EditTaskModal({
     onClose();
   };
 
-  if (loading) {
+  // Vérifier que task et task.id existent
+  if (!task || !task.id) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
@@ -67,7 +70,47 @@ export function EditTaskModal({
           )}
         >
           <div className="flex items-center justify-center h-64">
-            <p className="text-muted-foreground">Chargement...</p>
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <div className="text-center">
+                <p className="font-medium text-destructive mb-1">
+                  {t("common.error") || "Erreur"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Tâche invalide ou introuvable
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {t("common.close") || "Fermer"}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (isLoading || issueId === null) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent
+          className={cn(
+            "sm:max-w-[1300px] w-[90vw] max-h-[90vh] overflow-hidden border p-6",
+            `theme-${colorTheme} border-[var(--hover-border)]`
+          )}
+        >
+          <div className="flex items-center justify-center h-64">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-12 w-12 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+              <p className="text-sm text-muted-foreground">
+                {t("common.loading") || "Chargement..."}
+              </p>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -98,7 +141,7 @@ export function EditTaskModal({
               <CreateTaskForm
                 isEditing={true}
                 initialData={{
-                  issueId: issueId!, // Passer l'ID numérique
+                  issueId: issueId, // ✅ Utiliser l'ID numérique récupéré
                   title: task.title,
                   description: task.description || "",
                   priority: task.priority || "medium",
@@ -125,10 +168,6 @@ export function EditTaskModal({
                   <div>
                     <span className="text-muted-foreground">Clé: </span>
                     <span className="font-mono">{task.id}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">ID: </span>
-                    <span className="font-mono">{issueId || "..."}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Statut: </span>

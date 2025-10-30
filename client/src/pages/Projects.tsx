@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/pagination";
 
 import { PageContainer } from "@/components/pages/PageContainer";
-import SearchBar from "@/components/ui/search-bar";
+import { SearchBar } from "@/components/layout/SearchBar";
 import CreateProjectModal from "@/components/modals/CreateProjectModal";
 import EditProjectModal from "@/components/modals/EditProjectModal";
 import ProjectMembersModal from "@/components/modals/ProjectMembersModal";
@@ -230,7 +230,7 @@ export default function Projects() {
                             variant="outline"
                             size="sm"
                           >
-                            {t("app.common.edit") || "Modifier"}
+                            {t("common.edit") || "Modifier"}
                           </Button>
                         )}
 
@@ -241,7 +241,7 @@ export default function Projects() {
                             variant="destructive"
                             size="sm"
                           >
-                            {t("app.common.delete") || "Supprimer"}
+                            {t("common.delete") || "Supprimer"}
                           </Button>
                         )}
                       </div>
@@ -320,7 +320,7 @@ export default function Projects() {
         />
       )}
 
-      {canEditProject(editingProject || undefined) && (
+      {editingProject && canEditProject(editingProject) && (
         <EditProjectModal
           isOpen={editOpen}
           onClose={setEditOpen}

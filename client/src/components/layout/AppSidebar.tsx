@@ -237,7 +237,7 @@ export function AppSidebar() {
                           <div className="space-y-2">
                             {loading ? (
                               <div className="px-2 py-3 text-center text-muted-foreground text-sm">
-                                {t("app.common.loading") || "Chargement..."}
+                                {t("common.loading") || "Chargement..."}
                               </div>
                             ) : recentProjects.length > 0 ? (
                               recentProjects.map((project) => (

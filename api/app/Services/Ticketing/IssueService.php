@@ -12,10 +12,10 @@ class IssueService implements IssueServiceInterface
     public function createIssue(array $data): Issue
     {
         return DB::transaction(function () use ($data) {
-            $project = Project::findOrFail($data['project_id']);
+            $project = Project::lockForUpdate()->findOrFail($data['project_id']);
 
             $project->increment('issue_seq');
-            $project->refresh(); 
+            $project->refresh();
             $nextNumber = $project->issue_seq;
 
             $issueKey = $this->generateIssueKey($project->id);
@@ -29,7 +29,7 @@ class IssueService implements IssueServiceInterface
                 'reporter_id' => $data['reporter_id'],
                 'assignee_id' => $data['assignee_id'] ?? null,
                 'number' => $nextNumber,
-                'issue_key' => $issueKey,
+                'key' => $issueKey,
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
                 'story_points' => $data['story_points'] ?? null,
@@ -76,7 +76,7 @@ class IssueService implements IssueServiceInterface
                 'labels:id,name,color',
                 'comments.author:id,name,email'
             ])
-            ->where('issue_key', $key)
+            ->where('key', $key)
             ->first();
     }
 
@@ -146,7 +146,7 @@ class IssueService implements IssueServiceInterface
             $query->where(function ($w) use ($term) {
                 $w->where('title', 'ilike', "%{$term}%")
                     ->orWhere('description', 'ilike', "%{$term}%")
-                    ->orWhere('issue_key', 'ilike', "%{$term}%");
+                    ->orWhere('key', 'ilike', "%{$term}%");
             });
         }
 
@@ -200,7 +200,7 @@ class IssueService implements IssueServiceInterface
             $query->where(function ($w) use ($term) {
                 $w->where('title', 'ilike', "%{$term}%")
                     ->orWhere('description', 'ilike', "%{$term}%")
-                    ->orWhere('issue_key', 'ilike', "%{$term}%");
+                    ->orWhere('key', 'ilike', "%{$term}%");
             });
         }
 

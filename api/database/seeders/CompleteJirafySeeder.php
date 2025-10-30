@@ -9,9 +9,17 @@ use App\Models\Teams\Team;
 use App\Models\Ticketing\{Project, Issue, Label, Status};
 use App\Models\Organizations\Organization;
 use Illuminate\Support\Facades\DB;
+use App\Services\Ticketing\IssueService;
 
 class CompleteJirafySeeder extends Seeder
 {
+    protected IssueService $issueService;
+
+    public function __construct(IssueService $issueService)
+    {
+        $this->issueService = $issueService;
+    }
+
     public function run(): void
     {
         $this->command->info('🚀 Starting Complete Jirafy Seeding...');
@@ -449,7 +457,8 @@ class CompleteJirafySeeder extends Seeder
         $priorityLow = DB::table('priorities')->where('key', 'LOW')->first();
 
         // ==================== ISSUES PROJET WEB ====================
-        $issue1 = Issue::create([
+        // ✅ Utiliser IssueService au lieu de Issue::create()
+        $issue1 = $this->issueService->createIssue([
             'project_id' => $webProject->id,
             'type_id' => $typeTask->id,
             'status_id' => $statusInProgress->id,
@@ -459,10 +468,10 @@ class CompleteJirafySeeder extends Seeder
             'title' => 'Créer la page d\'accueil responsive',
             'description' => 'Développer une page d\'accueil moderne et responsive avec animations',
             'story_points' => 8,
-            'due_date' => now()->addDays(7),
+            'due_date' => now()->addDays(7)->format('Y-m-d'),
         ]);
 
-        $issue2 = Issue::create([
+        $issue2 = $this->issueService->createIssue([
             'project_id' => $webProject->id,
             'type_id' => $typeBug->id,
             'status_id' => $statusTodo->id,
@@ -471,10 +480,10 @@ class CompleteJirafySeeder extends Seeder
             'assignee_id' => $dev1->id,
             'title' => 'Corriger le bug du menu mobile',
             'description' => 'Le menu hamburger ne s\'ouvre pas correctement sur iOS',
-            'due_date' => now()->addDays(2),
+            'due_date' => now()->addDays(2)->format('Y-m-d'),
         ]);
 
-        $issue3 = Issue::create([
+        $issue3 = $this->issueService->createIssue([
             'project_id' => $webProject->id,
             'type_id' => $typeStory->id,
             'status_id' => $statusDone->id,
@@ -487,7 +496,7 @@ class CompleteJirafySeeder extends Seeder
         ]);
 
         // ==================== ISSUES PROJET MOBILE ====================
-        Issue::create([
+        $this->issueService->createIssue([
             'project_id' => $mobileProject->id,
             'type_id' => $typeTask->id,
             'status_id' => $statusTodo->id,
@@ -499,7 +508,7 @@ class CompleteJirafySeeder extends Seeder
             'story_points' => 13,
         ]);
 
-        Issue::create([
+        $this->issueService->createIssue([
             'project_id' => $mobileProject->id,
             'type_id' => $typeBug->id,
             'status_id' => $statusInProgress->id,
@@ -508,11 +517,11 @@ class CompleteJirafySeeder extends Seeder
             'assignee_id' => $dev2->id,
             'title' => 'Crash au démarrage sur Android 12',
             'description' => 'L\'application plante au démarrage sur les appareils Android 12',
-            'due_date' => now()->addDay(),
+            'due_date' => now()->addDay()->format('Y-m-d'),
         ]);
 
         // ==================== ISSUES DESIGN SYSTEM ====================
-        Issue::create([
+        $this->issueService->createIssue([
             'project_id' => $dsProject->id,
             'type_id' => $typeTask->id,
             'status_id' => $statusTodo->id,
