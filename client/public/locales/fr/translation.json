@@ -1,464 +1,468 @@
 {
-    "common": {
-        "createdBy": "Créé par",
-        "by": "par",
-        "edit": "Modifier",
-        "delete": "Supprimer",
-        "loading": "Chargement...",
-        "error": "Erreur",
-        "close": "Fermer",
-        "save": "Enregistrer",
-        "cancel": "Annuler"
+  "common": {
+    "createdBy": "Créé par",
+    "by": "par",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
+  },
+  "app": {
+    "title": "Jirafy",
+    "sidebar": {
+      "home": "Pour vous",
+      "dashboard": "Tableau de bord",
+      "calendar": "Calendrier",
+      "statistics": "Statistiques",
+      "settings": "Paramètres",
+      "favourites": "Éléments favoris",
+      "teams": "Équipes",
+      "projects": "Projets",
+      "workflows": "Flux de travail",
+      "recent": "Récents",
+      "noRecentProjects": "Aucun projet récent",
+      "myTickets": "Mes tickets"
     },
-    "app": {
-        "title": "Jirafy",
-        "sidebar": {
-            "home": "Pour vous",
-            "dashboard": "Tableau de bord",
-            "calendar": "Calendrier",
-            "statistics": "Statistiques",
-            "settings": "Paramètres",
-            "favourites": "Éléments favoris",
-            "teams": "Équipes",
-            "projects": "Projets",
-            "workflows": "Flux de travail",
-            "recent": "Récents",
-            "noRecentProjects": "Aucun projet récent",
-            "myTickets": "Mes tickets"
-        },
-        "search": {
-            "placeholder": "Rechercher..."
-        },
-        "header": {
-            "addTask": "Ajouter une tâche",
-            "changeTheme": "Changer de thème",
-            "toggleTheme": "Changer le mode",
-            "create": "Créer",
-            "userMenu": {
-                "label": "Menu utilisateur",
-                "profile": "Profil",
-                "settings": "Paramètres",
-                "logout": "Déconnexion"
-            }
-        },
-        "quickStart": {
-            "title": "Démarrage rapide",
-            "description": "Commencez à utiliser notre application en quelques étapes seulement.",
-            "openTrigger": "Démarrage rapide"
-        }
+    "search": {
+      "placeholder": "Rechercher..."
+    },
+    "header": {
+      "addTask": "Ajouter une tâche",
+      "changeTheme": "Changer de thème",
+      "toggleTheme": "Changer le mode",
+      "create": "Créer",
+      "userMenu": {
+        "label": "Menu utilisateur",
+        "profile": "Profil",
+        "settings": "Paramètres",
+        "logout": "Déconnexion"
+      }
+    },
+    "quickStart": {
+      "title": "Démarrage rapide",
+      "description": "Commencez à utiliser notre application en quelques étapes seulement.",
+      "openTrigger": "Démarrage rapide"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "description": "Personnalisez votre expérience Jirafy",
+    "general": "Paramètres généraux",
+    "appearance": {
+      "title": "Apparence"
+    },
+    "themeMode": {
+      "title": "Thème",
+      "description": "Choisissez votre mode d'affichage préféré",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système"
+    },
+    "colorTheme": {
+      "title": "Thème de couleur",
+      "description": "Choisissez votre thème de couleur préféré",
+      "blue": "Bleu",
+      "green": "Vert",
+      "purple": "Violet",
+      "red": "Rouge",
+      "pink": "Rose",
+      "orange": "Orange",
+      "yellow": "Jaune"
+    },
+    "localization": {
+      "title": "Localisation",
+      "description": "Choisissez votre langue préférée",
+      "language": {
+        "en": "Anglais",
+        "fr": "Français"
+      }
+    },
+    "language": {
+      "title": "Langue",
+      "description": "Choisissez votre langue préférée"
+    },
+    "account": {
+      "title": "Compte",
+      "password": {
+        "current": "Mot de passe actuel",
+        "new": "Nouveau mot de passe",
+        "confirm": "Confirmer le nouveau mot de passe",
+        "change": "Changer le mot de passe",
+        "success": "Mot de passe mis à jour",
+        "description": "Votre mot de passe a été mis à jour avec succès.",
+        "minimumLength": "Le mot de passe doit comporter au moins 8 caractères",
+        "required": "Mot de passe actuel requis",
+        "mismatch": "Les mots de passe ne correspondent pas",
+        "requirements": "Le mot de passe doit inclure des majuscules, des minuscules et des chiffres"
+      },
+      "avatar": {
+        "title": "Image de profil",
+        "description": "Téléchargez une image de profil pour personnaliser votre compte.",
+        "dropzone": "Déposez votre image ici, ou",
+        "browse": "parcourir",
+        "save": "Enregistrer les modifications",
+        "cancel": "Annuler",
+        "uploading": "Téléchargement...",
+        "success": "Avatar mis à jour",
+        "success_description": "Votre image de profil a été mise à jour avec succès."
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Gérez vos préférences de notification",
+      "email": {
+        "title": "Notifications par e-mail",
+        "description": "Recevez des notifications par e-mail pour les mises à jour importantes"
+      },
+      "push": {
+        "title": "Notifications push",
+        "description": "Recevez des notifications push sur votre appareil"
+      },
+      "sms": {
+        "title": "Notifications par SMS",
+        "description": "Recevez des notifications par SMS sur votre téléphone"
+      }
+    }
+  },
+  "dashboard": {
+    "description": "Gérez et suivez vos tâches de projet",
+    "tabInDevelopment": "Cet onglet est en cours de développement",
+    "addTask": {
+      "title": "Ajouter une tâche",
+      "description": "Créez une nouvelle tâche pour gérer votre projet",
+      "name": "Nom de la tâche",
+      "descriptionField": "Description de la tâche",
+      "descriptionPlaceholder": "Décrivez la tâche ici",
+      "dueDate": "Date d'échéance",
+      "project": "Projet",
+      "labels": "Étiquettes",
+      "addLabels": "Ajouter une étiquette",
+      "pickDate": "Choisir une date",
+      "addMembers": "Ajouter des membres",
+      "addAssignees": "Ajouter un responsable",
+      "assignee": "Responsable",
+      "members": "Membres",
+      "submit": "Valider",
+      "selectProjectFirst": "Veuillez choisir un projet",
+      "selectPriority": "Veuillez choisir une priorité",
+      "noLabels": "Aucun label",
+      "priorities": {
+        "title": "Priorité",
+        "low": "Basse",
+        "medium": "Moyenne",
+        "high": "Haute",
+        "urgent": "Urgent"
+      },
+      "create": "Créer une tâche",
+      "cancel": "Annuler",
+      "titlePlaceholder": "Que faut il faire ?",
+      "selectProject": "Sélectionner un projet",
+      "addAssignee": "Ajouter un responsable"
+    },
+    "editTask": {
+      "title": "Modifier la tâche",
+      "description": "Modifier les détails de la tâche",
+      "cancel": "Annuler",
+      "submit": "Valider",
+      "delete": "Supprimer la tâche",
+      "update": "Mettre à jour la tâche",
+      "info": {
+        "title": "Informations sur la tâche"
+      },
+      "guidelines": {
+        "title": "Bonnes pratiques",
+        "item1": "Utilise un titre clair et orienté vers l'action",
+        "item2": "Inclue des détails pertinents dans la description",
+        "item3": "Assigne des étiquettes appropriées pour un filtrage facile",
+        "item4": "Fixe des dates d'échéance réalistes"
+      }
+    },
+    "kanban": {
+      "todo": "À faire",
+      "inProgress": "En cours",
+      "done": "Terminé"
+    },
+    "createTask": {
+      "title": "Créer une tâche",
+      "description": "Créer une nouvelle tâche",
+      "cancel": "Annuler",
+      "submit": "Créer",
+      "guidelines": {
+        "title": "Directives",
+        "description": "Veuillez suivre ces directives lors de la création d'une tâche :",
+        "points": [
+          "Soyez clair et concis dans la description de votre tâche.",
+          "Assignez la tâche au membre de l'équipe approprié.",
+          "Fixez une date d'échéance réaliste pour la tâche.",
+          "Utilisez des étiquettes pour catégoriser la tâche."
+        ],
+        "item1": "Utilisez un titre clair et orienté vers l'action",
+        "item2": "Incluez des détails pertinents dans la description",
+        "item3": "Assignez des étiquettes appropriées pour un filtrage facile",
+        "item4": "Fixez des dates d'échéance réalistes"
+      },
+      "templates": {
+        "title": "Modèle de tâche",
+        "description": "Utilisez ce modèle pour créer une nouvelle tâche",
+        "name": "Nom de la tâche",
+        "descriptionField": "Description de la tâche",
+        "dueDate": "Date d'échéance",
+        "project": "Projet",
+        "labels": "Étiquettes",
+        "comingSoon": "Bientôt disponible"
+      }
+    },
+    "createProject": {
+      "title": "Créer un projet",
+      "description": "Renseigne les informations pour créer un nouveau projet.",
+      "guidelines": {
+        "title": "Bonnes pratiques",
+        "item1": "Utilise une clé courte et parlante (ex: OPS, WEB, APP).",
+        "item2": "Donne un nom précis et utile à la recherche.",
+        "item3": "Ajoute une description claire (contexte, objectifs).",
+        "item4": "Associe la team et le lead si connu pour préparer les permissions."
+      },
+      "templates": {
+        "title": "Infos",
+        "body": "Tu pourras définir le workflow du projet après la création (statuts, transitions)."
+      }
+    },
+    "tabs": {
+      "summary": "Résumé",
+      "board": "Tableau",
+      "list": "Liste",
+      "calendar": "Calendrier",
+      "timeline": "Chronologie",
+      "reports": "Rapports",
+      "settings": "Paramètres"
+    },
+    "list": {
+      "title": "Titre",
+      "status": "Statut",
+      "priority": "Priorité",
+      "labels": "Étiquettes",
+      "assignee": "Assigné à",
+      "dueDate": "Date d'échéance"
+    },
+    "summary": {
+      "title": "Résumé du projet",
+      "description": "Aperçu rapide des statistiques et de l'état du projet",
+      "totalTasks": "Total des tâches",
+      "completedTasks": "Tâches terminées",
+      "pendingTasks": "Tâches en attente",
+      "overdueTasks": "Tâches en retard",
+      "completed": "Terminé",
+      "progress": "Progrès"
+    },
+    "timeline": {
+      "title": "Chronologie du projet",
+      "description": "Visualisez les tâches et les jalons du projet dans une chronologie",
+      "noTasks": "Aucune tâche à afficher dans la chronologie"
+    },
+    "calendar": {
+      "title": "Calendrier du projet",
+      "description": "Affichez les tâches et les événements du projet dans un calendrier",
+      "noTasks": "Aucune tâche à afficher dans le calendrier"
     },
     "settings": {
-        "title": "Paramètres",
-        "description": "Personnalisez votre expérience Jirafy",
-        "general": "Paramètres généraux",
-        "appearance": {
-            "title": "Apparence"
-        },
-        "themeMode": {
-            "title": "Thème",
-            "description": "Choisissez votre mode d'affichage préféré",
-            "light": "Clair",
-            "dark": "Sombre",
-            "system": "Système"
-        },
-        "colorTheme": {
-            "title": "Thème de couleur",
-            "description": "Choisissez votre thème de couleur préféré",
-            "blue": "Bleu",
-            "green": "Vert",
-            "purple": "Violet",
-            "red": "Rouge",
-            "pink": "Rose",
-            "orange": "Orange",
-            "yellow": "Jaune"
-        },
-        "localization": {
-            "title": "Localisation",
-            "description": "Choisissez votre langue préférée",
-            "language": {
-                "en": "Anglais",
-                "fr": "Français"
-            }
-        },
-        "language": {
-            "title": "Langue",
-            "description": "Choisissez votre langue préférée"
-        },
-        "account": {
-            "title": "Compte",
-            "password": {
-                "current": "Mot de passe actuel",
-                "new": "Nouveau mot de passe",
-                "confirm": "Confirmer le nouveau mot de passe",
-                "change": "Changer le mot de passe",
-                "success": "Mot de passe mis à jour",
-                "description": "Votre mot de passe a été mis à jour avec succès.",
-                "minimumLength": "Le mot de passe doit comporter au moins 8 caractères",
-                "required": "Mot de passe actuel requis",
-                "mismatch": "Les mots de passe ne correspondent pas",
-                "requirements": "Le mot de passe doit inclure des majuscules, des minuscules et des chiffres"
-            },
-            "avatar": {
-                "title": "Image de profil",
-                "description": "Téléchargez une image de profil pour personnaliser votre compte.",
-                "dropzone": "Déposez votre image ici, ou",
-                "browse": "parcourir",
-                "save": "Enregistrer les modifications",
-                "cancel": "Annuler",
-                "uploading": "Téléchargement...",
-                "success": "Avatar mis à jour",
-                "success_description": "Votre image de profil a été mise à jour avec succès."
-            }
-        },
-        "notifications": {
-            "title": "Notifications",
-            "description": "Gérez vos préférences de notification",
-            "email": {
-                "title": "Notifications par e-mail",
-                "description": "Recevez des notifications par e-mail pour les mises à jour importantes"
-            },
-            "push": {
-                "title": "Notifications push",
-                "description": "Recevez des notifications push sur votre appareil"
-            },
-            "sms": {
-                "title": "Notifications par SMS",
-                "description": "Recevez des notifications par SMS sur votre téléphone"
-            }
-        }
+      "title": "Paramètres du projet",
+      "name": "Nom du projet",
+      "color": "Couleur du projet",
+      "description": "Gérez les paramètres et configurations de votre projet"
     },
-    "dashboard": {
-        "description": "Gérez et suivez vos tâches de projet",
-        "tabInDevelopment": "Cet onglet est en cours de développement",
-        "addTask": {
-            "title": "Ajouter une tâche",
-            "description": "Créez une nouvelle tâche pour gérer votre projet",
-            "name": "Nom de la tâche",
-            "descriptionField": "Description de la tâche",
-            "descriptionPlaceholder": "Décrivez la tâche ici",
-            "dueDate": "Date d'échéance",
-            "project": "Projet",
-            "labels": "Étiquettes",
-            "addLabels": "Ajouter une étiquette",
-            "pickDate": "Choisir une date",
-            "addMembers": "Ajouter des membres",
-            "addAssignees": "Ajouter un responsable",
-            "assignee": "Responsable",
-            "members": "Membres",
-            "submit": "Valider",
-            "selectProjectFirst": "Veuillez choisir un projet",
-            "selectPriority": "Veuillez choisir une priorité",
-            "noLabels": "Aucun label",
-            "priorities": {
-                "title": "Priorité",
-                "low": "Basse",
-                "medium": "Moyenne",
-                "high": "Haute",
-                "urgent": "Urgent"
-            },
-            "create": "Créer une tâche",
-            "cancel": "Annuler",
-            "titlePlaceholder": "Que faut il faire ?",
-            "selectProject": "Sélectionner un projet",
-            "addAssignee": "Ajouter un responsable"
-        },
-        "editTask": {
-            "title": "Modifier la tâche",
-            "description": "Modifier les détails de la tâche",
-            "cancel": "Annuler",
-            "submit": "Valider",
-            "delete": "Supprimer la tâche",
-            "update": "Mettre à jour la tâche",
-            "info": {
-                "title": "Informations sur la tâche"
-            },
-            "guidelines": {
-                "title": "Bonnes pratiques",
-                "item1": "Utilise un titre clair et orienté vers l'action",
-                "item2": "Inclue des détails pertinents dans la description",
-                "item3": "Assigne des étiquettes appropriées pour un filtrage facile",
-                "item4": "Fixe des dates d'échéance réalistes"
-            }
-        },
-        "kanban": {
-            "todo": "À faire",
-            "inProgress": "En cours",
-            "done": "Terminé"
-        },
-        "createTask": {
-            "title": "Créer une tâche",
-            "description": "Créer une nouvelle tâche",
-            "cancel": "Annuler",
-            "submit": "Créer",
-            "guidelines": {
-                "title": "Directives",
-                "description": "Veuillez suivre ces directives lors de la création d'une tâche :",
-                "points": [
-                    "Soyez clair et concis dans la description de votre tâche.",
-                    "Assignez la tâche au membre de l'équipe approprié.",
-                    "Fixez une date d'échéance réaliste pour la tâche.",
-                    "Utilisez des étiquettes pour catégoriser la tâche."
-                ],
-                "item1": "Utilisez un titre clair et orienté vers l'action",
-                "item2": "Incluez des détails pertinents dans la description",
-                "item3": "Assignez des étiquettes appropriées pour un filtrage facile",
-                "item4": "Fixez des dates d'échéance réalistes"
-            },
-            "templates": {
-                "title": "Modèle de tâche",
-                "description": "Utilisez ce modèle pour créer une nouvelle tâche",
-                "name": "Nom de la tâche",
-                "descriptionField": "Description de la tâche",
-                "dueDate": "Date d'échéance",
-                "project": "Projet",
-                "labels": "Étiquettes",
-                "comingSoon": "Bientôt disponible"
-            }
-        },
-        "createProject": {
-            "title": "Créer un projet",
-            "description": "Renseigne les informations pour créer un nouveau projet.",
-            "guidelines": {
-                "title": "Bonnes pratiques",
-                "item1": "Utilise une clé courte et parlante (ex: OPS, WEB, APP).",
-                "item2": "Donne un nom précis et utile à la recherche.",
-                "item3": "Ajoute une description claire (contexte, objectifs).",
-                "item4": "Associe la team et le lead si connu pour préparer les permissions."
-            },
-            "templates": {
-                "title": "Infos",
-                "body": "Tu pourras définir le workflow du projet après la création (statuts, transitions)."
-            }
-        },
-        "tabs": {
-            "summary": "Résumé",
-            "board": "Tableau",
-            "list": "Liste",
-            "calendar": "Calendrier",
-            "timeline": "Chronologie",
-            "reports": "Rapports",
-            "settings": "Paramètres"
-        },
-        "list": {
-            "title": "Titre",
-            "status": "Statut",
-            "priority": "Priorité",
-            "labels": "Étiquettes",
-            "assignee": "Assigné à",
-            "dueDate": "Date d'échéance"
-        },
-        "summary": {
-            "title": "Résumé du projet",
-            "description": "Aperçu rapide des statistiques et de l'état du projet",
-            "totalTasks": "Total des tâches",
-            "completedTasks": "Tâches terminées",
-            "pendingTasks": "Tâches en attente",
-            "overdueTasks": "Tâches en retard",
-            "completed": "Terminé",
-            "progress": "Progrès"
-        },
-        "timeline": {
-            "title": "Chronologie du projet",
-            "description": "Visualisez les tâches et les jalons du projet dans une chronologie",
-            "noTasks": "Aucune tâche à afficher dans la chronologie"
-        },
-        "calendar": {
-            "title": "Calendrier du projet",
-            "description": "Affichez les tâches et les événements du projet dans un calendrier",
-            "noTasks": "Aucune tâche à afficher dans le calendrier"
-        },
-        "settings": {
-            "title": "Paramètres du projet",
-            "name": "Nom du projet",
-            "color": "Couleur du projet",
-            "description": "Gérez les paramètres et configurations de votre projet"
-        },
-        "reports": {
-            "title": "Rapports du projet",
-            "description": "Générez des rapports et des analyses pour votre projet",
-            "noData": "Aucune donnée de rapport disponible"
-        },
-        "noProject": "Aucun projet sélectionné",
-        "selectProject": "Sélectionnez un projet pour afficher les tâches",
-        "selectProjectDescription": "Choisissez un projet dans la barre latérale pour commencer à gérer les tâches."
+    "reports": {
+      "title": "Rapports du projet",
+      "description": "Générez des rapports et des analyses pour votre projet",
+      "noData": "Aucune donnée de rapport disponible"
     },
-    "home": {
-        "description": "",
-        "recentProjects": {
-            "title": "Projets récents",
-            "viewAll": "Voir tous les projets",
-            "noProjects": "Aucun projet récent trouvé",
-            "createProject": "Créer un nouveau projet",
-            "open": "Ouvrir le projet"
-        },
-        "history": {
-            "workedOn": "Travaillé sur",
-            "viewed": "Vu",
-            "starred": "Favoris",
-            "noStarredItems": "Aucun élément favori trouvé",
-            "noRecentItems": "Aucun élément récent trouvé",
-            "noViewedItems": "Aucun élément vu trouvé",
-            "noWorkedItems": "Aucun élément travaillé trouvé"
-        }
+    "noProject": "Aucun projet sélectionné",
+    "selectProject": "Sélectionnez un projet pour afficher les tâches",
+    "selectProjectDescription": "Choisissez un projet dans la barre latérale pour commencer à gérer les tâches."
+  },
+  "home": {
+    "description": "",
+    "recentProjects": {
+      "title": "Projets récents",
+      "viewAll": "Voir tous les projets",
+      "noProjects": "Aucun projet récent trouvé",
+      "createProject": "Créer un nouveau projet",
+      "open": "Ouvrir le projet"
     },
-    "project": {
-        "title": "Projet",
-        "description": "Gérez les paramètres et configurations de votre projet",
-        "settings": "Paramètres",
-        "table": {
-            "name": "Nom",
-            "description": "Description",
-            "type": "Type",
-            "actions": "Plus d'actions",
-            "lead": "Responsable",
-            "caption": "Liste des projets",
-            "empty": "Aucun projet trouvé"
-        },
-        "actions": {
-            "archive": "Archiver",
-            "delete": "Supprimer",
-            "create": "Créer un projet",
-            "members": "Membres"
-        },
-        "members": {
-            "title": "Ajouter un membre",
-            "add": "Ajouter",
-            "current": "Membres"
-        },
-        "search": {
-            "placeholder": "Rechercher un projet..."
-        },
-        "edit": {
-            "title": "Modifier le projet",
-            "description": "Modifiez les informations du projet.",
-            "info": {
-                "title": "Informations",
-                "item1": "La clé du projet ne peut pas être modifiée.",
-                "item2": "Le changement de team peut affecter les permissions.",
-                "item3": "Le lead peut être modifié à tout moment.",
-                "item4": "Les modifications sont appliquées immédiatement."
-            },
-            "members": {
-                "title": "Membres",
-                "body": "Pour gérer les membres du projet, utilisez le bouton 'Membres' dans la liste des projets."
-            },
-            "current": {
-                "title": "Projet actuel"
-            }
-        },
-        "form": {
-            "key": "Clé du projet",
-            "name": "Nom du projet",
-            "namePlaceholder": "Entrez le nom du projet",
-            "description": "Description",
-            "descriptionPlaceholder": "Décrivez votre projet...",
-            "team": "Équipe",
-            "selectTeam": "Sélectionner une équipe",
-            "noTeam": "Aucune équipe",
-            "lead": "Chef de projet",
-            "selectLead": "Sélectionner un chef de projet",
-            "noLead": "Aucun chef de projet",
-            "cancel": "Annuler",
-            "updating": "Mise à jour...",
-            "creating": "Création...",
-            "update": "Mettre à jour",
-            "create": "Créer le projet",
-            "updateSuccess": "Projet mis à jour avec succès",
-            "createSuccess": "Projet créé avec succès",
-            "saving": "Sauvegarde...",
-            "save": "Sauvegarder"
-        }
+    "history": {
+      "workedOn": "Travaillé sur",
+      "viewed": "Vu",
+      "starred": "Favoris",
+      "noStarredItems": "Aucun élément favori trouvé",
+      "noRecentItems": "Aucun élément récent trouvé",
+      "noViewedItems": "Aucun élément vu trouvé",
+      "noWorkedItems": "Aucun élément travaillé trouvé"
+    }
+  },
+  "project": {
+    "title": "Projet",
+    "description": "Gérez les paramètres et configurations de votre projet",
+    "settings": "Paramètres",
+    "table": {
+      "name": "Nom",
+      "description": "Description",
+      "type": "Type",
+      "actions": "Plus d'actions",
+      "lead": "Responsable",
+      "caption": "Liste des projets",
+      "empty": "Aucun projet trouvé"
     },
-    "teams": {
-        "title": "Équipes",
-        "search": "Rechercher une équipe...",
-        "description": "Gérez vos équipes et leurs membres",
-        "actions": {
-            "addTeam": "Ajouter une équipe",
-            "editTeam": "Modifier l'équipe",
-            "deleteTeam": "Supprimer l'équipe",
-            "addMember": "Ajouter un membre",
-            "removeMember": "Supprimer le membre",
-            "create": "Créer une équipe",
-            "members": "Membres"
-        },
-        "table": {
-            "name": "Nom",
-            "members": "Membres",
-            "projects": "Projets",
-            "actions": "Actions",
-            "caption": "Liste des équipes",
-            "empty": "Aucune équipe trouvée",
-            "slug": "Slug"
-        }
+    "actions": {
+      "archive": "Archiver",
+      "delete": "Supprimer",
+      "create": "Créer un projet",
+      "members": "Membres"
     },
-    "task": {
-        "actions": {
-            "edit": "Modifier la tâche",
-            "create": "Créer une tâche",
-            "title": "Titre",
-            "description": "Description",
-            "delete": "Supprimer",
-            "deleting": "Suppresion"
-        }
+    "members": {
+      "title": "Ajouter un membre",
+      "add": "Ajouter",
+      "current": "Membres"
     },
-    "team": {
-        "actions": {
-            "create": "Créer une équipe",
-            "createSuccess": "Équipe créée avec succès",
-            "updateSuccess": "Équipe mise à jour avec succès",
-            "deleteSuccess": "Équipe supprimée avec succès",
-            "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette équipe ?"
-        },
-        "edit": {
-            "title": "Modifier l'équipe",
-            "description": "Modifiez les informations de l'équipe.",
-            "info": {
-                "title": "Informations"
-            }
-        },
-        "create": {
-            "title": "Créer une équipe",
-            "description": "Renseignez les informations pour créer une nouvelle équipe.",
-            "guidelines": {
-                "title": "Bonnes pratiques",
-                "item1": "Utilisez un slug court et mémorable (ex: dev, design, ops)",
-                "item2": "Donnez un nom clair et descriptif",
-                "item3": "Ajoutez une description pour expliquer le rôle de l'équipe",
-                "item4": "Désignez un owner pour gérer l'équipe"
-            },
-            "info": {
-                "title": "À propos des équipes",
-                "description": "Les équipes permettent d'organiser les projets et de gérer les permissions. Vous pourrez ajouter des membres après la création."
-            }
-        },
-        "form": {
-            "slug": "Slug",
-            "name": "Nom",
-            "description": "Description",
-            "cancel": "Annuler",
-            "create": "Créer",
-            "update": "Mettre à jour",
-            "saving": "Enregistrement...",
-            "createSuccess": "Équipe créée avec succès",
-            "updateSuccess": "Équipe mise à jour avec succès"
-        },
-        "members": {
-            "title": "Gérer les membres",
-            "add": "Ajouter un membre",
-            "current": "Membres actuels"
-        }
+    "search": {
+      "placeholder": "Rechercher un projet..."
     },
-    "customer": {
-        "myTickets": {
-            "title": "Mes tickets",
-            "description": "Consultez et gérez vos demandes de support.",
-            "create": "Créer un ticket",
-            "empty": "Aucun ticket pour le moment",
-            "createFirst": "Créer votre premier ticket",
-            "comments": "commentaires",
-            "createdAt": "Créé le",
-            "assignedTo": "Assigné à"
-        }
+    "edit": {
+      "title": "Modifier le projet",
+      "description": "Modifiez les informations du projet.",
+      "info": {
+        "title": "Informations",
+        "item1": "La clé du projet ne peut pas être modifiée.",
+        "item2": "Le changement de team peut affecter les permissions.",
+        "item3": "Le lead peut être modifié à tout moment.",
+        "item4": "Les modifications sont appliquées immédiatement."
+      },
+      "members": {
+        "title": "Membres",
+        "body": "Pour gérer les membres du projet, utilisez le bouton 'Membres' dans la liste des projets."
+      },
+      "current": {
+        "title": "Projet actuel"
+      }
+    },
+    "form": {
+      "key": "Clé du projet",
+      "name": "Nom du projet",
+      "namePlaceholder": "Entrez le nom du projet",
+      "description": "Description",
+      "descriptionPlaceholder": "Décrivez votre projet...",
+      "team": "Équipe",
+      "selectTeam": "Sélectionner une équipe",
+      "noTeam": "Aucune équipe",
+      "lead": "Chef de projet",
+      "selectLead": "Sélectionner un chef de projet",
+      "noLead": "Aucun chef de projet",
+      "cancel": "Annuler",
+      "updating": "Mise à jour...",
+      "creating": "Création...",
+      "update": "Mettre à jour",
+      "create": "Créer le projet",
+      "updateSuccess": "Projet mis à jour avec succès",
+      "createSuccess": "Projet créé avec succès",
+      "saving": "Sauvegarde...",
+      "save": "Sauvegarder"
+    }
+  },
+  "teams": {
+    "title": "Équipes",
+    "search": "Rechercher une équipe...",
+    "description": "Gérez vos équipes et leurs membres",
+    "actions": {
+      "addTeam": "Ajouter une équipe",
+      "editTeam": "Modifier l'équipe",
+      "deleteTeam": "Supprimer l'équipe",
+      "addMember": "Ajouter un membre",
+      "removeMember": "Supprimer le membre",
+      "create": "Créer une équipe",
+      "members": "Membres"
+    },
+    "table": {
+      "name": "Nom",
+      "members": "Membres",
+      "projects": "Projets",
+      "actions": "Actions",
+      "caption": "Liste des équipes",
+      "empty": "Aucune équipe trouvée",
+      "slug": "Slug"
+    }
+  },
+  "task": {
+    "actions": {
+      "edit": "Modifier la tâche",
+      "create": "Créer une tâche",
+      "title": "Titre",
+      "description": "Description",
+      "delete": "Supprimer",
+      "deleting": "Suppresion"
+    }
+  },
+  "team": {
+    "actions": {
+      "create": "Créer une équipe",
+      "createSuccess": "Équipe créée avec succès",
+      "updateSuccess": "Équipe mise à jour avec succès",
+      "deleteSuccess": "Équipe supprimée avec succès",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette équipe ?"
+    },
+    "edit": {
+      "title": "Modifier l'équipe",
+      "description": "Modifiez les informations de l'équipe.",
+      "info": {
+        "title": "Informations"
+      }
+    },
+    "create": {
+      "title": "Créer une équipe",
+      "description": "Renseignez les informations pour créer une nouvelle équipe.",
+      "guidelines": {
+        "title": "Bonnes pratiques",
+        "item1": "Utilisez un slug court et mémorable (ex: dev, design, ops)",
+        "item2": "Donnez un nom clair et descriptif",
+        "item3": "Ajoutez une description pour expliquer le rôle de l'équipe",
+        "item4": "Désignez un owner pour gérer l'équipe"
+      },
+      "info": {
+        "title": "À propos des équipes",
+        "description": "Les équipes permettent d'organiser les projets et de gérer les permissions. Vous pourrez ajouter des membres après la création."
+      }
+    },
+    "form": {
+      "slug": "Slug",
+      "name": "Nom",
+      "description": "Description",
+      "cancel": "Annuler",
+      "create": "Créer",
+      "update": "Mettre à jour",
+      "saving": "Enregistrement...",
+      "createSuccess": "Équipe créée avec succès",
+      "updateSuccess": "Équipe mise à jour avec succès"
+    },
+    "members": {
+      "title": "Gérer les membres",
+      "add": "Ajouter un membre",
+      "current": "Membres actuels"
+    }
+  },
+  "customer": {
+    "myTickets": {
+      "title": "Mes tickets",
+      "description": "Consultez et gérez vos demandes de support.",
+      "create": "Créer un ticket",
+      "empty": "Aucun ticket pour le moment",
+      "createFirst": "Créer votre premier ticket",
+      "comments": "commentaires",
+      "createdAt": "Créé le",
+      "assignedTo": "Assigné à"
+    }
+
+  },
+    "workflow": {
+      "description": "oui"
     }
 }

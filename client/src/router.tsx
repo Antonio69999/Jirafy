@@ -10,6 +10,7 @@ import Teams from "@/pages/Teams";
 import Register from "@/pages/Register";
 import Login from "@/pages/Login";
 import MyTickets from "@/pages/MyTickets";
+import Workflow from "@/pages/Workflow";
 
 const router = createBrowserRouter([
   {
@@ -68,6 +69,16 @@ const router = createBrowserRouter([
       <ProtectedRoute>
         <Layout>
           <MyTickets />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/workflow",
+    element: (
+      <ProtectedRoute>
+        <Layout>
+          <Workflow />
         </Layout>
       </ProtectedRoute>
     ),

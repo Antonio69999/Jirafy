@@ -21,6 +21,8 @@ use App\Interfaces\Ticketing\LabelServiceInterface;
 use App\Services\Permission\PermissionService;
 use App\Services\Teams\TeamService;
 use App\Services\Ticketing\LabelService;
+use App\Interfaces\Workflow\WorkflowServiceInterface;
+use App\Services\Workflow\WorkflowService;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -39,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TeamServiceInterface::class, TeamService::class);
         $this->app->bind(PermissionServiceInterface::class, PermissionService::class);
         $this->app->bind(LabelServiceInterface::class, LabelService::class);
+        $this->app->bind(WorkflowServiceInterface::class, WorkflowService::class);
     }
 
     /**
