@@ -32,7 +32,7 @@ export function EditTaskModal({
   const [issueId, setIssueId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ Récupérer l'ID numérique depuis la clé de l'issue
+  //  Récupérer l'ID numérique depuis la clé de l'issue
   useEffect(() => {
     if (isOpen && task.id) {
       const fetchIssueId = async () => {
@@ -141,7 +141,7 @@ export function EditTaskModal({
               <CreateTaskForm
                 isEditing={true}
                 initialData={{
-                  issueId: issueId, // ✅ Utiliser l'ID numérique récupéré
+                  issueId: issueId, //  Utiliser l'ID numérique récupéré
                   title: task.title,
                   description: task.description || "",
                   priority: task.priority || "medium",

@@ -43,7 +43,7 @@ export function useLabels() {
  * (globaux + labels du projet)
  */
 export function useProjectLabels(projectId: number | null) {
-  const [data, setData] = useState<Label[]>([]); // ✅ Initialiser avec un tableau vide
+  const [data, setData] = useState<Label[]>([]); //  Initialiser avec un tableau vide
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>(null);
 
@@ -59,10 +59,10 @@ export function useProjectLabels(projectId: number | null) {
       setError(null);
       try {
         const result = await labelService.getByProject(projectId);
-        console.log("✅ Project labels loaded:", result); 
-        setData(Array.isArray(result) ? result : []); 
+        console.log(" Project labels loaded:", result);
+        setData(Array.isArray(result) ? result : []);
       } catch (err: any) {
-        console.error("❌ Error loading project labels:", err); 
+        console.error("❌ Error loading project labels:", err);
         setError({
           message: err.message || "Une erreur est survenue",
           status: err.status,

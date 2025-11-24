@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { statusService, type Status, type StatusCreate, type StatusUpdate, type StatusListParams } from "@/api/services/statusService";
+import {
+  statusService,
+  type Status,
+  type StatusCreate,
+  type StatusUpdate,
+  type StatusListParams,
+} from "@/api/services/statusService";
 import type { Paginated } from "@/types/common";
 import { toast } from "sonner";
 
@@ -38,7 +44,10 @@ export function useUpdateStatus() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>(null);
 
-  const update = async (id: number, payload: StatusUpdate): Promise<Status | null> => {
+  const update = async (
+    id: number,
+    payload: StatusUpdate
+  ): Promise<Status | null> => {
     setLoading(true);
     setError(null);
     try {
@@ -132,30 +141,32 @@ export function useStatuses(params: StatusListParams = {}) {
   return { data, loading, error, refetch };
 }
 
-export function useAvailableStatuses() {
-  const [data, setData] = useState<Status[] | null>(null);
+export function useAvailableStatuses(projectId?: number) {
+  const [data, setData] = useState<Status[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchStatuses = async () => {
       setLoading(true);
       setError(null);
       try {
-        const result = await statusService.getAvailable();
-        setData(result);
+        const params = projectId ? `?project_id=${projectId}` : "";
+        const res = await api.get(`/api/statuses/available${params}`);
+        setData(res.data.data);
       } catch (err: any) {
         setError({
-          message: err.message || "Une erreur est survenue",
+          message: err.message || "Erreur lors du chargement des statuts",
           status: err.status,
         });
+        setData([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
+    fetchStatuses();
+  }, [projectId]);
 
   return { data, loading, error };
 }

@@ -49,7 +49,7 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const location = useLocation();
 
-  // ✅ Hook de permissions
+  //  Hook de permissions
   const { canViewTeams, canViewDashboard, user } = usePermissions();
 
   // Récupération des projets récents
@@ -74,11 +74,11 @@ export function AppSidebar() {
     }
   }, [projectsData]);
 
-  // ✅ Menu dynamique selon le rôle
+  //  Menu dynamique selon le rôle
   const items = useMemo(() => {
     const baseItems = [];
 
-    // ✅ Pour les CLIENTS uniquement
+    //  Pour les CLIENTS uniquement
     if (user?.role === "customer") {
       return [
         {
@@ -94,7 +94,7 @@ export function AppSidebar() {
       ];
     }
 
-    // ✅ Pour les UTILISATEURS INTERNES (admin, user)
+    //  Pour les UTILISATEURS INTERNES (admin, user)
     baseItems.push(
       { title: t("app.sidebar.home") || "Accueil", url: "/", icon: CircleUser },
       {
@@ -117,7 +117,7 @@ export function AppSidebar() {
       isDropdown: true,
     });
 
-    // ✅ Dashboard : masqué pour les clients
+    //  Dashboard : masqué pour les clients
     if (canViewDashboard()) {
       baseItems.push({
         title: t("app.sidebar.dashboard") || "Dashboard",
@@ -126,7 +126,7 @@ export function AppSidebar() {
       });
     }
 
-    // ✅ Teams : masqué pour les clients
+    //  Teams : masqué pour les clients
     if (canViewTeams()) {
       baseItems.push({
         title: t("app.sidebar.teams") || "Équipes",
@@ -135,7 +135,7 @@ export function AppSidebar() {
       });
     }
 
-    // ✅ Workflows : masqué pour les clients
+    //  Workflows : masqué pour les clients
     if (user?.role !== "customer") {
       baseItems.push({
         title: t("app.sidebar.workflows") || "Workflows",

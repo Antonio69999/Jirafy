@@ -26,8 +26,8 @@ import { toast } from "sonner";
 import { useColorThemeStore } from "@/store/colorThemeStore";
 import { cn } from "@/lib/utils";
 import { useCreateProject, useUpdateProject } from "@/hooks/useProject";
-import { useTeamOptions } from "@/hooks/useTeamOptions"; // ✅ NOUVEAU
-import { useUserOptions } from "@/hooks/useUserOptions"; // ✅ NOUVEAU
+import { useTeamOptions } from "@/hooks/useTeamOptions"; //  NOUVEAU
+import { useUserOptions } from "@/hooks/useUserOptions"; //  NOUVEAU
 import type { ProjectCreate, Project } from "@/types/project";
 
 const projectFormSchema = z.object({
@@ -81,7 +81,7 @@ export default function ProjectCreationForm({
   const loading = createLoading || updateLoading;
   const error = createError || updateError;
 
-  // ✅ UTILISER LES HOOKS OPTIONS
+  //  UTILISER LES HOOKS OPTIONS
   const { data: availableTeams, loading: teamsLoading } = useTeamOptions();
   const { data: availableUsers, loading: usersLoading } = useUserOptions();
 

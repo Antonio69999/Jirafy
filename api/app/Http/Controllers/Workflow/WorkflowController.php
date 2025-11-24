@@ -10,6 +10,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\Workflow\StoreTransitionRequest;
+use App\Models\Workflow\WorkflowTransition;
 
 class WorkflowController extends Controller
 {
@@ -95,6 +97,62 @@ class WorkflowController extends Controller
       'success' => true,
       'data' => $transitions,
       'message' => 'Project transitions retrieved successfully'
+    ]);
+  }
+
+  /**
+   * Créer une transition
+   */
+  public function createTransition(Request $request): JsonResponse
+  {
+    $user = Auth::user();
+    $projectId = $request->input('project_id');
+    $project = Project::findOrFail($projectId);
+
+    if (!$this->permissionService->userCanOnProject($user, 'workflow.manage', $project)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Permission refusée'
+      ], Response::HTTP_FORBIDDEN);
+    }
+
+    $validated = $request->validate([
+      'project_id' => 'required|integer|exists:projects,id',
+      'from_status_id' => 'required|integer|exists:statuses,id',
+      'to_status_id' => 'required|integer|exists:statuses,id',
+      'name' => 'required|string|max:255',
+      'description' => 'nullable|string',
+    ]);
+
+    $transition = $this->service->createTransition($validated);
+
+    return response()->json([
+      'success' => true,
+      'data' => $transition->load(['fromStatus', 'toStatus']),
+      'message' => 'Transition créée avec succès'
+    ], Response::HTTP_CREATED);
+  }
+
+  /**
+   * Supprimer une transition
+   */
+  public function deleteTransition(WorkflowTransition $transition): JsonResponse
+  {
+    $user = Auth::user();
+    $project = Project::findOrFail($transition->project_id);
+
+    if (!$this->permissionService->userCanOnProject($user, 'workflow.manage', $project)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Permission refusée'
+      ], Response::HTTP_FORBIDDEN);
+    }
+
+    $this->service->deleteTransition($transition);
+
+    return response()->json([
+      'success' => true,
+      'message' => 'Transition supprimée avec succès'
     ]);
   }
 }

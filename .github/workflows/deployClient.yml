@@ -61,6 +61,6 @@ jobs:
             chmod 644 .htaccess
             chmod -R 755 .
 
-            echo "✅ Client deployment completed!"
+            echo " Client deployment completed!"
             echo "Files deployed:"
             ls -la

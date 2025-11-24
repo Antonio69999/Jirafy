@@ -48,7 +48,7 @@ export default function Projects() {
   const { t } = useTranslation();
   const { colorTheme } = useColorThemeStore();
 
-  // ✅ Hook de permissions
+  //  Hook de permissions
   const {
     canCreateProject,
     canEditProject,
@@ -148,7 +148,7 @@ export default function Projects() {
         <div className="flex justify-between items-center mb-4">
           <SearchBar placeholder={t("project.search.placeholder")} />
 
-          {/* ✅ Masquer le bouton "Créer un projet" si pas de permission */}
+          {/*  Masquer le bouton "Créer un projet" si pas de permission */}
           {canCreateProject() && (
             <Button
               onClick={() => setCreateOpen(true)}
@@ -209,7 +209,7 @@ export default function Projects() {
                     <TableCell>{project.lead}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
-                        {/* ✅ Bouton "Membres" : toujours visible si l'utilisateur peut voir le projet */}
+                        {/*  Bouton "Membres" : toujours visible si l'utilisateur peut voir le projet */}
                         {canManageProjectMembers(project.originalData) && (
                           <Button
                             onClick={() =>
@@ -223,7 +223,7 @@ export default function Projects() {
                           </Button>
                         )}
 
-                        {/* ✅ Bouton "Modifier" : masqué si pas de permission */}
+                        {/*  Bouton "Modifier" : masqué si pas de permission */}
                         {canEditProject(project.originalData) && (
                           <Button
                             onClick={() => handleEdit(project.originalData)}
@@ -234,7 +234,7 @@ export default function Projects() {
                           </Button>
                         )}
 
-                        {/* ✅ Bouton "Supprimer" : masqué si pas de permission */}
+                        {/*  Bouton "Supprimer" : masqué si pas de permission */}
                         {canDeleteProject() && (
                           <Button
                             onClick={() => handleDelete(project.originalData)}
