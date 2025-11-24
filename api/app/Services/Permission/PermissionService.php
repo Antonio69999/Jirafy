@@ -10,200 +10,201 @@ use Illuminate\Support\Facades\DB;
 
 class PermissionService implements PermissionServiceInterface
 {
-    /**
-     * Vérifier si un utilisateur a une permission sur un projet
-     */
-    public function userCanOnProject(User $user, string $permission, Project $project): bool
-    {
-        // Super admin peut tout faire
-        if ($user->isSuperAdmin() || $user->isAdmin()) {
-            return true;
-        }
-
-        //  Les clients ont des permissions limitées
-        if ($user->isCustomer()) {
-            return $this->customerCanOnProject($user, $permission, $project);
-        }
-
-        // Logique existante pour les utilisateurs internes
-        $projectRole = $user->projects()
-            ->where('project_id', $project->id)
-            ->first()?->pivot->role;
-
-        if (!$projectRole) {
-            if ($project->team_id) {
-                $teamRole = $user->teams()
-                    ->where('team_id', $project->team_id)
-                    ->first()?->pivot->role;
-
-                $projectRole = $this->mapTeamRoleToProjectRole($teamRole);
-            }
-        }
-
-        if (!$projectRole) {
-            return false;
-        }
-
-        return $this->hasPermission($projectRole, $permission, 'project');
+  /**
+   * Vérifier si un utilisateur a une permission sur un projet
+   */
+  public function userCanOnProject(User $user, string $permission, Project $project): bool
+  {
+    // Super admin peut tout faire
+    if ($user->isSuperAdmin() || $user->isAdmin()) {
+      return true;
     }
 
-    /**
-     * Permissions spécifiques pour les clients
-     */
-    private function customerCanOnProject(User $user, string $permission, Project $project): bool
-    {
-        // Vérifier que le client a accès au projet via son organisation
-        if (!$user->organization_id) {
-            return false;
-        }
-
-        $hasAccess = DB::table('organization_projects')
-            ->where('organization_id', $user->organization_id)
-            ->where('project_id', $project->id)
-            ->exists();
-
-        if (!$hasAccess) {
-            return false;
-        }
-
-        $allowedPermissions = [
-            'project.view',    
-            'issue.create',   
-            'issue.view',     
-        ];
-
-        return in_array($permission, $allowedPermissions);
+    //  Les clients ont des permissions limitées
+    if ($user->isCustomer()) {
+      return $this->customerCanOnProject($user, $permission, $project);
     }
 
-    /**
-     * Vérifier si un utilisateur a une permission sur une équipe
-     */
-    public function userCanOnTeam(User $user, string $permission, Team $team): bool
-    {
-        // Super admin peut tout faire
-        if ($user->isSuperAdmin()) {
-            return true;
-        }
+    // Logique existante pour les utilisateurs internes
+    $projectRole = $user->projects()
+      ->where('project_id', $project->id)
+      ->first()?->pivot->role;
 
-        // Récupérer le rôle de l'utilisateur dans l'équipe
+    if (!$projectRole) {
+      if ($project->team_id) {
         $teamRole = $user->teams()
-            ->where('team_id', $team->id)
-            ->first()?->pivot->role;
+          ->where('team_id', $project->team_id)
+          ->first()?->pivot->role;
 
-        if (!$teamRole) {
-            return false;
-        }
-
-        // Mapper le rôle d'équipe vers le rôle normalisé
-        $normalizedRole = $this->normalizeTeamRole($teamRole);
-
-        // Vérifier si le rôle a la permission
-        return $this->hasPermission($normalizedRole, $permission, 'team');
+        $projectRole = $this->mapTeamRoleToProjectRole($teamRole);
+      }
     }
 
-    /**
-     * Vérifier si un utilisateur peut effectuer une transition de workflow
-     */
-    public function canTransition(User $user, Issue $issue, int $targetStatusId): bool
-    {
-        // Charger le projet si pas déjà fait
-        if (!$issue->relationLoaded('project')) {
-            $issue->load('project');
-        }
-
-        // Vérifier la permission de base
-        if (!$this->userCanOnProject($user, 'workflow.transition', $issue->project)) {
-            return false;
-        }
-
-        // TODO: Ajouter la logique de transitions autorisées
-        // (ce sera la prochaine étape avec le système de workflow)
-
-        return true;
+    if (!$projectRole) {
+      return false;
     }
 
-    /**
-     * Obtenir toutes les permissions d'un rôle dans un contexte
-     */
-    public function getRolePermissions(string $role, string $context): array
-    {
-        return DB::table('role_permissions')
-            ->join('permissions', 'permissions.id', '=', 'role_permissions.permission_id')
-            ->where('role_permissions.role', $role)
-            ->where('role_permissions.context', $context)
-            ->pluck('permissions.name')
-            ->toArray();
+    return $this->hasPermission($projectRole, $permission, 'project');
+  }
+
+  /**
+   * Permissions spécifiques pour les clients
+   */
+  private function customerCanOnProject(User $user, string $permission, Project $project): bool
+  {
+    // Vérifier que le client a accès au projet via son organisation
+    if (!$user->organization_id) {
+      return false;
     }
 
-    /**
-     * Vérifier si un utilisateur est owner d'un projet (pour compatibilité)
-     */
-    public function isProjectOwner(User $user, Project $project): bool
-    {
-        // Lead du projet est considéré comme owner
-        if ($project->lead_user_id === $user->id) {
-            return true;
-        }
+    $hasAccess = DB::table('organization_projects')
+      ->where('organization_id', $user->organization_id)
+      ->where('project_id', $project->id)
+      ->exists();
 
-        // Admin du projet
-        $projectRole = $user->projects()
-            ->where('project_id', $project->id)
-            ->first()?->pivot->role;
-
-        if ($projectRole === 'admin') {
-            return true;
-        }
-
-        // Owner de l'équipe du projet
-        if ($project->team_id) {
-            $teamRole = $user->teams()
-                ->where('team_id', $project->team_id)
-                ->first()?->pivot->role;
-
-            return $teamRole === 'owner';
-        }
-
-        return false;
+    if (!$hasAccess) {
+      return false;
     }
 
-    /**
-     * Vérifier si un rôle a une permission dans un contexte
-     */
-    private function hasPermission(string $role, string $permission, string $context): bool
-    {
-        return DB::table('role_permissions')
-            ->join('permissions', 'permissions.id', '=', 'role_permissions.permission_id')
-            ->where('role_permissions.role', $role)
-            ->where('permissions.name', $permission)
-            ->where('role_permissions.context', $context)
-            ->exists();
+    $allowedPermissions = [
+      'project.view',
+      'issue.view',
+      'issue.create',
+      'comment.create',
+    ];
+
+    return in_array($permission, $allowedPermissions);
+  }
+
+  /**
+   * Vérifier si un utilisateur a une permission sur une équipe
+   */
+  public function userCanOnTeam(User $user, string $permission, Team $team): bool
+  {
+    // Super admin peut tout faire
+    if ($user->isSuperAdmin()) {
+      return true;
     }
 
-    /**
-     * Mapper les rôles d'équipe vers les rôles de projet
-     */
-    private function mapTeamRoleToProjectRole(?string $teamRole): ?string
-    {
-        return match ($teamRole) {
-            'owner' => 'admin',
-            'admin' => 'manager',
-            'member' => 'contributor',
-            'viewer' => 'viewer',
-            default => null,
-        };
+    // Récupérer le rôle de l'utilisateur dans l'équipe
+    $teamRole = $user->teams()
+      ->where('team_id', $team->id)
+      ->first()?->pivot->role;
+
+    if (!$teamRole) {
+      return false;
     }
 
-    /**
-     * Normaliser les rôles d'équipe pour la vérification de permissions
-     */
-    private function normalizeTeamRole(?string $teamRole): ?string
-    {
-        return match ($teamRole) {
-            'owner' => 'admin',
-            'admin' => 'manager',
-            'member' => 'contributor',
-            'viewer' => 'viewer',
-            default => null,
-        };
+    // Mapper le rôle d'équipe vers le rôle normalisé
+    $normalizedRole = $this->normalizeTeamRole($teamRole);
+
+    // Vérifier si le rôle a la permission
+    return $this->hasPermission($normalizedRole, $permission, 'team');
+  }
+
+  /**
+   * Vérifier si un utilisateur peut effectuer une transition de workflow
+   */
+  public function canTransition(User $user, Issue $issue, int $targetStatusId): bool
+  {
+    // Charger le projet si pas déjà fait
+    if (!$issue->relationLoaded('project')) {
+      $issue->load('project');
     }
+
+    // Vérifier la permission de base
+    if (!$this->userCanOnProject($user, 'workflow.transition', $issue->project)) {
+      return false;
+    }
+
+    // TODO: Ajouter la logique de transitions autorisées
+    // (ce sera la prochaine étape avec le système de workflow)
+
+    return true;
+  }
+
+  /**
+   * Obtenir toutes les permissions d'un rôle dans un contexte
+   */
+  public function getRolePermissions(string $role, string $context): array
+  {
+    return DB::table('role_permissions')
+      ->join('permissions', 'permissions.id', '=', 'role_permissions.permission_id')
+      ->where('role_permissions.role', $role)
+      ->where('role_permissions.context', $context)
+      ->pluck('permissions.name')
+      ->toArray();
+  }
+
+  /**
+   * Vérifier si un utilisateur est owner d'un projet (pour compatibilité)
+   */
+  public function isProjectOwner(User $user, Project $project): bool
+  {
+    // Lead du projet est considéré comme owner
+    if ($project->lead_user_id === $user->id) {
+      return true;
+    }
+
+    // Admin du projet
+    $projectRole = $user->projects()
+      ->where('project_id', $project->id)
+      ->first()?->pivot->role;
+
+    if ($projectRole === 'admin') {
+      return true;
+    }
+
+    // Owner de l'équipe du projet
+    if ($project->team_id) {
+      $teamRole = $user->teams()
+        ->where('team_id', $project->team_id)
+        ->first()?->pivot->role;
+
+      return $teamRole === 'owner';
+    }
+
+    return false;
+  }
+
+  /**
+   * Vérifier si un rôle a une permission dans un contexte
+   */
+  private function hasPermission(string $role, string $permission, string $context): bool
+  {
+    return DB::table('role_permissions')
+      ->join('permissions', 'permissions.id', '=', 'role_permissions.permission_id')
+      ->where('role_permissions.role', $role)
+      ->where('permissions.name', $permission)
+      ->where('role_permissions.context', $context)
+      ->exists();
+  }
+
+  /**
+   * Mapper les rôles d'équipe vers les rôles de projet
+   */
+  private function mapTeamRoleToProjectRole(?string $teamRole): ?string
+  {
+    return match ($teamRole) {
+      'owner' => 'admin',
+      'admin' => 'manager',
+      'member' => 'contributor',
+      'viewer' => 'viewer',
+      default => null,
+    };
+  }
+
+  /**
+   * Normaliser les rôles d'équipe pour la vérification de permissions
+   */
+  private function normalizeTeamRole(?string $teamRole): ?string
+  {
+    return match ($teamRole) {
+      'owner' => 'admin',
+      'admin' => 'manager',
+      'member' => 'contributor',
+      'viewer' => 'viewer',
+      default => null,
+    };
+  }
 }

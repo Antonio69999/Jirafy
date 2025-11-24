@@ -7,6 +7,7 @@ use App\Interfaces\Ticketing\ProjectServiceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use App\Interfaces\Workflow\WorkflowServiceInterface;
+use App\Models\Auth\User;
 
 class ProjectService implements ProjectServiceInterface
 {
@@ -81,11 +82,19 @@ class ProjectService implements ProjectServiceInterface
     });
   }
 
-  public function getAllProjects(array $filters = [], int $perPage = 15): LengthAwarePaginator
+
+  public function getAllProjects(array $filters = [], int $perPage = 15, ?User $user = null): LengthAwarePaginator
   {
     $query = Project::query()
       ->with(['team:id,slug,name', 'lead:id,name,email'])
       ->withCount('issues');
+
+    // Filtrer par organisation pour les clients
+    if ($user && $user->isCustomer() && $user->organization_id) {
+      $query->whereHas('organizations', function ($q) use ($user) {
+        $q->where('organizations.id', $user->organization_id);
+      });
+    }
 
     if (!empty($filters['team_id'])) {
       $query->where('team_id', (int)$filters['team_id']);

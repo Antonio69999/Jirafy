@@ -14,135 +14,137 @@ use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
-    public function __construct(
-        private ProjectServiceInterface $service,
-        private PermissionServiceInterface $permissionService
-    ) {}
+  public function __construct(
+    private ProjectServiceInterface $service,
+    private PermissionServiceInterface $permissionService
+  ) {}
 
-    /**
-     * Lister tous les projets
-     */
-    public function index(Request $request): JsonResponse
-    {
-        $filters = [
-            'team_id'   => $request->query('team_id'),
-            'search'    => $request->query('q'),
-            'order_by'  => $request->query('order_by'),
-            'order_dir' => $request->query('order_dir'),
-        ];
-        $perPage = (int)($request->query('per_page', 20));
+  /**
+   * Lister tous les projets
+   */
+  public function index(Request $request): JsonResponse
+  {
+    $user = Auth::user();
 
-        $page = $this->service->getAllProjects($filters, $perPage);
+    $filters = [
+      'team_id'   => $request->query('team_id'),
+      'search'    => $request->query('q'),
+      'order_by'  => $request->query('order_by'),
+      'order_dir' => $request->query('order_dir'),
+    ];
+    $perPage = (int)($request->query('per_page', 20));
 
-        return response()->json([
-            'success' => true,
-            'data' => $page,
-            'message' => 'Projects retrieved successfully'
-        ]);
+    $page = $this->service->getAllProjects($filters, $perPage, $user);
+
+    return response()->json([
+      'success' => true,
+      'data' => $page,
+      'message' => 'Projects retrieved successfully'
+    ]);
+  }
+
+  /**
+   * Afficher un projet
+   */
+  public function show(Project $project): JsonResponse
+  {
+    $user = Auth::user();
+
+    // Vérifier les permissions
+    if (!$this->permissionService->userCanOnProject($user, 'project.view', $project)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Vous n\'avez pas la permission de voir ce projet'
+      ], Response::HTTP_FORBIDDEN);
     }
 
-    /**
-     * Afficher un projet
-     */
-    public function show(Project $project): JsonResponse
-    {
-        $user = Auth::user();
+    $project->load(['team:id,slug,name', 'lead:id,name,email'])
+      ->loadCount('issues');
 
-        // Vérifier les permissions
-        if (!$this->permissionService->userCanOnProject($user, 'project.view', $project)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Vous n\'avez pas la permission de voir ce projet'
-            ], Response::HTTP_FORBIDDEN);
-        }
+    return response()->json([
+      'success' => true,
+      'data' => $project,
+      'message' => 'Project retrieved successfully'
+    ]);
+  }
 
-        $project->load(['team:id,slug,name', 'lead:id,name,email'])
-            ->loadCount('issues');
+  /**
+   * Créer un projet
+   */
+  public function store(ProjectStoreRequest $request): JsonResponse
+  {
+    /** @var User $user */
+    $user = Auth::user();
 
+    // Vérifier si l'utilisateur peut créer des projets
+    if (!$user->isSuperAdmin() && !$user->isAdmin()) {
+      // Vérifier s'il est owner d'au moins une équipe
+      $isTeamOwner = $user->teams()
+        ->wherePivot('role', 'owner')
+        ->exists();
+
+      if (!$isTeamOwner) {
         return response()->json([
-            'success' => true,
-            'data' => $project,
-            'message' => 'Project retrieved successfully'
-        ]);
+          'success' => false,
+          'message' => 'Vous n\'avez pas la permission de créer un projet'
+        ], Response::HTTP_FORBIDDEN);
+      }
     }
 
-    /**
-     * Créer un projet
-     */
-    public function store(ProjectStoreRequest $request): JsonResponse
-    {
-        /** @var User $user */
-        $user = Auth::user();
+    $project = $this->service->createProject($request->validated());
 
-        // Vérifier si l'utilisateur peut créer des projets
-        if (!$user->isSuperAdmin() && !$user->isAdmin()) {
-            // Vérifier s'il est owner d'au moins une équipe
-            $isTeamOwner = $user->teams()
-                ->wherePivot('role', 'owner')
-                ->exists();
+    return response()->json([
+      'success' => true,
+      'data' => $project,
+      'message' => 'Project created successfully'
+    ], Response::HTTP_CREATED);
+  }
 
-            if (!$isTeamOwner) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vous n\'avez pas la permission de créer un projet'
-                ], Response::HTTP_FORBIDDEN);
-            }
-        }
+  /**
+   * Mettre à jour un projet
+   */
+  public function update(ProjectUpdateRequest $request, Project $project): JsonResponse
+  {
+    $user = Auth::user();
 
-        $project = $this->service->createProject($request->validated());
-
-        return response()->json([
-            'success' => true,
-            'data' => $project,
-            'message' => 'Project created successfully'
-        ], Response::HTTP_CREATED);
+    // Vérifier les permissions
+    if (!$this->permissionService->userCanOnProject($user, 'project.update', $project)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Vous n\'avez pas la permission de modifier ce projet'
+      ], Response::HTTP_FORBIDDEN);
     }
 
-    /**
-     * Mettre à jour un projet
-     */
-    public function update(ProjectUpdateRequest $request, Project $project): JsonResponse
-    {
-        $user = Auth::user();
+    $updated = $this->service->updateProject($project, $request->validated());
 
-        // Vérifier les permissions
-        if (!$this->permissionService->userCanOnProject($user, 'project.update', $project)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Vous n\'avez pas la permission de modifier ce projet'
-            ], Response::HTTP_FORBIDDEN);
-        }
+    return response()->json([
+      'success' => true,
+      'data' => $updated,
+      'message' => 'Project updated successfully'
+    ]);
+  }
 
-        $updated = $this->service->updateProject($project, $request->validated());
+  /**
+   * Supprimer un projet
+   */
+  public function destroy(Project $project): JsonResponse
+  {
+    $user = Auth::user();
 
-        return response()->json([
-            'success' => true,
-            'data' => $updated,
-            'message' => 'Project updated successfully'
-        ]);
+    // Vérifier les permissions
+    if (!$this->permissionService->userCanOnProject($user, 'project.delete', $project)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Vous n\'avez pas la permission de supprimer ce projet'
+      ], Response::HTTP_FORBIDDEN);
     }
 
-    /**
-     * Supprimer un projet
-     */
-    public function destroy(Project $project): JsonResponse
-    {
-        $user = Auth::user();
+    $this->service->deleteProject($project);
 
-        // Vérifier les permissions
-        if (!$this->permissionService->userCanOnProject($user, 'project.delete', $project)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Vous n\'avez pas la permission de supprimer ce projet'
-            ], Response::HTTP_FORBIDDEN);
-        }
-
-        $this->service->deleteProject($project);
-
-        return response()->json([
-            'success' => true,
-            'data' => null,
-            'message' => 'Project deleted successfully'
-        ], Response::HTTP_NO_CONTENT);
-    }
+    return response()->json([
+      'success' => true,
+      'data' => null,
+      'message' => 'Project deleted successfully'
+    ], Response::HTTP_NO_CONTENT);
+  }
 }

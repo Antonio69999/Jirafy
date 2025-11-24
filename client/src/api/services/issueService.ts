@@ -37,6 +37,22 @@ export const issueService = {
     return unwrap(res);
   },
 
+  /**
+   * Récupérer les tickets du client connecté
+   */
+  async getMyTickets(
+    params: {
+      per_page?: number;
+      page?: number;
+    } = {}
+  ): Promise<Paginated<Issue>> {
+    const res = await api.get<ApiResponse<Paginated<Issue>>>(
+      `${base}/my-tickets`,
+      { params }
+    );
+    return unwrap(res);
+  },
+
   async get(id: number): Promise<Issue> {
     const res = await api.get<ApiResponse<Issue>>(`${base}/${id}`);
     return unwrap(res);
@@ -61,3 +77,5 @@ export const issueService = {
     await api.delete(`${base}/${id}`);
   },
 };
+
+export type { Issue, IssueCreate, IssueUpdate, IssueListParams };

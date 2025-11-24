@@ -17,7 +17,8 @@ import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router-dom";
 import logo from "@/assets/logo.png";
 import { usePermissions } from "@/hooks/usePermissions";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
+import { useProjects } from "@/hooks/useProject";
 
 import {
   Sidebar,
@@ -29,14 +30,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
+  SidebarMenuSub,
 } from "@/components/ui/sidebar";
+
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useEffect, useState } from "react";
-import { useProjects } from "@/hooks/useProject";
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
 
 type RecentProject = {
   id: string;
@@ -49,42 +50,75 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const location = useLocation();
 
-  //  Hook de permissions
   const { canViewTeams, canViewDashboard, user } = usePermissions();
 
-  // Récupération des projets récents
   const { data: projectsData, loading } = useProjects({
-    per_page: 5,
+    per_page: user?.role === "customer" ? 100 : 5,
     order_by: "created_at",
     order_dir: "desc",
   });
+
+  const isItemActive = (item: any) => {
+    const basePath = item.url.split("?")[0];
+
+    if (item.url === "/") {
+      return location.pathname === "/" && !location.search;
+    }
+
+    if (item.url.startsWith("/?tab=")) {
+      return (
+        location.pathname === "/" &&
+        location.search === item.url.replace("/", "")
+      );
+    }
+
+    if (item.isDropdown) {
+      return isProjectActive();
+    }
+
+    return location.pathname === basePath;
+  };
 
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
 
   useEffect(() => {
     if (projectsData?.data) {
-      const convertedProjects: RecentProject[] = projectsData.data.map(
-        (project) => ({
-          id: String(project.id),
-          name: project.name,
-          key: project.key,
-        })
+      setRecentProjects(
+        projectsData.data.map((p) => ({
+          id: String(p.id),
+          name: p.name,
+          key: p.key,
+        }))
       );
-      setRecentProjects(convertedProjects);
     }
   }, [projectsData]);
 
-  //  Menu dynamique selon le rôle
+  const isProjectActive = () => {
+    return (
+      location.pathname.startsWith("/projects") ||
+      location.pathname === "/dashboard" ||
+      location.pathname === "/my-tickets" ||
+      recentProjects.some((project) =>
+        location.pathname.includes(`/project/${project.id}`)
+      )
+    );
+  };
+
   const items = useMemo(() => {
     const baseItems = [];
 
-    //  Pour les CLIENTS uniquement
     if (user?.role === "customer") {
       return [
         {
           title: t("app.sidebar.myTickets") || "Mes Tickets",
           url: "/my-tickets",
           icon: CircleUser,
+        },
+        {
+          title: t("app.sidebar.projects") || "Projects",
+          url: "#",
+          icon: Rocket,
+          isDropdown: true,
         },
         {
           title: t("app.sidebar.settings") || "Paramètres",
@@ -94,7 +128,6 @@ export function AppSidebar() {
       ];
     }
 
-    //  Pour les UTILISATEURS INTERNES (admin, user)
     baseItems.push(
       { title: t("app.sidebar.home") || "Accueil", url: "/", icon: CircleUser },
       {
@@ -106,18 +139,15 @@ export function AppSidebar() {
         title: t("app.sidebar.favourites") || "Favoris",
         url: "/?tab=starred",
         icon: Star,
+      },
+      {
+        title: t("app.sidebar.projects") || "Projects",
+        url: "#",
+        icon: Rocket,
+        isDropdown: true,
       }
     );
 
-    // Projects : visible pour tous (mais filtré par backend)
-    baseItems.push({
-      title: t("app.sidebar.projects") || "Projects",
-      url: "#",
-      icon: Rocket,
-      isDropdown: true,
-    });
-
-    //  Dashboard : masqué pour les clients
     if (canViewDashboard()) {
       baseItems.push({
         title: t("app.sidebar.dashboard") || "Dashboard",
@@ -126,7 +156,6 @@ export function AppSidebar() {
       });
     }
 
-    //  Teams : masqué pour les clients
     if (canViewTeams()) {
       baseItems.push({
         title: t("app.sidebar.teams") || "Équipes",
@@ -135,16 +164,12 @@ export function AppSidebar() {
       });
     }
 
-    //  Workflows : masqué pour les clients
-    if (user?.role !== "customer") {
-      baseItems.push({
-        title: t("app.sidebar.workflows") || "Workflows",
-        url: "/workflow",
-        icon: Workflow,
-      });
-    }
+    baseItems.push({
+      title: t("app.sidebar.workflows") || "Workflows",
+      url: "/workflow",
+      icon: Workflow,
+    });
 
-    // Settings : visible pour tous
     baseItems.push({
       title: t("app.sidebar.settings") || "Paramètres",
       url: "/settings",
@@ -152,17 +177,7 @@ export function AppSidebar() {
     });
 
     return baseItems;
-  }, [t, canViewTeams, canViewDashboard, user]);
-
-  const isProjectActive = () => {
-    return (
-      location.pathname.startsWith("/projects") ||
-      location.pathname === "/dashboard" ||
-      recentProjects.some((project) =>
-        location.pathname.includes(`/project/${project.id}`)
-      )
-    );
-  };
+  }, [t, user]);
 
   return (
     <Sidebar>
@@ -177,64 +192,54 @@ export function AppSidebar() {
             <img src={logo} alt="Logo" className="rounded-md w-14" />
             <span className="text-lg font-semibold">Jirafy</span>
           </SidebarGroupLabel>
+
           <div className="my-5 flex items-center gap-3">
             <div className="h-px flex-1 bg-muted-foreground/30"></div>
             <div className="h-1 w-1 rounded-full bg-muted-foreground/50"></div>
             <div className="h-px flex-1 bg-muted-foreground/30"></div>
           </div>
+
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
-              {items.map((item) => {
-                const isActive = () => {
-                  if (item.url.startsWith("/?tab=")) {
-                    return (
-                      location.pathname === "/" &&
-                      location.search === item.url.substring(1)
-                    );
-                  }
-
-                  if (item.url === "/") {
-                    return location.pathname === "/" && !location.search;
-                  }
-
-                  if (
-                    item.title === t("app.sidebar.projects") ||
-                    item.title === "Projects"
-                  ) {
-                    return isProjectActive();
-                  }
-
-                  return location.pathname.startsWith(item.url.split("?")[0]);
-                };
-
-                if (item.isDropdown) {
-                  return (
-                    <SidebarMenuItem key={item.title}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <div className="w-full">
-                            <SidebarMenuButton
-                              tooltip={item.title}
-                              className={cn(
-                                "transition-colors w-full",
-                                `theme-${colorTheme}`,
-                                "hover:bg-[var(--hover-bg)] focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:outline-none",
-                                isActive() ? "bg-[var(--active-bg)]" : ""
-                              )}
-                            >
-                              <item.icon className="size-5" />
-                              <span>{item.title}</span>
-                              <ChevronRight className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-                            </SidebarMenuButton>
-                          </div>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          side="right"
-                          align="start"
-                          className="w-52 p-2"
-                          sideOffset={0}
+              {items.map((item) =>
+                item.isDropdown ? (
+                  /**  ---------------------------
+                   *   SECTION COLLAPSIBLE PROJECTS
+                   *  --------------------------- */
+                  <Collapsible
+                    key={item.title}
+                    asChild
+                    defaultOpen={isProjectActive()}
+                    className="group/collapsible"
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          tooltip={item.title}
+                          className={cn(
+                            "transition-colors",
+                            `theme-${colorTheme}`,
+                            "hover:bg-[var(--hover-bg)]",
+                            isProjectActive() ? "bg-[var(--active-bg)]" : ""
+                          )}
                         >
-                          <div className="space-y-2">
+                          <item.icon className="size-5" />
+                          <span>{item.title}</span>
+                          <ChevronRight className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          <div className="space-y-2 mt-2">
+                            {/* Label pour clients */}
+                            {user?.role === "customer" && (
+                              <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                                {t("customer.myProjects.title") ||
+                                  "Mes projets"}
+                              </div>
+                            )}
+
                             {loading ? (
                               <div className="px-2 py-3 text-center text-muted-foreground text-sm">
                                 {t("common.loading") || "Chargement..."}
@@ -243,7 +248,11 @@ export function AppSidebar() {
                               recentProjects.map((project) => (
                                 <NavLink
                                   key={project.id}
-                                  to={`/dashboard?project=${project.id}`}
+                                  to={
+                                    user?.role === "customer"
+                                      ? `/my-tickets?project=${project.id}`
+                                      : `/dashboard?project=${project.id}`
+                                  }
                                   style={{ textDecoration: "none" }}
                                 >
                                   <div
@@ -252,13 +261,15 @@ export function AppSidebar() {
                                       "transition-colors",
                                       `theme-${colorTheme}`,
                                       "hover:bg-[var(--hover-bg)]",
-                                      location.pathname === "/dashboard" &&
-                                        location.search ===
-                                          `?project=${project.id}`
+                                      location.search ===
+                                        `?project=${project.id}`
                                         ? "bg-[var(--active-bg)]"
                                         : ""
                                     )}
                                   >
+                                    <span className="text-xs font-mono text-muted-foreground">
+                                      {project.key}
+                                    </span>
                                     <span className="truncate">
                                       {project.name}
                                     </span>
@@ -267,53 +278,59 @@ export function AppSidebar() {
                               ))
                             ) : (
                               <div className="px-2 py-3 text-center text-muted-foreground text-sm">
-                                {t("app.sidebar.noRecentProjects") ||
-                                  "Aucun projet récent"}
+                                {user?.role === "customer"
+                                  ? t("customer.noProjects") ||
+                                    "Aucun projet associé"
+                                  : t("app.sidebar.noRecentProjects") ||
+                                    "Aucun projet récent"}
                               </div>
                             )}
 
-                            <NavLink
-                              to="/projects"
-                              style={{ textDecoration: "none" }}
-                            >
-                              <div
-                                className={cn(
-                                  "flex items-center justify-between gap-2 px-2 py-1.5 rounded-md text-sm",
-                                  "transition-colors text-muted-foreground",
-                                  `theme-${colorTheme}`,
-                                  "hover:bg-[var(--hover-bg)] hover:text-foreground",
-                                  location.pathname === "/projects"
-                                    ? "bg-[var(--active-bg)] text-foreground"
-                                    : ""
-                                )}
+                            {/* Voir tous les projets : interdit aux clients */}
+                            {user?.role !== "customer" && (
+                              <NavLink
+                                to="/projects"
+                                style={{ textDecoration: "none" }}
                               >
-                                <div className="flex items-center gap-2">
-                                  <FolderClosed className="size-4" />
-                                  <span>
-                                    {t("home.recentProjects.viewAll") ||
-                                      "Voir tous les projets"}
-                                  </span>
+                                <div
+                                  className={cn(
+                                    "flex items-center justify-between gap-2 px-2 py-1.5 rounded-md text-sm",
+                                    "transition-colors text-muted-foreground",
+                                    `theme-${colorTheme}`,
+                                    "hover:bg-[var(--hover-bg)] hover:text-foreground",
+                                    location.pathname === "/projects"
+                                      ? "bg-[var(--active-bg)] text-foreground"
+                                      : ""
+                                  )}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <FolderClosed className="size-4" />
+                                    <span>
+                                      {t("home.recentProjects.viewAll") ||
+                                        "Voir tous les projets"}
+                                    </span>
+                                  </div>
+                                  <ArrowRight className="size-3.5" />
                                 </div>
-                                <ArrowRight className="size-3.5" />
-                              </div>
-                            </NavLink>
+                              </NavLink>
+                            )}
                           </div>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
                     </SidebarMenuItem>
-                  );
-                }
-
-                return (
+                  </Collapsible>
+                ) : (
+                  /** ---------------------------
+                   *  ITEMS NORMAUX
+                   * --------------------------- */
                   <SidebarMenuItem key={item.title}>
                     <NavLink to={item.url} style={{ textDecoration: "none" }}>
                       <SidebarMenuButton
                         tooltip={item.title}
                         className={cn(
-                          "transition-colors",
                           `theme-${colorTheme}`,
-                          "hover:bg-[var(--hover-bg)] focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:outline-none",
-                          isActive() ? "bg-[var(--active-bg)]" : ""
+                          "hover:bg-[var(--hover-bg)] transition-colors",
+                          isItemActive(item) ? "bg-[var(--active-bg)]" : ""
                         )}
                       >
                         <item.icon className="size-5" />
@@ -321,16 +338,12 @@ export function AppSidebar() {
                       </SidebarMenuButton>
                     </NavLink>
                   </SidebarMenuItem>
-                );
-              })}
+                )
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <div className="my-4 px-4">
-        <hr className="border-muted-foreground/40" />
-      </div>
 
       <SidebarFooter className="py-4 px-4">
         <div className="text-sm text-muted-foreground">

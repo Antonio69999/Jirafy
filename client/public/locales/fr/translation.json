@@ -459,6 +459,12 @@
       "comments": "commentaires",
       "createdAt": "Créé le",
       "assignedTo": "Assigné à"
+    },
+    "myProjects": {
+      "title": "Mes projets",
+      "description": "Consultez les projets auxquels vous participez.",
+      "empty": "Aucun projet pour le moment",
+      "contactAdmin": "Contactez votre administrateur pour plus d'informations."
     }
 
   },

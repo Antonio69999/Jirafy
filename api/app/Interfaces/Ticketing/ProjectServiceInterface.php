@@ -2,18 +2,19 @@
 
 namespace App\Interfaces\Ticketing;
 
+use App\Models\Auth\User;
 use App\Models\Ticketing\Project;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface ProjectServiceInterface
 {
-    public function createProject(array $data): Project;
+  public function createProject(array $data): Project;
 
-    public function getProjectById(int $id): ?Project;
+  public function getProjectById(int $id): ?Project;
 
-    public function updateProject(Project $project, array $data): Project;
+  public function updateProject(Project $project, array $data): Project;
 
-    public function deleteProject(Project $project): bool;
+  public function deleteProject(Project $project): bool;
 
-    public function getAllProjects(array $filters = [], int $perPage = 15): LengthAwarePaginator;
+  public function getAllProjects(array $filters = [], int $perPage = 15, ?User $user = null): LengthAwarePaginator;
 }
