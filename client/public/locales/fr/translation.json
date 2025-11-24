@@ -468,6 +468,13 @@
     }
   },
   "workflow": {
-    "description": "Gérez les transitions de statut de vos projets"
+    "description": "Gérez les transitions de statut de vos projets",
+    "transition": {
+      "create": "Créer une transition",
+      "name" : "Nom",
+      "description" : "Description",
+      "namePlaceholder" : "nom transistion",
+      "descriptionPlaceholder" : "blablabla"
+    }
   }
 }

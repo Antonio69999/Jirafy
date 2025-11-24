@@ -16,6 +16,15 @@ import { useProjectWorkflow } from "@/hooks/useProjectWorkflow";
 import { useAvailableStatuses } from "@/hooks/useStatus";
 import { cn } from "@/lib/utils";
 import { useColorThemeStore } from "@/store/colorThemeStore";
+import StatusNode from "./StatusNode";
+import EntryNode from "./EntryNode";
+import ExitNode from "./ExitNode";
+
+const nodeTypes = {
+  status: StatusNode,
+  entry: EntryNode,
+  exit: ExitNode,
+};
 
 export default function WorkflowDiagram() {
   const [searchParams] = useSearchParams();
@@ -29,41 +38,48 @@ export default function WorkflowDiagram() {
   const { data: statuses, loading: statusesLoading } = useAvailableStatuses(
     projectId ? parseInt(projectId) : undefined
   );
-  // Création des nœuds
+
+  // ✅ Création des nœuds avec entrée/sortie
   const nodes: Node[] = useMemo(() => {
     if (!statuses || !Array.isArray(statuses) || statuses.length === 0)
       return [];
 
-    return statuses.map((status, index) => ({
+    const statusNodes = statuses.map((status, index) => ({
       id: String(status.id),
-      type: "default",
+      type: "status" as const,
       data: {
-        label: (
-          <div className="px-4 py-2">
-            <div className="font-semibold">{status.name}</div>
-            <div className="text-xs text-muted-foreground">{status.key}</div>
-          </div>
-        ),
+        name: status.name,
+        key: status.key,
+        category: status.category,
       },
       position: {
-        x: (index % 3) * 250,
-        y: Math.floor(index / 3) * 150,
-      },
-      style: {
-        background: "var(--card)",
-        border: "2px solid var(--border)",
-        borderRadius: "8px",
-        color: "var(--foreground)",
-        padding: "10px",
+        x: 350 + index * 300, // ✅ Même espacement
+        y: 100, // ✅ Même ligne
       },
     }));
+
+    const entryNode: Node = {
+      id: "entry",
+      type: "entry",
+      data: { label: "Ticket créé" },
+      position: { x: 0, y: 100 },
+    };
+
+    const exitNode: Node = {
+      id: "exit",
+      type: "exit",
+      data: { label: "Ticket résolu" },
+      position: { x: 350 + statuses.length * 300, y: 100 },
+    };
+
+    return [entryNode, ...statusNodes, exitNode];
   }, [statuses]);
 
-  // Création des edges
+  // ✅ Création des edges avec connexions entrée/sortie
   const edges: Edge[] = useMemo(() => {
-    if (!transitions || transitions.length === 0) return [];
+    if (!transitions || transitions.length === 0 || !statuses) return [];
 
-    return transitions.map((transition) => ({
+    const transitionEdges: Edge[] = transitions.map((transition) => ({
       id: String(transition.id),
       source: String(transition.from_status_id),
       target: String(transition.to_status_id),
@@ -87,12 +103,53 @@ export default function WorkflowDiagram() {
         fillOpacity: 0.9,
       },
     }));
-  }, [transitions]);
+
+    const todoStatus = statuses.find((s) => s.key === "TODO");
+    if (todoStatus) {
+      transitionEdges.push({
+        id: "entry-to-todo",
+        source: "entry",
+        target: String(todoStatus.id),
+        type: "smoothstep",
+        animated: true,
+        style: {
+          stroke: "#10b981",
+          strokeWidth: 3,
+          strokeDasharray: "5,5",
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: "#10b981",
+        },
+      });
+    }
+
+    const doneStatus = statuses.find((s) => s.key === "DONE");
+    if (doneStatus) {
+      transitionEdges.push({
+        id: "done-to-exit",
+        source: String(doneStatus.id),
+        target: "exit",
+        type: "smoothstep",
+        animated: true,
+        style: {
+          stroke: "#a855f7",
+          strokeWidth: 3,
+          strokeDasharray: "5,5",
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: "#a855f7",
+        },
+      });
+    }
+
+    return transitionEdges;
+  }, [transitions, statuses]);
 
   const [nodesState, setNodesState, onNodesChange] = useNodesState([]);
   const [edgesState, setEdgesState, onEdgesChange] = useEdgesState([]);
 
-  // ✅ Synchroniser les states
   useEffect(() => {
     setNodesState(nodes);
   }, [nodes, setNodesState]);
@@ -131,6 +188,7 @@ export default function WorkflowDiagram() {
         edges={edgesState}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        nodeTypes={nodeTypes}
         fitView
         minZoom={0.5}
         maxZoom={1.5}

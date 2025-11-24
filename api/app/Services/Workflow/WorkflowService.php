@@ -92,6 +92,8 @@ class WorkflowService implements WorkflowServiceInterface
       return;
     }
 
+    // ✅ WORKFLOW SIMPLIFIÉ : Seulement le flux principal
+
     // TODO → IN_PROGRESS
     WorkflowTransition::create([
       'project_id' => $project->id,
@@ -108,24 +110,6 @@ class WorkflowService implements WorkflowServiceInterface
       'to_status_id' => $done->id,
       'name' => 'Complete',
       'description' => 'Terminer la tâche',
-    ]);
-
-    // IN_PROGRESS → TODO (retour arrière)
-    WorkflowTransition::create([
-      'project_id' => $project->id,
-      'from_status_id' => $inProgress->id,
-      'to_status_id' => $todo->id,
-      'name' => 'Reopen',
-      'description' => 'Remettre la tâche en attente',
-    ]);
-
-    // DONE → IN_PROGRESS (réouverture)
-    WorkflowTransition::create([
-      'project_id' => $project->id,
-      'from_status_id' => $done->id,
-      'to_status_id' => $inProgress->id,
-      'name' => 'Reopen',
-      'description' => 'Rouvrir la tâche terminée',
     ]);
   }
 }
