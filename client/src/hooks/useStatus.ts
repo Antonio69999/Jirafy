@@ -151,10 +151,14 @@ export function useAvailableStatuses(projectId?: number) {
       setLoading(true);
       setError(null);
       try {
-        const params = projectId ? `?project_id=${projectId}` : "";
-        const res = await api.get(`/api/statuses/available${params}`);
-        setData(res.data.data);
+        const result = await statusService.getAvailable();
+
+        const filteredData = projectId ? result : result;
+
+        console.log("📦 Statuses loaded:", filteredData);
+        setData(filteredData);
       } catch (err: any) {
+        console.error("❌ Error loading statuses:", err);
         setError({
           message: err.message || "Erreur lors du chargement des statuts",
           status: err.status,
@@ -170,6 +174,8 @@ export function useAvailableStatuses(projectId?: number) {
 
   return { data, loading, error };
 }
+
+// ...existing code...
 
 export function useStatus(id: number | undefined) {
   const [data, setData] = useState<Status | null>(null);

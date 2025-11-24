@@ -11,13 +11,13 @@ export function usePermissions() {
     if (!user) return false;
     if (user.role === "super_admin") return true;
     if (user.role === "admin") return true;
-    if (user.role === "customer") return false; 
+    if (user.role === "customer") return false;
     return user.teams?.some((team) => team.pivot.role === "owner") || false;
   };
 
   const canEditProject = (project?: Project): boolean => {
     if (!user) return false;
-    if (user.role === "customer") return false; 
+    if (user.role === "customer") return false;
     if (user.role === "super_admin" || user.role === "admin") return true;
 
     if (project && user.teams) {
@@ -53,17 +53,27 @@ export function usePermissions() {
     return false;
   };
 
+  const canManageProject = (project?: { id: number }): boolean => {
+    if (!user) return false;
+    if (user.role === "customer") return false;
+    if (user.role === "super_admin" || user.role === "admin") return true;
+
+    // Pour l'instant, on autorise tous les utilisateurs internes à éditer le workflow
+    // Tu peux affiner la logique selon tes besoins
+    return true;
+  };
+
   // ==================== ÉQUIPES ====================
 
   const canCreateTeam = (): boolean => {
     if (!user) return false;
-    if (user.role === "customer") return false; 
+    if (user.role === "customer") return false;
     return user.role === "super_admin" || user.role === "admin";
   };
 
   const canEditTeam = (team?: Team): boolean => {
     if (!user) return false;
-    if (user.role === "customer") return false; 
+    if (user.role === "customer") return false;
     if (user.role === "super_admin" || user.role === "admin") return true;
 
     if (team && user.teams) {
@@ -83,7 +93,7 @@ export function usePermissions() {
 
   const canManageTeamMembers = (team?: Team): boolean => {
     if (!user) return false;
-    if (user.role === "customer") return false; 
+    if (user.role === "customer") return false;
     if (user.role === "super_admin" || user.role === "admin") return true;
 
     if (team && user.teams) {
@@ -104,7 +114,7 @@ export function usePermissions() {
       // TODO: Vérifier via organization_projects
       return true; // Pour l'instant, on autorise
     }
-    return true; 
+    return true;
   };
 
   const canEditIssue = (issue?: any): boolean => {
@@ -131,14 +141,14 @@ export function usePermissions() {
   const canAssignIssue = (): boolean => {
     if (!user) return false;
     if (user.role === "customer") return false;
-    return true; 
+    return true;
   };
 
   // ==================== LABELS ====================
 
   const canCreateLabel = (projectId?: number): boolean => {
     if (!user) return false;
-    if (user.role === "customer") return false; 
+    if (user.role === "customer") return false;
 
     if (!projectId) {
       return user.role === "super_admin" || user.role === "admin";
@@ -156,13 +166,13 @@ export function usePermissions() {
 
   const canViewTeams = (): boolean => {
     if (!user) return false;
-    if (user.role === "customer") return false; 
+    if (user.role === "customer") return false;
     return true;
   };
 
   const canViewDashboard = (): boolean => {
     if (!user) return false;
-    if (user.role === "customer") return false; 
+    if (user.role === "customer") return false;
     return true;
   };
 
@@ -173,6 +183,7 @@ export function usePermissions() {
     canDeleteProject,
     canManageProjectMembers,
     canViewProjects,
+    canManageProject,
 
     // Équipes
     canCreateTeam,

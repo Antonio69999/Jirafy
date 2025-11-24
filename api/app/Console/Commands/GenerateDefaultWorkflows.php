@@ -18,14 +18,19 @@ class GenerateDefaultWorkflows extends Command
     $created = 0;
 
     foreach ($projects as $project) {
-      $hasTransitions = WorkflowTransition::where('project_id', $project->id)->exists();
+      $transitionsCount = WorkflowTransition::where('project_id', $project->id)->count();
 
-      if (!$hasTransitions) {
+      if ($transitionsCount === 0) {
         $workflowService->createDefaultTransitions($project);
         $created++;
         $this->info("✅ Transitions créées pour le projet {$project->key}");
+      } elseif ($transitionsCount < 4) {
+        WorkflowTransition::where('project_id', $project->id)->delete();
+        $workflowService->createDefaultTransitions($project);
+        $created++;
+        $this->warn("⚠️  Transitions incomplètes recréées pour le projet {$project->key}");
       } else {
-        $this->line("⏭️  Le projet {$project->key} a déjà des transitions");
+        $this->line("⏭️  Le projet {$project->key} a déjà des transitions ({$transitionsCount})");
       }
     }
 

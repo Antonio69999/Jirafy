@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ReactFlowProvider } from "@xyflow/react";
 
 export default function Workflow() {
   const { t } = useTranslation();
@@ -22,22 +23,18 @@ export default function Workflow() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isEditing, setIsEditing] = useState(false);
 
-  // Récupérer le projet sélectionné depuis l'URL
   const selectedProjectId = searchParams.get("project");
 
-  // Récupérer la liste des projets
   const { data: projectsData, loading: projectsLoading } = useProjects({
     per_page: 100,
   });
 
-  // Synchroniser le projet sélectionné avec l'URL
   const handleProjectChange = (projectId: string) => {
     const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.set("project", projectId);
     setSearchParams(newSearchParams);
   };
 
-  // Sélectionner automatiquement le premier projet si aucun n'est sélectionné
   useEffect(() => {
     if (
       !selectedProjectId &&
@@ -48,10 +45,27 @@ export default function Workflow() {
     }
   }, [projectsData, selectedProjectId]);
 
+  // Empêche le scroll sur la page
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, []);
+
   return (
-    <PageContainer title={t("app.sidebar.workflows") || "Workflows"}>
-      <div className="mb-4 flex justify-between items-center gap-4">
+    <PageContainer
+      title={t("app.sidebar.workflows") || "Workflows"}
+      className="h-screen flex flex-col overflow-hidden p-0"
+      compact
+    >
+      <div className="mb-4 flex justify-between items-center gap-4 shrink-0">
         <div className="flex-1 max-w-xs">
+          <p className="text-sm text-muted-foreground flex-1 mb-2">
+            {t("workflow.description") ||
+              "Gérez les transitions de statut de vos projets"}
+          </p>
           <Select
             value={selectedProjectId || undefined}
             onValueChange={handleProjectChange}
@@ -74,11 +88,6 @@ export default function Workflow() {
           </Select>
         </div>
 
-        <p className="text-sm text-muted-foreground flex-1">
-          {t("workflow.description") ||
-            "Gérez les transitions de statut de vos projets"}
-        </p>
-
         {selectedProjectId && (
           <Button onClick={() => setIsEditing(!isEditing)}>
             <Plus className="mr-2 h-4 w-4" />
@@ -87,19 +96,29 @@ export default function Workflow() {
         )}
       </div>
 
-      {selectedProjectId ? (
-        isEditing ? (
-          <WorkflowEditor />
-        ) : (
-          <WorkflowDiagram />
-        )
-      ) : (
-        <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
-          <p className="text-muted-foreground">
-            Sélectionnez un projet pour afficher son workflow
-          </p>
+      <ReactFlowProvider>
+        {" "}
+        {/* ✅ Envelopper ici */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {selectedProjectId ? (
+            isEditing ? (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <WorkflowEditor />
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <WorkflowDiagram />
+              </div>
+            )
+          ) : (
+            <div className="flex items-center justify-center flex-1 h-full">
+              <p className="text-muted-foreground">
+                Sélectionnez un projet pour afficher son workflow
+              </p>
+            </div>
+          )}
         </div>
-      )}
+      </ReactFlowProvider>
     </PageContainer>
   );
 }

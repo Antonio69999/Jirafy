@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   ReactFlow,
@@ -20,8 +20,7 @@ import {
   useDeleteTransition,
 } from "@/hooks/useProjectWorkflow";
 import { useAvailableStatuses } from "@/hooks/useStatus";
-import { Button } from "@/components/ui/button";
-import { Trash2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useColorThemeStore } from "@/store/colorThemeStore";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -37,8 +36,11 @@ export default function WorkflowEditor() {
     loading: transitionsLoading,
     refetch,
   } = useProjectWorkflow(projectId ? parseInt(projectId) : null);
-  const { data: statuses, loading: statusesLoading } = useAvailableStatuses();
 
+ const { data: statuses, loading: statusesLoading } = useAvailableStatuses(
+    projectId ? parseInt(projectId) : undefined
+  );
+  
   const { create: createTransition } = useCreateTransition();
   const { remove: deleteTransition } = useDeleteTransition();
 
@@ -46,8 +48,12 @@ export default function WorkflowEditor() {
   const nodes: Node[] = useMemo(() => {
     if (!statuses || !Array.isArray(statuses) || statuses.length === 0)
       return [];
+
+    console.log("📦 Creating nodes from statuses:", statuses);
+
     return statuses.map((status, index) => ({
       id: String(status.id),
+      type: "default",
       data: {
         label: (
           <div className="px-4 py-2">
@@ -65,13 +71,17 @@ export default function WorkflowEditor() {
         border: "2px solid var(--border)",
         borderRadius: "8px",
         color: "var(--foreground)",
+        padding: "10px",
       },
     }));
   }, [statuses]);
 
   // Création des edges (transitions)
   const edges: Edge[] = useMemo(() => {
-    if (!transitions.length) return [];
+    if (!transitions || transitions.length === 0) return [];
+
+    console.log("🔗 Creating edges from transitions:", transitions);
+
     return transitions.map((transition) => ({
       id: String(transition.id),
       source: String(transition.from_status_id),
@@ -95,14 +105,23 @@ export default function WorkflowEditor() {
         fill: "var(--card)",
         fillOpacity: 0.9,
       },
-      data: {
-        transitionId: transition.id,
-      },
     }));
   }, [transitions]);
 
-  const [nodesState, , onNodesChange] = useNodesState(nodes);
-  const [edgesState, , onEdgesChange] = useEdgesState(edges);
+  // ✅ Initialiser les states ReactFlow
+  const [nodesState, setNodesState, onNodesChange] = useNodesState([]);
+  const [edgesState, setEdgesState, onEdgesChange] = useEdgesState([]);
+
+  // ✅ Mettre à jour les states quand les données changent
+  useEffect(() => {
+    console.log("🔄 Updating nodes state:", nodes);
+    setNodesState(nodes);
+  }, [nodes, setNodesState]);
+
+  useEffect(() => {
+    console.log("🔄 Updating edges state:", edges);
+    setEdgesState(edges);
+  }, [edges, setEdgesState]);
 
   // Ajout d'une transition par drag & drop
   const onConnect = useCallback(
@@ -110,12 +129,14 @@ export default function WorkflowEditor() {
       if (!projectId || !params.source || !params.target) return;
       const name = window.prompt("Nom de la transition ?");
       if (!name) return;
+
       await createTransition({
         project_id: parseInt(projectId),
         from_status_id: parseInt(params.source),
         to_status_id: parseInt(params.target),
         name,
       });
+
       refetch();
     },
     [projectId, createTransition, refetch]
@@ -123,15 +144,15 @@ export default function WorkflowEditor() {
 
   // Suppression d'une transition
   const handleDeleteEdge = useCallback(
-    async (edge: FlowEdge) => {
-      if (!edge.id) return;
+    async (edgeId: string) => {
       if (!window.confirm("Supprimer cette transition ?")) return;
-      await deleteTransition(Number(edge.id));
+      await deleteTransition(Number(edgeId));
       refetch();
     },
     [deleteTransition, refetch]
   );
 
+  // États de chargement et permissions
   if (!projectId) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
@@ -160,29 +181,41 @@ export default function WorkflowEditor() {
     );
   }
 
+  console.log("🎨 Rendering ReactFlow with:", {
+    nodesCount: nodesState.length,
+    edgesCount: edgesState.length,
+  });
+
   return (
     <div
       className={cn(
-        "h-[calc(100vh-12rem)] rounded-lg border",
+        "h-[calc(100vh-12rem)] w-full rounded-lg border",
         `theme-${colorTheme}`
       )}
     >
-      <Background variant={BackgroundVariant.Dots} />
-      <Controls />
-      <div className="h-full">
-        <ReactFlow
-          nodes={nodesState}
-          edges={edgesState}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          fitView
-        />
-        <div className="p-2 text-xs text-muted-foreground">
-          <Plus className="inline w-4 h-4 mr-1" />
-          Glissez-déposez entre deux statuts pour créer une transition. Cliquez
-          sur une flèche pour la supprimer.
-        </div>
+      <ReactFlow
+        nodes={nodesState}
+        edges={edgesState}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onEdgeClick={(_, edge) => handleDeleteEdge(edge.id)}
+        fitView
+        minZoom={0.5}
+        maxZoom={1.5}
+        defaultEdgeOptions={{
+          type: "smoothstep",
+          animated: true,
+        }}
+      >
+        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+        <Controls />
+      </ReactFlow>
+
+      <div className="absolute bottom-4 left-4 p-2 text-xs text-muted-foreground bg-card/80 rounded border">
+        <Plus className="inline w-4 h-4 mr-1" />
+        Glissez-déposez entre deux statuts pour créer une transition. Cliquez
+        sur une flèche pour la supprimer.
       </div>
     </div>
   );

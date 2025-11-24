@@ -24,7 +24,9 @@ export function useProjectWorkflow(projectId: number | null) {
     setLoading(true);
     setError(null);
     try {
+      console.log("🔄 Fetching transitions for project:", projectId);
       const result = await workflowService.getProjectTransitions(projectId);
+      console.log("✅ Transitions loaded:", result);
       setData(result);
     } catch (err: any) {
       const error = {

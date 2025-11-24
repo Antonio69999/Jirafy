@@ -466,9 +466,8 @@
       "empty": "Aucun projet pour le moment",
       "contactAdmin": "Contactez votre administrateur pour plus d'informations."
     }
-
   },
-    "workflow": {
-      "description": "oui"
-    }
+  "workflow": {
+    "description": "Gérez les transitions de statut de vos projets"
+  }
 }
