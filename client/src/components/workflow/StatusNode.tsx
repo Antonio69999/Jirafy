@@ -8,6 +8,7 @@ interface StatusNodeProps {
     name: string;
     key: string;
     category: string;
+    contextMenu?: React.ReactNode; // ✅ Ajouter cette prop
   };
   selected?: boolean;
 }
@@ -15,13 +16,13 @@ interface StatusNodeProps {
 const getCategoryColor = (category: string): string => {
   switch (category) {
     case "todo":
-      return "#3b82f6"; // Bleu
+      return "#3b82f6";
     case "in_progress":
-      return "#f59e0b"; // Orange
+      return "#f59e0b";
     case "done":
-      return "#10b981"; // Vert
+      return "#10b981";
     default:
-      return "#6b7280"; // Gris
+      return "#6b7280";
   }
 };
 
@@ -56,7 +57,8 @@ function StatusNode({ data, selected }: StatusNodeProps) {
   const icon = getCategoryIcon(data.category);
   const categoryLabel = getCategoryLabel(data.category);
 
-  return (
+  // ✅ Le contenu du nœud
+  const nodeContent = (
     <div
       className={cn(
         "px-4 py-3 rounded-lg border-2 transition-all min-w-[180px]",
@@ -88,6 +90,14 @@ function StatusNode({ data, selected }: StatusNodeProps) {
       <Handle type="source" position={Position.Right} className="opacity-0" />
     </div>
   );
+
+  // ✅ Si un contextMenu est fourni, on wrap le nœud avec
+  if (data.contextMenu) {
+    return <>{data.contextMenu}</>;
+  }
+
+  // ✅ Sinon, on affiche juste le nœud
+  return nodeContent;
 }
 
 export default memo(StatusNode);

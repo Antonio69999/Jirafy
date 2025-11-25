@@ -39,7 +39,6 @@ export default function WorkflowDiagram() {
     projectId ? parseInt(projectId) : undefined
   );
 
-  // ✅ Création des nœuds avec entrée/sortie
   const nodes: Node[] = useMemo(() => {
     if (!statuses || !Array.isArray(statuses) || statuses.length === 0)
       return [];
@@ -53,8 +52,8 @@ export default function WorkflowDiagram() {
         category: status.category,
       },
       position: {
-        x: 350 + index * 300, // ✅ Même espacement
-        y: 100, // ✅ Même ligne
+        x: 350 + index * 300,
+        y: 100,
       },
     }));
 

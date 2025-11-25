@@ -8,6 +8,9 @@ import {
   useEdgesState,
   MarkerType,
   BackgroundVariant,
+  useReactFlow,
+  Handle,
+  Position,
   type Edge,
   type Connection,
   type Node,
@@ -18,23 +21,89 @@ import {
   useCreateTransition,
   useDeleteTransition,
 } from "@/hooks/useProjectWorkflow";
-import { useAvailableStatuses } from "@/hooks/useStatus";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { useAvailableStatuses, useStatusActions } from "@/hooks/useStatus";
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Circle,
+  ArrowRight,
+  CheckCircle2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useColorThemeStore } from "@/store/colorThemeStore";
 import { usePermissions } from "@/hooks/usePermissions";
 import { TransitionModal } from "./TransitionModal";
+import { CreateStatusModal } from "./CreateStatusModal";
+import { EditStatusModal } from "./EditStatusModal";
 import StatusNode from "./StatusNode";
 import EntryNode from "./EntryNode";
 import ExitNode from "./ExitNode";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import type { Status } from "@/api/services/statusService";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
-// ✅ Définir les types de nœuds personnalisés
 const nodeTypes = {
   status: StatusNode,
   entry: EntryNode,
   exit: ExitNode,
+};
+
+// ✅ Déplacer les helper functions EN DEHORS du composant
+const getCategoryColor = (category: string): string => {
+  switch (category) {
+    case "todo":
+      return "#3b82f6";
+    case "in_progress":
+      return "#f59e0b";
+    case "done":
+      return "#10b981";
+    default:
+      return "#6b7280";
+  }
+};
+
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case "todo":
+      return <Circle className="w-4 h-4" />;
+    case "in_progress":
+      return <ArrowRight className="w-4 h-4" />;
+    case "done":
+      return <CheckCircle2 className="w-4 h-4" />;
+    default:
+      return <Circle className="w-4 h-4" />;
+  }
+};
+
+const getCategoryLabel = (category: string): string => {
+  switch (category) {
+    case "todo":
+      return "À faire";
+    case "in_progress":
+      return "En cours";
+    case "done":
+      return "Terminé";
+    default:
+      return "";
+  }
 };
 
 export default function WorkflowEditor() {
@@ -42,8 +111,14 @@ export default function WorkflowEditor() {
   const projectId = searchParams.get("project");
   const { colorTheme } = useColorThemeStore();
   const { canManageProject } = usePermissions();
+  const reactFlowInstance = useReactFlow();
 
   const [isTransitionModalOpen, setIsTransitionModalOpen] = useState(false);
+  const [isCreateStatusModalOpen, setIsCreateStatusModalOpen] = useState(false);
+  const [isEditStatusModalOpen, setIsEditStatusModalOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
+  const [nodeToDelete, setNodeToDelete] = useState<string | null>(null);
+
   const [pendingConnection, setPendingConnection] = useState<{
     source: string;
     target: string;
@@ -54,56 +129,147 @@ export default function WorkflowEditor() {
   const {
     data: transitions,
     loading: transitionsLoading,
-    refetch,
+    refetch: refetchTransitions,
   } = useProjectWorkflow(projectId ? parseInt(projectId) : null);
 
-  const { data: statuses, loading: statusesLoading } = useAvailableStatuses(
-    projectId ? parseInt(projectId) : undefined
-  );
+  const {
+    data: statuses,
+    loading: statusesLoading,
+    error: statusesError,
+    refetch: refetchStatuses,
+  } = useAvailableStatuses(projectId ? parseInt(projectId) : undefined);
 
   const { create: createTransition } = useCreateTransition();
   const { remove: deleteTransition } = useDeleteTransition();
 
-  // ✅ Création des nœuds avec entrée/sortie
- const nodes: Node[] = useMemo(() => {
-  if (!statuses || !Array.isArray(statuses) || statuses.length === 0)
-    return [];
+  const {
+    create: createStatus,
+    update: updateStatus,
+    remove: removeStatus,
+  } = useStatusActions();
 
-  // ✅ Layout amélioré : disposition horizontale
-  const statusNodes = statuses.map((status, index) => ({
-    id: String(status.id),
-    type: "status" as const,
-    data: {
-      name: status.name,
-      key: status.key,
-      category: status.category,
-    },
-    position: {
-      x: 350 + index * 300, // ✅ Augmenter l'espacement horizontal (300px au lieu de 250px)
-      y: 100, // ✅ Tous sur la même ligne (pas de Math.floor pour éviter les étages)
-    },
-  }));
-
-  // ✅ Nœud d'entrée (plus à gauche)
-  const entryNode: Node = {
-    id: "entry",
-    type: "entry",
-    data: { label: "Ticket créé" },
-    position: { x: 0, y: 100 }, // ✅ Aligné avec les autres
+  // Context menu handlers
+  const handleEditNodeClick = (statusId: string) => {
+    const status = statuses?.find((s) => String(s.id) === statusId);
+    if (status) {
+      setSelectedStatus(status);
+      setIsEditStatusModalOpen(true);
+    }
   };
 
-  // ✅ Nœud de sortie (plus à droite)
-  const exitNode: Node = {
-    id: "exit",
-    type: "exit",
-    data: { label: "Ticket résolu" },
-    position: { x: 350 + statuses.length * 300, y: 100 }, // ✅ Aligné avec les autres
+  const handleDeleteNodeClick = (statusId: string) => {
+    setNodeToDelete(statusId);
   };
 
-  return [entryNode, ...statusNodes, exitNode];
-}, [statuses]);
+  const confirmDelete = async () => {
+    if (nodeToDelete) {
+      await handleDeleteStatus(nodeToDelete);
+      setNodeToDelete(null);
+    }
+  };
 
-  // ✅ Création des edges avec connexions entrée/sortie
+  // ✅ Maintenant useMemo peut utiliser les fonctions helper
+  const nodes: Node[] = useMemo(() => {
+    if (!statuses || !Array.isArray(statuses) || statuses.length === 0)
+      return [];
+
+    const statusNodes = statuses.map((status, index) => ({
+      id: String(status.id),
+      type: "status" as const,
+      data: {
+        name: status.name,
+        key: status.key,
+        category: status.category,
+        contextMenu: (
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <div
+                className={cn(
+                  "px-4 py-3 rounded-lg border-2 transition-all min-w-[180px]",
+                  "bg-card shadow-md cursor-context-menu"
+                )}
+                style={{ borderColor: getCategoryColor(status.category) }}
+              >
+                <Handle
+                  type="target"
+                  position={Position.Left}
+                  className="opacity-0"
+                />
+
+                <div className="flex items-center gap-2 mb-1">
+                  <div style={{ color: getCategoryColor(status.category) }}>
+                    {getCategoryIcon(status.category)}
+                  </div>
+                  <div className="font-semibold text-foreground">
+                    {status.name}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-muted-foreground">
+                    {status.key}
+                  </div>
+                  <div
+                    className="text-xs font-medium px-2 py-0.5 rounded"
+                    style={{
+                      backgroundColor: `${getCategoryColor(status.category)}20`,
+                      color: getCategoryColor(status.category),
+                    }}
+                  >
+                    {getCategoryLabel(status.category)}
+                  </div>
+                </div>
+
+                <Handle
+                  type="source"
+                  position={Position.Right}
+                  className="opacity-0"
+                />
+              </div>
+            </ContextMenuTrigger>
+
+            <ContextMenuContent className={`theme-${colorTheme}`}>
+              <ContextMenuItem
+                onClick={() => handleEditNodeClick(String(status.id))}
+              >
+                <Edit2 className="mr-2 h-4 w-4" />
+                Modifier
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem
+                onClick={() => handleDeleteNodeClick(String(status.id))}
+                className="text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Supprimer
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+        ),
+      },
+      position: {
+        x: 350 + index * 300,
+        y: 100,
+      },
+    }));
+
+    const entryNode: Node = {
+      id: "entry",
+      type: "entry",
+      data: { label: "Ticket créé" },
+      position: { x: 0, y: 100 },
+    };
+
+    const exitNode: Node = {
+      id: "exit",
+      type: "exit",
+      data: { label: "Ticket résolu" },
+      position: { x: 350 + statuses.length * 300, y: 100 },
+    };
+
+    return [entryNode, ...statusNodes, exitNode];
+  }, [statuses, colorTheme]); // ✅ Ajouter colorTheme dans les deps
+
   const edges: Edge[] = useMemo(() => {
     if (!transitions || transitions.length === 0 || !statuses) return [];
 
@@ -132,7 +298,6 @@ export default function WorkflowEditor() {
       },
     }));
 
-    // ✅ Connexion entrée → premier statut (TODO)
     const todoStatus = statuses.find((s) => s.key === "TODO");
     if (todoStatus) {
       transitionEdges.push({
@@ -153,7 +318,6 @@ export default function WorkflowEditor() {
       });
     }
 
-    // ✅ Connexion dernier statut (DONE) → sortie
     const doneStatus = statuses.find((s) => s.key === "DONE");
     if (doneStatus) {
       transitionEdges.push({
@@ -181,21 +345,17 @@ export default function WorkflowEditor() {
   const [edgesState, setEdgesState, onEdgesChange] = useEdgesState([]);
 
   useEffect(() => {
-    console.log("🔄 Updating nodes state:", nodes);
     setNodesState(nodes);
   }, [nodes, setNodesState]);
 
   useEffect(() => {
-    console.log("🔄 Updating edges state:", edges);
     setEdgesState(edges);
   }, [edges, setEdgesState]);
 
-  // ✅ Gérer la connexion avec modal
   const onConnect = useCallback(
     (params: Connection) => {
       if (!projectId || !params.source || !params.target) return;
 
-      // Empêcher les connexions depuis/vers entrée/sortie
       if (
         params.source === "entry" ||
         params.target === "exit" ||
@@ -220,7 +380,6 @@ export default function WorkflowEditor() {
     [projectId, statuses]
   );
 
-  // ✅ Créer la transition depuis la modal
   const handleCreateTransition = async (data: {
     name: string;
     description?: string;
@@ -237,7 +396,7 @@ export default function WorkflowEditor() {
       });
 
       toast.success("Transition créée avec succès");
-      refetch();
+      refetchTransitions();
     } catch (error) {
       toast.error("Erreur lors de la création de la transition");
     } finally {
@@ -245,10 +404,8 @@ export default function WorkflowEditor() {
     }
   };
 
-  // Suppression d'une transition
   const handleDeleteEdge = useCallback(
     async (edgeId: string) => {
-      // Empêcher la suppression des edges entrée/sortie
       if (edgeId === "entry-to-todo" || edgeId === "done-to-exit") {
         toast.error("Impossible de supprimer les connexions entrée/sortie");
         return;
@@ -258,13 +415,65 @@ export default function WorkflowEditor() {
       try {
         await deleteTransition(Number(edgeId));
         toast.success("Transition supprimée");
-        refetch();
+        refetchTransitions();
       } catch (error) {
         toast.error("Erreur lors de la suppression");
       }
     },
-    [deleteTransition, refetch]
+    [deleteTransition, refetchTransitions]
   );
+
+  const handleCreateStatus = async (data: {
+    key: string;
+    name: string;
+    category: string;
+  }) => {
+    try {
+      await createStatus(data);
+      toast.success("Statut créé avec succès");
+      await refetchStatuses();
+      setTimeout(() => {
+        reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
+      }, 100);
+    } catch (error) {
+      toast.error("Erreur lors de la création du statut");
+    }
+  };
+
+  const handleUpdateStatus = async (updates: {
+    key?: string;
+    name?: string;
+    category?: string;
+  }) => {
+    if (!selectedStatus) return;
+
+    try {
+      await updateStatus(selectedStatus.id, updates);
+      toast.success("Statut modifié avec succès");
+      await refetchStatuses();
+      setSelectedStatus(null);
+      setIsEditStatusModalOpen(false);
+      setTimeout(() => {
+        reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
+      }, 100);
+    } catch (error) {
+      toast.error("Erreur lors de la modification du statut");
+    }
+  };
+
+  const handleDeleteStatus = async (statusId: string) => {
+    try {
+      await removeStatus(Number(statusId));
+      toast.success("Statut supprimé");
+      await refetchStatuses();
+      await refetchTransitions();
+      setTimeout(() => {
+        reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
+      }, 100);
+    } catch (error) {
+      toast.error("Erreur lors de la suppression");
+    }
+  };
 
   if (!projectId) {
     return (
@@ -294,11 +503,6 @@ export default function WorkflowEditor() {
     );
   }
 
-  console.log("🎨 Rendering ReactFlow with:", {
-    nodesCount: nodesState.length,
-    edgesCount: edgesState.length,
-  });
-
   return (
     <>
       <div
@@ -307,34 +511,15 @@ export default function WorkflowEditor() {
           `theme-${colorTheme}`
         )}
       >
-        {/* ✅ Boutons d'action en haut à droite */}
         <div className="absolute top-4 right-4 z-10 flex gap-2">
           <Button
             size="sm"
             variant="outline"
             className="bg-card/80 backdrop-blur"
-            onClick={() => toast.info("Fonctionnalité bientôt disponible")}
+            onClick={() => setIsCreateStatusModalOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
             Ajouter un statut
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="bg-card/80 backdrop-blur"
-            onClick={() => toast.info("Fonctionnalité bientôt disponible")}
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Éditer un statut
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="bg-card/80 backdrop-blur text-destructive hover:text-destructive"
-            onClick={() => toast.info("Fonctionnalité bientôt disponible")}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Supprimer un statut
           </Button>
         </div>
 
@@ -345,7 +530,7 @@ export default function WorkflowEditor() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgeClick={(_, edge) => handleDeleteEdge(edge.id)}
-          nodeTypes={nodeTypes} // ✅ Utiliser les nœuds personnalisés
+          nodeTypes={nodeTypes}
           fitView
           minZoom={0.5}
           maxZoom={1.5}
@@ -368,14 +553,11 @@ export default function WorkflowEditor() {
               • Glissez-déposez entre deux statuts pour créer une transition
             </li>
             <li>• Cliquez sur une flèche pour la supprimer</li>
-            <li>
-              • Les flèches en pointillés sont automatiques (entrée/sortie)
-            </li>
+            <li>• Clic droit sur un statut pour modifier/supprimer</li>
           </ul>
         </div>
       </div>
 
-      {/* ✅ Modal de création de transition */}
       <TransitionModal
         isOpen={isTransitionModalOpen}
         onClose={() => {
@@ -386,6 +568,47 @@ export default function WorkflowEditor() {
         fromStatusName={pendingConnection?.fromStatus?.name}
         toStatusName={pendingConnection?.toStatus?.name}
       />
+
+      <CreateStatusModal
+        isOpen={isCreateStatusModalOpen}
+        onClose={() => setIsCreateStatusModalOpen(false)}
+        onSubmit={handleCreateStatus}
+        projectId={projectId ? parseInt(projectId) : undefined}
+      />
+
+      <EditStatusModal
+        isOpen={isEditStatusModalOpen}
+        onClose={() => {
+          setIsEditStatusModalOpen(false);
+          setSelectedStatus(null);
+        }}
+        onSubmit={handleUpdateStatus}
+        status={selectedStatus}
+      />
+
+      <AlertDialog
+        open={!!nodeToDelete}
+        onOpenChange={() => setNodeToDelete(null)}
+      >
+        <AlertDialogContent className={`theme-${colorTheme}`}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Les issues utilisant ce statut
+              devront être migrées vers un autre statut.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
