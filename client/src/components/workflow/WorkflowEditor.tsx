@@ -9,8 +9,6 @@ import {
   MarkerType,
   BackgroundVariant,
   useReactFlow,
-  Handle,
-  Position,
   type Edge,
   type Connection,
   type Node,
@@ -20,35 +18,24 @@ import {
   useProjectWorkflow,
   useCreateTransition,
   useDeleteTransition,
+  useValidateWorkflow,
 } from "@/hooks/useProjectWorkflow";
 import { useAvailableStatuses, useStatusActions } from "@/hooks/useStatus";
-import {
-  Plus,
-  Edit2,
-  Trash2,
-  Circle,
-  ArrowRight,
-  CheckCircle2,
-} from "lucide-react";
+import { Plus, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useColorThemeStore } from "@/store/colorThemeStore";
 import { usePermissions } from "@/hooks/usePermissions";
 import { TransitionModal } from "./TransitionModal";
 import { CreateStatusModal } from "./CreateStatusModal";
 import { EditStatusModal } from "./EditStatusModal";
+import { ValidationDialog } from "./ValidationDialog";
 import StatusNode from "./StatusNode";
 import EntryNode from "./EntryNode";
 import ExitNode from "./ExitNode";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Status } from "@/api/services/statusService";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+import type { WorkflowValidation } from "@/api/services/workflowService";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,46 +53,6 @@ const nodeTypes = {
   exit: ExitNode,
 };
 
-// ✅ Déplacer les helper functions EN DEHORS du composant
-const getCategoryColor = (category: string): string => {
-  switch (category) {
-    case "todo":
-      return "#3b82f6";
-    case "in_progress":
-      return "#f59e0b";
-    case "done":
-      return "#10b981";
-    default:
-      return "#6b7280";
-  }
-};
-
-const getCategoryIcon = (category: string) => {
-  switch (category) {
-    case "todo":
-      return <Circle className="w-4 h-4" />;
-    case "in_progress":
-      return <ArrowRight className="w-4 h-4" />;
-    case "done":
-      return <CheckCircle2 className="w-4 h-4" />;
-    default:
-      return <Circle className="w-4 h-4" />;
-  }
-};
-
-const getCategoryLabel = (category: string): string => {
-  switch (category) {
-    case "todo":
-      return "À faire";
-    case "in_progress":
-      return "En cours";
-    case "done":
-      return "Terminé";
-    default:
-      return "";
-  }
-};
-
 export default function WorkflowEditor() {
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get("project");
@@ -113,17 +60,23 @@ export default function WorkflowEditor() {
   const { canManageProject } = usePermissions();
   const reactFlowInstance = useReactFlow();
 
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const [isTransitionModalOpen, setIsTransitionModalOpen] = useState(false);
   const [isCreateStatusModalOpen, setIsCreateStatusModalOpen] = useState(false);
   const [isEditStatusModalOpen, setIsEditStatusModalOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
   const [nodeToDelete, setNodeToDelete] = useState<string | null>(null);
+  const [edgeToDelete, setEdgeToDelete] = useState<string | null>(null);
+  const [validationResult, setValidationResult] =
+    useState<WorkflowValidation | null>(null);
+  const [isValidationDialogOpen, setIsValidationDialogOpen] = useState(false);
 
   const [pendingConnection, setPendingConnection] = useState<{
     source: string;
     target: string;
-    fromStatus?: any;
-    toStatus?: any;
+    fromStatus?: Status;
+    toStatus?: Status;
   } | null>(null);
 
   const {
@@ -135,7 +88,6 @@ export default function WorkflowEditor() {
   const {
     data: statuses,
     loading: statusesLoading,
-    error: statusesError,
     refetch: refetchStatuses,
   } = useAvailableStatuses(projectId ? parseInt(projectId) : undefined);
 
@@ -148,18 +100,46 @@ export default function WorkflowEditor() {
     remove: removeStatus,
   } = useStatusActions();
 
-  // Context menu handlers
-  const handleEditNodeClick = (statusId: string) => {
-    const status = statuses?.find((s) => String(s.id) === statusId);
-    if (status) {
-      setSelectedStatus(status);
-      setIsEditStatusModalOpen(true);
+  const { validate: validateWorkflow, loading: validationLoading } =
+    useValidateWorkflow();
+
+  const handleDeleteEdgeClick = useCallback((edgeId: string) => {
+    if (edgeId === "entry-to-todo" || edgeId === "done-to-exit") {
+      toast.error("Impossible de supprimer les connexions entrée/sortie");
+      return;
+    }
+    setEdgeToDelete(edgeId);
+  }, []);
+
+  const confirmDeleteEdge = async () => {
+    if (edgeToDelete) {
+      try {
+        await deleteTransition(Number(edgeToDelete));
+        toast.success("Transition supprimée");
+        refetchTransitions();
+      } catch (error) {
+        toast.error("Erreur lors de la suppression");
+      } finally {
+        setEdgeToDelete(null);
+      }
     }
   };
 
-  const handleDeleteNodeClick = (statusId: string) => {
+  // Context menu handlers
+  const handleEditNodeClick = useCallback(
+    (statusId: string) => {
+      const status = statuses?.find((s) => String(s.id) === statusId);
+      if (status) {
+        setSelectedStatus(status);
+        setIsEditStatusModalOpen(true);
+      }
+    },
+    [statuses]
+  );
+
+  const handleDeleteNodeClick = useCallback((statusId: string) => {
     setNodeToDelete(statusId);
-  };
+  }, []);
 
   const confirmDelete = async () => {
     if (nodeToDelete) {
@@ -168,10 +148,8 @@ export default function WorkflowEditor() {
     }
   };
 
-  // ✅ Maintenant useMemo peut utiliser les fonctions helper
   const nodes: Node[] = useMemo(() => {
-    if (!statuses || !Array.isArray(statuses) || statuses.length === 0)
-      return [];
+    if (!statuses || statuses.length === 0) return [];
 
     const statusNodes = statuses.map((status, index) => ({
       id: String(status.id),
@@ -180,72 +158,9 @@ export default function WorkflowEditor() {
         name: status.name,
         key: status.key,
         category: status.category,
-        contextMenu: (
-          <ContextMenu>
-            <ContextMenuTrigger asChild>
-              <div
-                className={cn(
-                  "px-4 py-3 rounded-lg border-2 transition-all min-w-[180px]",
-                  "bg-card shadow-md cursor-context-menu"
-                )}
-                style={{ borderColor: getCategoryColor(status.category) }}
-              >
-                <Handle
-                  type="target"
-                  position={Position.Left}
-                  className="opacity-0"
-                />
-
-                <div className="flex items-center gap-2 mb-1">
-                  <div style={{ color: getCategoryColor(status.category) }}>
-                    {getCategoryIcon(status.category)}
-                  </div>
-                  <div className="font-semibold text-foreground">
-                    {status.name}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-muted-foreground">
-                    {status.key}
-                  </div>
-                  <div
-                    className="text-xs font-medium px-2 py-0.5 rounded"
-                    style={{
-                      backgroundColor: `${getCategoryColor(status.category)}20`,
-                      color: getCategoryColor(status.category),
-                    }}
-                  >
-                    {getCategoryLabel(status.category)}
-                  </div>
-                </div>
-
-                <Handle
-                  type="source"
-                  position={Position.Right}
-                  className="opacity-0"
-                />
-              </div>
-            </ContextMenuTrigger>
-
-            <ContextMenuContent className={`theme-${colorTheme}`}>
-              <ContextMenuItem
-                onClick={() => handleEditNodeClick(String(status.id))}
-              >
-                <Edit2 className="mr-2 h-4 w-4" />
-                Modifier
-              </ContextMenuItem>
-              <ContextMenuSeparator />
-              <ContextMenuItem
-                onClick={() => handleDeleteNodeClick(String(status.id))}
-                className="text-red-600"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Supprimer
-              </ContextMenuItem>
-            </ContextMenuContent>
-          </ContextMenu>
-        ),
+        colorTheme,
+        onEdit: () => handleEditNodeClick(String(status.id)),
+        onDelete: () => handleDeleteNodeClick(String(status.id)),
       },
       position: {
         x: 350 + index * 300,
@@ -264,15 +179,20 @@ export default function WorkflowEditor() {
       id: "exit",
       type: "exit",
       data: { label: "Ticket résolu" },
-      position: { x: 350 + statuses.length * 300, y: 100 },
+      position: { x: statuses.length * 300 + 350, y: 100 },
     };
 
     return [entryNode, ...statusNodes, exitNode];
-  }, [statuses, colorTheme]); // ✅ Ajouter colorTheme dans les deps
+  }, [
+    statuses,
+    colorTheme,
+    handleEditNodeClick,
+    handleDeleteNodeClick,
+    refreshKey,
+  ]);
 
   const edges: Edge[] = useMemo(() => {
     if (!transitions || transitions.length === 0 || !statuses) return [];
-
     const transitionEdges: Edge[] = transitions.map((transition) => ({
       id: String(transition.id),
       source: String(transition.from_status_id),
@@ -339,7 +259,7 @@ export default function WorkflowEditor() {
     }
 
     return transitionEdges;
-  }, [transitions, statuses]);
+  }, [transitions, statuses, refreshKey]);
 
   const [nodesState, setNodesState, onNodesChange] = useNodesState([]);
   const [edgesState, setEdgesState, onEdgesChange] = useEdgesState([]);
@@ -404,6 +324,16 @@ export default function WorkflowEditor() {
     }
   };
 
+  const handleValidateWorkflow = async () => {
+    if (!projectId) return;
+
+    const result = await validateWorkflow(parseInt(projectId));
+    if (result) {
+      setValidationResult(result);
+      setIsValidationDialogOpen(true);
+    }
+  };
+
   const handleDeleteEdge = useCallback(
     async (edgeId: string) => {
       if (edgeId === "entry-to-todo" || edgeId === "done-to-exit") {
@@ -432,6 +362,11 @@ export default function WorkflowEditor() {
       await createStatus(data);
       toast.success("Statut créé avec succès");
       await refetchStatuses();
+      await refetchTransitions();
+
+      // ✅ Incrémenter refreshKey pour forcer le re-render
+      setRefreshKey((prev) => prev + 1);
+
       setTimeout(() => {
         reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
       }, 100);
@@ -451,8 +386,12 @@ export default function WorkflowEditor() {
       await updateStatus(selectedStatus.id, updates);
       toast.success("Statut modifié avec succès");
       await refetchStatuses();
+      await refetchTransitions();
       setSelectedStatus(null);
       setIsEditStatusModalOpen(false);
+
+      setRefreshKey((prev) => prev + 1);
+
       setTimeout(() => {
         reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
       }, 100);
@@ -467,6 +406,9 @@ export default function WorkflowEditor() {
       toast.success("Statut supprimé");
       await refetchStatuses();
       await refetchTransitions();
+
+      setRefreshKey((prev) => prev + 1);
+
       setTimeout(() => {
         reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
       }, 100);
@@ -516,6 +458,16 @@ export default function WorkflowEditor() {
             size="sm"
             variant="outline"
             className="bg-card/80 backdrop-blur"
+            onClick={handleValidateWorkflow}
+            disabled={validationLoading}
+          >
+            <CheckCircle2 className="mr-2 h-4 w-4" />
+            {validationLoading ? "Validation..." : "Valider le workflow"}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="bg-card/80 backdrop-blur"
             onClick={() => setIsCreateStatusModalOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -529,7 +481,7 @@ export default function WorkflowEditor() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onEdgeClick={(_, edge) => handleDeleteEdge(edge.id)}
+          onEdgeClick={(_, edge) => handleDeleteEdgeClick(edge.id)}
           nodeTypes={nodeTypes}
           fitView
           minZoom={0.5}
@@ -587,6 +539,31 @@ export default function WorkflowEditor() {
       />
 
       <AlertDialog
+        open={!!edgeToDelete}
+        onOpenChange={() => setEdgeToDelete(null)}
+      >
+        <AlertDialogContent className={`theme-${colorTheme}`}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette transition ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. La transition sera définitivement
+              supprimée du workflow.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteEdge}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ✅ AlertDialog pour supprimer un statut (déjà existant) */}
+      <AlertDialog
         open={!!nodeToDelete}
         onOpenChange={() => setNodeToDelete(null)}
       >
@@ -609,6 +586,12 @@ export default function WorkflowEditor() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ValidationDialog
+        isOpen={isValidationDialogOpen}
+        onClose={() => setIsValidationDialogOpen(false)}
+        validation={validationResult}
+        colorTheme={colorTheme}
+      />
     </>
   );
 }

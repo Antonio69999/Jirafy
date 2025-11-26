@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   workflowService,
   type WorkflowTransition,
+  type WorkflowValidation,
 } from "@/api/services/workflowService";
 import { toast } from "sonner";
 
@@ -106,4 +107,42 @@ export function useDeleteTransition() {
   };
 
   return { remove, loading, error };
+}
+
+
+export function useValidateWorkflow() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error>(null);
+
+  const validate = async (
+    projectId: number
+  ): Promise<WorkflowValidation | null> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await workflowService.validateWorkflow(projectId);
+
+      if (!result.valid) {
+        toast.error("Le workflow contient des erreurs");
+      } else if (result.warnings.length > 0) {
+        toast.warning("Le workflow contient des avertissements");
+      } else {
+        toast.success("Workflow valide !");
+      }
+
+      return result;
+    } catch (err: any) {
+      const error = {
+        message: err.message || "Erreur lors de la validation du workflow",
+        status: err.status,
+      };
+      setError(error);
+      toast.error(error.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { validate, loading, error };
 }

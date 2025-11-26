@@ -37,4 +37,10 @@ interface WorkflowServiceInterface
    * Créer les transitions par défaut pour un projet
    */
   public function createDefaultTransitions(Project $project): void;
+
+  /**
+   * Valider le workflow d'un projet
+   */
+  public function validateWorkflow(Project $project): array;
+
 }

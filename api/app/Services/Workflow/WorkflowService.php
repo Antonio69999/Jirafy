@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\DB;
 
 class WorkflowService implements WorkflowServiceInterface
 {
+
+  public function __construct(
+    private WorkflowValidationService $validationService
+  ) {}
+
   /**
    * Récupérer les transitions disponibles pour une issue
    */
@@ -111,5 +116,13 @@ class WorkflowService implements WorkflowServiceInterface
       'name' => 'Complete',
       'description' => 'Terminer la tâche',
     ]);
+  }
+
+    /**
+   * Valider le workflow d'un projet
+   */
+  public function validateWorkflow(Project $project): array
+  {
+    return $this->validationService->validateWorkflow($project);
   }
 }

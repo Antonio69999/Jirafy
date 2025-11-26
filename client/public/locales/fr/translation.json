@@ -471,10 +471,16 @@
     "description": "Gérez les transitions de statut de vos projets",
     "transition": {
       "create": "Créer une transition",
-      "name" : "Nom",
-      "description" : "Description",
-      "namePlaceholder" : "nom transistion",
-      "descriptionPlaceholder" : "blablabla"
+      "name": "Nom",
+      "description": "Description",
+      "namePlaceholder": "nom transistion",
+      "descriptionPlaceholder": "blablabla"
+    },
+    "status": {
+      "create": "Créer un statut",
+      "key": "Clé",
+      "name": "Nom",
+      "category": "Catégorie"
     }
   }
 }

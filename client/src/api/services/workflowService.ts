@@ -22,6 +22,12 @@ export interface WorkflowTransition {
   };
 }
 
+export interface WorkflowValidation {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
 function unwrap<T>(res: { data: ApiResponse<T> }): T {
   if (!res.data?.success || typeof res.data.data === "undefined") {
     throw new Error(res.data?.message || "API error");
@@ -85,6 +91,13 @@ export const workflowService = {
     const res = await api.post<ApiResponse<any>>(
       `/api/issues/${issueId}/transition`,
       { transition_id: transitionId }
+    );
+    return unwrap(res);
+  },
+
+  async validateWorkflow(projectId: number): Promise<WorkflowValidation> {
+    const res = await api.get<ApiResponse<WorkflowValidation>>(
+      `/api/projects/${projectId}/workflow/validate`
     );
     return unwrap(res);
   },

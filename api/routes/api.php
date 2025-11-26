@@ -48,6 +48,7 @@ Route::middleware('auth:api')->group(function () {
 
   Route::prefix('projects/{project}/workflow')->group(function () {
     Route::get('/transitions', [WorkflowController::class, 'getProjectTransitions']);
+    Route::get('/validate', [WorkflowController::class, 'validateWorkflow']);
   });
 
   Route::prefix('workflow')->group(function () {

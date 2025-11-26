@@ -155,4 +155,29 @@ class WorkflowController extends Controller
       'message' => 'Transition supprimée avec succès'
     ]);
   }
+
+  /**
+   * Valider le workflow d'un projet
+   */
+  public function validateWorkflow(Project $project): JsonResponse
+  {
+    $user = Auth::user();
+
+    if (!$this->permissionService->userCanOnProject($user, 'workflow.manage', $project)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Permission refusée'
+      ], Response::HTTP_FORBIDDEN);
+    }
+
+    $validation = $this->service->validateWorkflow($project);
+
+    return response()->json([
+      'success' => true,
+      'data' => $validation,
+      'message' => $validation['valid']
+        ? 'Workflow valide'
+        : 'Le workflow contient des erreurs'
+    ], $validation['valid'] ? Response::HTTP_OK : Response::HTTP_UNPROCESSABLE_ENTITY);
+  }
 }

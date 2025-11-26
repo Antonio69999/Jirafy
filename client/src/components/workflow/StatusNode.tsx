@@ -1,14 +1,23 @@
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Circle, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Circle, ArrowRight, CheckCircle2, Edit2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 interface StatusNodeProps {
   data: {
     name: string;
     key: string;
     category: string;
-    contextMenu?: React.ReactNode; // ✅ Ajouter cette prop
+    colorTheme?: string;
+    onEdit?: () => void;
+    onDelete?: () => void;
   };
   selected?: boolean;
 }
@@ -62,7 +71,7 @@ function StatusNode({ data, selected }: StatusNodeProps) {
     <div
       className={cn(
         "px-4 py-3 rounded-lg border-2 transition-all min-w-[180px]",
-        "bg-card shadow-md",
+        "bg-card shadow-md cursor-context-menu",
         selected && "ring-2 ring-primary ring-offset-2"
       )}
       style={{ borderColor: color }}
@@ -91,12 +100,27 @@ function StatusNode({ data, selected }: StatusNodeProps) {
     </div>
   );
 
-  // ✅ Si un contextMenu est fourni, on wrap le nœud avec
-  if (data.contextMenu) {
-    return <>{data.contextMenu}</>;
+  // ✅ Si onEdit et onDelete sont fournis, wrapper avec ContextMenu
+  if (data.onEdit && data.onDelete) {
+    return (
+      <ContextMenu>
+        <ContextMenuTrigger asChild>{nodeContent}</ContextMenuTrigger>
+        <ContextMenuContent className={`theme-${data.colorTheme || "blue"}`}>
+          <ContextMenuItem onClick={data.onEdit}>
+            <Edit2 className="mr-2 h-4 w-4" />
+            Modifier
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={data.onDelete} className="text-red-600">
+            <Trash2 className="mr-2 h-4 w-4" />
+            Supprimer
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+    );
   }
 
-  // ✅ Sinon, on affiche juste le nœud
+  // ✅ Sinon, afficher juste le nœud
   return nodeContent;
 }
 
