@@ -28,6 +28,19 @@ export interface WorkflowValidation {
   warnings: string[];
 }
 
+export interface AvailableTransition {
+  id: number;
+  name: string;
+  description?: string;
+  to_status_id: number;
+  toStatus: {
+    id: number;
+    key: string;
+    name: string;
+    category: string;
+  };
+}
+
 function unwrap<T>(res: { data: ApiResponse<T> }): T {
   if (!res.data?.success || typeof res.data.data === "undefined") {
     throw new Error(res.data?.message || "API error");
@@ -77,8 +90,8 @@ export const workflowService = {
    */
   async getAvailableTransitions(
     issueId: number
-  ): Promise<WorkflowTransition[]> {
-    const res = await api.get<ApiResponse<WorkflowTransition[]>>(
+  ): Promise<AvailableTransition[]> {
+    const res = await api.get<ApiResponse<AvailableTransition[]>>(
       `/api/issues/${issueId}/transitions`
     );
     return unwrap(res);
@@ -89,7 +102,7 @@ export const workflowService = {
    */
   async performTransition(issueId: number, transitionId: number): Promise<any> {
     const res = await api.post<ApiResponse<any>>(
-      `/api/issues/${issueId}/transition`,
+      `/api/issues/${issueId}/transitions`,
       { transition_id: transitionId }
     );
     return unwrap(res);

@@ -15,7 +15,14 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { useDeleteIssue } from "@/hooks/useIssue";
 import { issueService } from "@/api/services/issueService";
+import {
+  useIssueTransitions,
+  usePerformTransition,
+} from "@/hooks/useIssueTransitions";
+import { TransitionSelector } from "./TransitionSelector";
 import { toast } from "sonner";
+import { useProjectStatuses } from "@/hooks/useStatus";
+import { useSearchParams } from "react-router-dom";
 
 interface TaskCardProps {
   task: Task;
@@ -33,8 +40,59 @@ export function TaskCard({
   const { t } = useTranslation();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showTransitions, setShowTransitions] = useState(false);
+  const [searchParams] = useSearchParams();
+  const projectId = searchParams.get("project");
 
   const { remove: deleteIssue, loading: deleteLoading } = useDeleteIssue();
+
+  // ✅ Récupérer l'ID numérique de l'issue
+  const issueId = parseInt(task.id.split("-")[1]) || null;
+
+  const { data: transitions, loading: transitionsLoading } =
+    useIssueTransitions(showTransitions ? issueId : null);
+
+  const { performTransition, loading: isTransitioning } =
+    usePerformTransition();
+
+  // ✅ Récupérer les statuts du projet pour afficher le nom réel
+  const { data: projectStatuses } = useProjectStatuses(
+    projectId ? parseInt(projectId) : null
+  );
+
+  // ✅ Trouver le statut actuel de la tâche
+  const getCurrentStatusName = (): string => {
+    // Si on n'a pas les statuts du projet, utiliser les noms par défaut
+    if (!projectStatuses || projectStatuses.length === 0) {
+      return task.status === "todo"
+        ? "À faire"
+        : task.status === "in-progress"
+        ? "En cours"
+        : "Terminé";
+    }
+
+    // Trouver le statut correspondant à la catégorie de la tâche
+    const categoryMap: Record<string, string> = {
+      todo: "todo",
+      "in-progress": "in_progress",
+      done: "done",
+    };
+
+    const category = categoryMap[task.status] || "todo";
+    const status = projectStatuses.find((s) => s.category === category);
+
+    return status?.name || task.status;
+  };
+
+  const handleTransition = async (transitionId: number) => {
+    if (!issueId) return;
+
+    const result = await performTransition(issueId, transitionId);
+    if (result && onTaskUpdate) {
+      onTaskUpdate();
+      setShowTransitions(false);
+    }
+  };
 
   const handleEditClick = () => {
     setIsEditModalOpen(true);
@@ -188,6 +246,34 @@ export function TaskCard({
             )}
           </div>
         )}
+
+        {/* ✅ Section de transition avec nom de statut dynamique */}
+        {showTransitions && issueId && (
+          <div className="mt-3 pt-3 border-t">
+            <TransitionSelector
+              issueId={issueId}
+              currentStatusName={getCurrentStatusName()}
+              transitions={transitions}
+              onTransition={handleTransition}
+              loading={transitionsLoading || isTransitioning}
+              colorTheme={colorTheme}
+            />
+          </div>
+        )}
+
+        <div className="mt-2 pt-2 border-t flex justify-end">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowTransitions(!showTransitions);
+            }}
+            className="h-7 px-2 text-xs"
+          >
+            {showTransitions ? "Masquer transitions" : "Changer statut"}
+          </Button>
+        </div>
       </div>
 
       <EditTaskModal

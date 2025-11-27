@@ -14,6 +14,7 @@ export interface StatusCreate {
   key: string;
   name: string;
   category: "todo" | "in_progress" | "done";
+  project_id?: number;
 }
 
 export interface StatusUpdate {
@@ -75,5 +76,12 @@ export const statusService = {
 
   async remove(id: number): Promise<void> {
     await api.delete(`${base}/${id}`);
+  },
+
+  async getProjectStatuses(projectId: number): Promise<Status[]> {
+    const res = await api.get<ApiResponse<Status[]>>(
+      `/api/projects/${projectId}/statuses`
+    );
+    return unwrap(res);
   },
 };

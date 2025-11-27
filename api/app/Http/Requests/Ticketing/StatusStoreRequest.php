@@ -17,6 +17,7 @@ class StatusStoreRequest extends FormRequest
             'key' => ['required', 'string', 'max:30', 'unique:statuses,key', 'regex:/^[A-Z0-9_-]+$/'],
             'name' => ['required', 'string', 'max:50'],
             'category' => ['required', 'string', 'in:todo,in_progress,done'],
+            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
         ];
     }
 

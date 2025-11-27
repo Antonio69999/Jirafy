@@ -7,6 +7,7 @@ use App\Http\Requests\Ticketing\{StatusStoreRequest, StatusUpdateRequest};
 use App\Models\Ticketing\Status;
 use Illuminate\Http\Request;
 use App\Interfaces\Ticketing\StatusServiceInterface;
+use App\Models\Ticketing\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -78,16 +79,16 @@ class StatusController extends Controller
    */
   public function store(StatusStoreRequest $request): JsonResponse
   {
-    $validated = $request->validate([
-      'key' => 'required|string|max:30|unique:statuses,key',
-      'name' => 'required|string|max:50',
-      'category' => 'required|string|in:todo,in_progress,done',
-      'project_id' => 'nullable|integer|exists:projects,id',
+    $validated = $request->validated();
+
+    $status = Status::create([
+      'key' => $validated['key'],
+      'name' => $validated['name'],
+      'category' => $validated['category'],
+      'project_id' => $validated['project_id'] ?? null,
     ]);
 
-    $status = Status::create($validated);
-
-    if ($validated['project_id']) {
+    if (!empty($validated['project_id'])) {
       DB::table('project_statuses')->insert([
         'project_id' => $validated['project_id'],
         'status_id' => $status->id,
@@ -153,6 +154,19 @@ class StatusController extends Controller
       'success' => true,
       'data' => $statuses,
       'message' => 'Available statuses retrieved successfully'
+    ]);
+  }
+
+  public function projectStatuses(Project $project): JsonResponse
+  {
+    $statuses = $project->availableStatuses()
+      ->orderBy('project_statuses.position')
+      ->get();
+
+    return response()->json([
+      'success' => true,
+      'data' => $statuses,
+      'message' => 'Project statuses retrieved successfully'
     ]);
   }
 }

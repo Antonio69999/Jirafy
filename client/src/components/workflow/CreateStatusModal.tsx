@@ -23,7 +23,12 @@ import { useColorThemeStore } from "@/store/colorThemeStore";
 interface CreateStatusModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { key: string; name: string; category: string }) => void;
+  onSubmit: (data: {
+    key: string;
+    name: string;
+    category: string;
+    project_id?: number;
+  }) => void;
   projectId?: number;
 }
 
@@ -44,7 +49,7 @@ export function CreateStatusModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!key.trim() || !name.trim()) return;
-    onSubmit({ key: key.toUpperCase(), name, category });
+    onSubmit({ key: key.toUpperCase(), name, category, project_id: projectId });
     handleClose();
   };
 

@@ -1,4 +1,4 @@
-export type TaskStatus = "todo" | "in-progress" | "done";
+export type TaskStatus = string;
 
 export interface User {
   id: string;
@@ -14,15 +14,16 @@ export interface Task {
   priority?: "low" | "medium" | "high" | "urgent";
   labels?: string[];
   assignee?: {
-    id: string; 
+    id: string;
     name: string;
     avatar?: string;
-    email?: string; 
+    email?: string;
   };
   dueDate?: string;
   projectId?: string;
   createdAt?: string;
   updatedAt?: string;
+  statusId?: number;
 }
 
 export interface KanbanColumn {

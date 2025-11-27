@@ -97,6 +97,7 @@ Route::middleware('auth:api')->group(function () {
   Route::prefix('projects')->group(function () {
     Route::get('/', [ProjectController::class, 'index']);
     Route::get('/{project}', [ProjectController::class, 'show']);
+    Route::get('/{project}/statuses', [StatusController::class, 'projectStatuses']);
 
     Route::middleware('check.role:project_create')->group(function () {
       Route::post('/', [ProjectController::class, 'store']);

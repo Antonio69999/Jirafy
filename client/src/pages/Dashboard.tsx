@@ -20,6 +20,7 @@ import { ReportsView } from "@/components/kanban/ReportsView";
 import { SettingsView } from "@/components/kanban/SettingsView";
 import { SummaryView } from "@/components/kanban/SummaryView";
 import ProjectMembersModal from "@/components/modals/ProjectMembersModal";
+import { useProjectStatuses } from "@/hooks/useStatus";
 import { toast } from "sonner";
 
 type TabType =
@@ -44,6 +45,13 @@ export function Dashboard() {
     loading: projectLoading,
     error: projectError,
   } = useProject(projectId ? parseInt(projectId) : undefined);
+
+  // ✅ Récupération des statuts du projet
+  const {
+    data: projectStatuses,
+    loading: statusesLoading,
+    error: statusesError,
+  } = useProjectStatuses(projectId ? parseInt(projectId) : null);
 
   // Récupération des issues du projet
   const {
@@ -75,6 +83,78 @@ export function Dashboard() {
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
 
+  // ✅ Mapper l'ID du statut vers le format de colonne
+  const mapStatusIdToTaskStatus = (statusId: number): string => {
+    return `status-${statusId}`;
+  };
+
+  // Fonctions de mapping
+  const mapPriorityToTaskPriority = (
+    priorityKey: string
+  ): "low" | "medium" | "high" => {
+    switch (priorityKey) {
+      case "LOW":
+        return "low";
+      case "MEDIUM":
+        return "medium";
+      case "HIGH":
+        return "high";
+      case "URGENT":
+        return "high";
+      default:
+        return "medium";
+    }
+  };
+
+  // ✅ Transformation des issues en tâches avec les statuts du projet
+  useEffect(() => {
+    if (!issuesData?.data) {
+      setTasks([]);
+      return;
+    }
+
+    if (!projectStatuses || projectStatuses.length === 0) {
+      console.log("⏳ Waiting for project statuses...");
+      return;
+    }
+
+    console.log(
+      "✅ Transforming tasks with project statuses:",
+      projectStatuses
+    );
+
+    const transformedTasks: Task[] = issuesData.data.map((issue) => {
+      const status = projectStatuses.find((s) => s.id === issue.status_id);
+
+      console.log(
+        `Task ${issue.key}: status_id=${issue.status_id}, status=${status?.name}`
+      );
+
+      return {
+        id: issue.key,
+        title: issue.title,
+        description: issue.description || undefined,
+        status: mapStatusIdToTaskStatus(issue.status_id), // ✅ Utiliser l'ID du statut
+        statusId: issue.status_id, // ✅ Stocker l'ID pour référence
+        priority: mapPriorityToTaskPriority(issue.priority?.key || "MEDIUM"),
+        labels: issue.labels?.map((label) => label.name) || [],
+        assignee: issue.assignee
+          ? {
+              id: String(issue.assignee.id),
+              name: issue.assignee.name,
+              email: issue.assignee.email,
+              avatar: undefined,
+            }
+          : undefined,
+        dueDate: issue.due_date || undefined,
+        projectId: String(issue.project_id),
+      };
+    });
+
+    console.log("✅ Tasks transformed:", transformedTasks);
+    setTasks(transformedTasks);
+  }, [issuesData, projectStatuses]);
+
   // Mettre à jour le projet actuel quand les données arrivent
   useEffect(() => {
     if (projectData) {
@@ -83,7 +163,7 @@ export function Dashboard() {
         name: projectData.name,
         key: projectData.key,
         description: projectData.description || "",
-        color: "#3b82f6", // Couleur par défaut
+        color: "#3b82f6",
         lead: projectData.lead?.name || "Non assigné",
       });
     } else {
@@ -110,74 +190,34 @@ export function Dashboard() {
     }
   }, [searchParams]);
 
-  // Transformer les issues API vers le format Task
-  useEffect(() => {
-    if (issuesData?.data) {
-      const transformedTasks: Task[] = issuesData.data.map((issue) => ({
-        id: issue.key,
-        title: issue.title,
-        description: issue.description || undefined,
-        status: mapStatusToTaskStatus(issue.status?.key || "TODO"),
-        priority: mapPriorityToTaskPriority(issue.priority?.key || "MEDIUM"),
-        labels: issue.labels?.map((label) => label.name) || [],
-        assignee: issue.assignee
-          ? {
-              id: String(issue.assignee.id), // Conversion en string
-              name: issue.assignee.name,
-              email: issue.assignee.email, // Ajout de l'email
-              avatar: undefined, // Pas d'avatar dans l'API pour l'instant
-            }
-          : undefined,
-        dueDate: issue.due_date || undefined,
-        projectId: String(issue.project_id),
-      }));
-      setTasks(transformedTasks);
-    } else {
-      setTasks([]);
-    }
-  }, [issuesData]);
+  // ✅ Générer les colonnes directement à partir des statuts du projet
+  const columns =
+    projectStatuses && projectStatuses.length > 0
+      ? projectStatuses.map((status) => ({
+          id: mapStatusIdToTaskStatus(status.id),
+          title: status.name,
+        }))
+      : [
+          { id: "status-1", title: t("dashboard.kanban.todo") || "À faire" },
+          {
+            id: "status-2",
+            title: t("dashboard.kanban.inProgress") || "En cours",
+          },
+          { id: "status-3", title: t("dashboard.kanban.done") || "Terminé" },
+        ];
 
-  // Fonctions de mapping
-  const mapStatusToTaskStatus = (statusKey: string): TaskStatus => {
-    switch (statusKey) {
-      case "TODO":
-        return "todo";
-      case "IN_PROGRESS":
-        return "in-progress";
-      case "DONE":
-        return "done";
-      default:
-        return "todo";
-    }
-  };
+  console.log("✅ Columns generated:", columns);
 
-  const mapPriorityToTaskPriority = (
-    priorityKey: string
-  ): "low" | "medium" | "high" => {
-    switch (priorityKey) {
-      case "LOW":
-        return "low";
-      case "MEDIUM":
-        return "medium";
-      case "HIGH":
-        return "high";
-      case "URGENT":
-        return "high";
+  const getPriorityClass = (priority?: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-500";
+      case "medium":
+        return "bg-yellow-500";
+      case "low":
+        return "bg-blue-500";
       default:
-        return "medium";
-    }
-  };
-
-  const getStatusKeyFromColumn = (columnId: string): string => {
-    switch (columnId) {
-      case "todo":
-        return "TODO";
-      case "in-progress":
-        return "IN_PROGRESS";
-      case "done":
-        return "DONE";
-      default:
-        return "TODO";
+        return "bg-gray-500";
     }
   };
 
@@ -212,6 +252,8 @@ export function Dashboard() {
       setNewTaskTitle("");
     }
   };
+
+  // ✅ Créer une tâche avec l'ID du statut extrait de la colonne
   const handleSaveTask = async (columnId: string, title: string) => {
     if (!projectId || !currentProject) {
       toast.error("Aucun projet sélectionné");
@@ -219,19 +261,18 @@ export function Dashboard() {
     }
 
     try {
-      const statusKey = getStatusKeyFromColumn(columnId);
+      // Extraire l'ID du statut depuis columnId ("status-123" -> 123)
+      const statusId = parseInt(columnId.replace("status-", ""));
+
       const result = await quickCreate({
         title,
         projectId: parseInt(projectId),
-        statusKey,
+        statusId, // ✅ Utiliser statusId au lieu de statusKey
       });
 
       if (result) {
-        // Réinitialiser l'état
         setEditingColumn(null);
         setNewTaskTitle("");
-
-        // Rafraîchir les données
         handleTaskSuccess();
       }
     } catch (error) {
@@ -239,46 +280,24 @@ export function Dashboard() {
     }
   };
 
-  // Configuration
-  const columns = [
-    { id: "todo", title: t("dashboard.kanban.todo") || "To Do" },
-    {
-      id: "in-progress",
-      title: t("dashboard.kanban.inProgress") || "In Progress",
-    },
-    { id: "done", title: t("dashboard.kanban.done") || "Done" },
-  ];
-
-  const getPriorityClass = (priority?: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-500";
-      case "medium":
-        return "bg-yellow-500";
-      case "low":
-        return "bg-blue-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
-  // Rendu du contenu selon l'onglet actif
   const renderTabContent = () => {
-    if (issuesLoading) {
+    if (issuesLoading || statusesLoading) {
       return (
         <div className="flex items-center justify-center h-64">
           <p className="text-muted-foreground">
-            {t("common.loading") || "Chargement des tâches..."}
+            {t("common.loading") || "Chargement..."}
           </p>
         </div>
       );
     }
 
-    if (issuesError) {
+    if (issuesError || statusesError) {
       return (
         <div className="flex items-center justify-center h-64">
           <p className="text-red-500">
-            {issuesError.message || "Erreur lors du chargement des tâches"}
+            {issuesError?.message ||
+              statusesError?.message ||
+              "Erreur lors du chargement"}
           </p>
         </div>
       );
@@ -317,7 +336,14 @@ export function Dashboard() {
         return (
           <SummaryView
             tasksCount={tasks.length}
-            doneCount={tasks.filter((t) => t.status === "done").length}
+            doneCount={
+              tasks.filter((t) => {
+                // Trouver le statut correspondant
+                const statusId = parseInt(t.status.replace("status-", ""));
+                const status = projectStatuses?.find((s) => s.id === statusId);
+                return status?.category === "done";
+              }).length
+            }
           />
         );
       case "calendar":

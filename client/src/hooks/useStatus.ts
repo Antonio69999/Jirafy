@@ -175,8 +175,6 @@ export function useAvailableStatuses(projectId?: number) {
   return { data, loading, error };
 }
 
-// ...existing code...
-
 export function useStatus(id: number | undefined) {
   const [data, setData] = useState<Status | null>(null);
   const [loading, setLoading] = useState(false);
@@ -270,4 +268,40 @@ export function useStatusActions() {
     loading,
     error,
   };
+}
+
+export function useProjectStatuses(projectId: number | null) {
+  const [data, setData] = useState<Status[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error>(null);
+
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      if (!projectId) {
+        setData([]);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await statusService.getProjectStatuses(projectId);
+        console.log("📦 Project statuses loaded:", result);
+        setData(result);
+      } catch (err: any) {
+        console.error("❌ Error loading project statuses:", err);
+        setError({
+          message: err.message || "Erreur lors du chargement des statuts",
+          status: err.status,
+        });
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStatuses();
+  }, [projectId]);
+
+  return { data, loading, error };
 }

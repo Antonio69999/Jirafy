@@ -20,7 +20,7 @@ import {
   useDeleteTransition,
   useValidateWorkflow,
 } from "@/hooks/useProjectWorkflow";
-import { useAvailableStatuses, useStatusActions } from "@/hooks/useStatus";
+import { useStatusActions, useProjectStatuses } from "@/hooks/useStatus";
 import { Plus, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useColorThemeStore } from "@/store/colorThemeStore";
@@ -89,7 +89,7 @@ export default function WorkflowEditor() {
     data: statuses,
     loading: statusesLoading,
     refetch: refetchStatuses,
-  } = useAvailableStatuses(projectId ? parseInt(projectId) : undefined);
+  } = useProjectStatuses(projectId ? parseInt(projectId) : null);
 
   const { create: createTransition } = useCreateTransition();
   const { remove: deleteTransition } = useDeleteTransition();
@@ -357,6 +357,7 @@ export default function WorkflowEditor() {
     key: string;
     name: string;
     category: string;
+    project_id?: number;
   }) => {
     try {
       await createStatus(data);
@@ -364,7 +365,6 @@ export default function WorkflowEditor() {
       await refetchStatuses();
       await refetchTransitions();
 
-      // ✅ Incrémenter refreshKey pour forcer le re-render
       setRefreshKey((prev) => prev + 1);
 
       setTimeout(() => {

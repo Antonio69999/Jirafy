@@ -8,83 +8,41 @@ import type { Issue } from "@/types/issue";
 
 export function useQuickCreateIssue() {
   const [isCreating, setIsCreating] = useState(false);
-  const { user } = useAuthStore();
-  const { create, loading: createLoading, error } = useCreateIssue();
+  const [error, setError] = useState<Error | null>(null);
 
-  // Récupérer les métadonnées nécessaires
-  const { data: issueTypes } = useIssueTypes();
-  const { data: issueStatuses } = useAvailableStatuses(); // Utiliser le nouveau hook
-  const { data: issuePriorities } = useIssuePriorities();
-
-  const quickCreate = async (params: {
+  const quickCreate = async (data: {
     title: string;
     projectId: number;
-    statusKey: string;
-  }): Promise<Issue | null> => {
-    if (!user) {
-      toast.error("Vous devez être connecté pour créer une tâche");
-      return null;
-    }
-
-    if (!issueTypes || !issueStatuses || !issuePriorities) {
-      console.log("Metadata not loaded:", {
-        issueTypes,
-        issueStatuses,
-        issuePriorities,
-      }); // Debug
-      toast.error("Impossible de charger les métadonnées");
-      return null;
-    }
-
+    statusId: number; 
+  }) => {
     setIsCreating(true);
+    setError(null);
 
     try {
-      const taskType = issueTypes.find((t) => t.key === "TASK");
-      const status = issueStatuses.find((s) => s.key === params.statusKey);
-      const defaultPriority = issuePriorities.find((p) => p.key === "MEDIUM");
+      // ✅ Créer l'issue avec statusId
+      const result = await issueService.create({
+        title: data.title,
+        project_id: data.projectId,
+        status_id: data.statusId,
+        type_id: 1,
+        priority_id: 2,
+        description: "",
+      });
 
-      if (!taskType || !status || !defaultPriority) {
-        console.error("Metadata missing:", {
-          taskType,
-          status,
-          defaultPriority,
-        }); // Debug
-        toast.error("Configuration des métadonnées incomplète");
-        return null;
-      }
-
-      const issueData = {
-        project_id: params.projectId,
-        type_id: taskType.id,
-        status_id: status.id,
-        priority_id: defaultPriority.id,
-        reporter_id: user.id,
-        assignee_id: undefined,
-        title: params.title,
-        description: null,
-        story_points: null,
-        due_date: null,
+      toast.success("Tâche créée avec succès");
+      return result;
+    } catch (err: any) {
+      const error = {
+        message: err.message || "Erreur lors de la création de la tâche",
+        status: err.status,
       };
-
-      const result = await create(issueData);
-
-      if (result) {
-        toast.success("Tâche créée avec succès");
-        return result;
-      }
-
-      return null;
-    } catch (err) {
-      console.error("Erreur lors de la création rapide:", err);
+      setError(error);
+      toast.error(error.message);
       return null;
     } finally {
       setIsCreating(false);
     }
   };
 
-  return {
-    quickCreate,
-    isCreating: isCreating || createLoading,
-    error,
-  };
+  return { quickCreate, isCreating, error };
 }

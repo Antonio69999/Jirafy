@@ -41,56 +41,40 @@ export function useDragAndDrop(
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    setActiveTask(null);
 
-    if (!over) return;
+    if (!over || active.id === over.id) {
+      setActiveTask(null);
+      return;
+    }
 
-    const activeTaskId = active.id as string;
-    const overColumnId = over.id as string;
+    const taskId = String(active.id);
+    const newStatus = String(over.id) as TaskStatus;
 
-    // Trouver la tâche déplacée
-    const draggedTask = tasks.find((task) => task.id === activeTaskId);
-    if (!draggedTask) return;
-
-    // Mapper les colonnes vers les statuts
-    const statusMapping: Record<string, TaskStatus> = {
-      todo: "todo",
-      "in-progress": "in-progress",
-      done: "done",
-    };
-
-    const newStatus = statusMapping[overColumnId];
-    if (!newStatus || draggedTask.status === newStatus) return;
-
-    // Mise à jour optimiste de l'interface
-    const updatedTasks = tasks.map((task) =>
-      task.id === activeTaskId ? { ...task, status: newStatus } : task
-    );
-    onTasksUpdate(updatedTasks);
+    setIsUpdating(true);
 
     try {
-      const statusKeyMapping: Record<TaskStatus, string> = {
-        todo: "TODO",
-        "in-progress": "IN_PROGRESS",
-        done: "DONE",
-      };
+      // Extraire l'ID du statut depuis newStatus ("status-123" -> 123)
+      const statusId = parseInt(newStatus.replace("status-", ""));
 
-      const statusKey = statusKeyMapping[newStatus];
+      // Récupérer l'issue par sa clé
+      const issue = await issueService.getByKey(taskId);
 
-      const result = await updateTaskStatus(draggedTask, statusKey);
+      // Mettre à jour le statut
+      await issueService.update(issue.id, {
+        status_id: statusId, // ✅ Utiliser status_id
+      });
 
-      if (result) {
-        toast.success("Statut de la tâche mis à jour");
+      toast.success("Tâche déplacée avec succès");
 
-        if (onRefreshData) {
-          onRefreshData();
-        }
-      } else {
-        onTasksUpdate(tasks);
+      // Rafraîchir les données
+      if (onRefreshData) {
+        onRefreshData();
       }
-    } catch (error) {
-      onTasksUpdate(tasks);
-      toast.error("Erreur lors de la mise à jour du statut");
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors du déplacement de la tâche");
+    } finally {
+      setIsUpdating(false);
+      setActiveTask(null);
     }
   };
 

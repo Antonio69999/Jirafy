@@ -26,8 +26,8 @@ class WorkflowController extends Controller
   public function getAvailableTransitions(Issue $issue): JsonResponse
   {
     $user = Auth::user();
-    $issue->load('project');
 
+    // Vérifier que l'utilisateur peut voir l'issue
     if (!$this->permissionService->userCanOnProject($user, 'issue.view', $issue->project)) {
       return response()->json([
         'success' => false,
@@ -40,18 +40,18 @@ class WorkflowController extends Controller
     return response()->json([
       'success' => true,
       'data' => $transitions,
-      'message' => 'Transitions retrieved successfully'
+      'message' => 'Available transitions retrieved successfully'
     ]);
   }
 
   /**
-   * Effectuer une transition
+   * Effectuer une transition sur une issue
    */
   public function performTransition(Request $request, Issue $issue): JsonResponse
   {
     $user = Auth::user();
-    $issue->load('project');
 
+    // Vérifier les permissions
     if (!$this->permissionService->userCanOnProject($user, 'workflow.transition', $issue->project)) {
       return response()->json([
         'success' => false,
@@ -59,10 +59,12 @@ class WorkflowController extends Controller
       ], Response::HTTP_FORBIDDEN);
     }
 
-    $transitionId = $request->input('transition_id');
+    $validated = $request->validate([
+      'transition_id' => 'required|integer|exists:workflow_transitions,id',
+    ]);
 
     try {
-      $updatedIssue = $this->service->performTransition($issue, $transitionId);
+      $updatedIssue = $this->service->performTransition($issue, $validated['transition_id']);
 
       return response()->json([
         'success' => true,

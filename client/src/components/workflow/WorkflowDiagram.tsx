@@ -13,7 +13,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useProjectWorkflow } from "@/hooks/useProjectWorkflow";
-import { useAvailableStatuses } from "@/hooks/useStatus";
+import { useProjectStatuses } from "@/hooks/useStatus";
 import { cn } from "@/lib/utils";
 import { useColorThemeStore } from "@/store/colorThemeStore";
 import StatusNode from "./StatusNode";
@@ -35,8 +35,8 @@ export default function WorkflowDiagram() {
     projectId ? parseInt(projectId) : null
   );
 
-  const { data: statuses, loading: statusesLoading } = useAvailableStatuses(
-    projectId ? parseInt(projectId) : undefined
+  const { data: statuses, loading: statusesLoading } = useProjectStatuses(
+    projectId ? parseInt(projectId) : null
   );
 
   const nodes: Node[] = useMemo(() => {
