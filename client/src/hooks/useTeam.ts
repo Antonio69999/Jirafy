@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { teamService } from "@/api/services/teamService";
 import type { Paginated } from "@/types/common";
 import type {
@@ -64,7 +64,7 @@ export function useTeam(id: number | undefined) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!id) {
       setData(null);
       return;
@@ -83,15 +83,15 @@ export function useTeam(id: number | undefined) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchData();
-  }, [id]);
+  }, [fetchData]);
 
-  const refetch = () => {
+  const refetch = useCallback(() => {
     fetchData();
-  };
+  }, [fetchData]);
 
   return { data, loading, error, refetch };
 }

@@ -40,13 +40,6 @@ export default function EditTeamModal({
   // Utiliser les données à jour ou les données initiales
   const team = teamData || initialTeam;
 
-  // Recharger la team quand la modale s'ouvre
-  useEffect(() => {
-    if (isOpen) {
-      refetchTeam();
-    }
-  }, [isOpen, refetchTeam]);
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent

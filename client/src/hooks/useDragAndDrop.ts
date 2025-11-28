@@ -11,7 +11,7 @@ import {
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { type Task, type TaskStatus } from "@/types/task";
-import { useQuickUpdateIssue } from "./useQuickUpdateIssue";
+import { issueService } from "@/api/services/issueService";
 import { toast } from "sonner";
 
 export function useDragAndDrop(
@@ -20,7 +20,7 @@ export function useDragAndDrop(
   onRefreshData?: () => void
 ) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const { updateTaskStatus, isUpdating } = useQuickUpdateIssue();
+  const [isUpdating, setIsUpdating] = useState(false); // ✅ Ajout de l'état manquant
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -61,7 +61,7 @@ export function useDragAndDrop(
 
       // Mettre à jour le statut
       await issueService.update(issue.id, {
-        status_id: statusId, // ✅ Utiliser status_id
+        status_id: statusId,
       });
 
       toast.success("Tâche déplacée avec succès");
@@ -71,7 +71,9 @@ export function useDragAndDrop(
         onRefreshData();
       }
     } catch (error: any) {
-      toast.error(error.message || "Erreur lors du déplacement de la tâche");
+      toast.error(
+        error.message || "Erreur lors du déplacement de la tâche"
+      );
     } finally {
       setIsUpdating(false);
       setActiveTask(null);

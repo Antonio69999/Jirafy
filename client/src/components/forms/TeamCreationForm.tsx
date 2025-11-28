@@ -15,13 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { useCreateTeam, useUpdateTeam } from "@/hooks/useTeam";
 import type { Team, TeamCreate, TeamUpdate } from "@/types/team";
 import { toast } from "sonner";

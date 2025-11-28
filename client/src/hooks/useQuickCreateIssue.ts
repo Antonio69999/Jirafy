@@ -1,31 +1,45 @@
 import { useState } from "react";
-import { useCreateIssue } from "./useIssue";
-import { useIssueTypes, useIssuePriorities } from "./useIssueMetadata";
-import { useAvailableStatuses } from "./useStatus"; // Nouveau hook
-import { useAuthStore } from "@/store/authStore";
+import { issueService } from "@/api/services/issueService";
 import { toast } from "sonner";
 import type { Issue } from "@/types/issue";
+import { useAuthStore } from "@/store/authStore";
+
+type Error = {
+  message: string;
+  status?: number;
+} | null;
 
 export function useQuickCreateIssue() {
   const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<Error>(null);
+  const { user } = useAuthStore();
 
   const quickCreate = async (data: {
     title: string;
     projectId: number;
-    statusId: number; 
-  }) => {
+    statusId: number;
+  }): Promise<Issue | null> => {
+    if (!user) {
+      const error = {
+        message: "Vous devez être connecté pour créer une tâche",
+        status: 401,
+      };
+      setError(error);
+      toast.error(error.message);
+      return null;
+    }
+
     setIsCreating(true);
     setError(null);
 
     try {
-      // ✅ Créer l'issue avec statusId
       const result = await issueService.create({
         title: data.title,
         project_id: data.projectId,
         status_id: data.statusId,
         type_id: 1,
         priority_id: 2,
+        reporter_id: user.id,
         description: "",
       });
 
