@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { MoreVertical, Calendar, Tag, User, Trash2 } from "lucide-react";
@@ -13,16 +13,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { TransitionSelector } from "./TransitionSelector";
 import { EditTaskModal } from "@/components/modals/EditTaskModal";
@@ -49,10 +39,15 @@ export function TaskCard({
 
   const { remove: deleteIssue, loading: deleteLoading } = useDeleteIssue();
 
-  const issueId = parseInt(task.id.split("-")[1]) || null;
+  const issueId = task.issueId || parseInt(task.id.split("-")[1]) || null;
 
-  const { data: transitions, loading: transitionsLoading } =
-    useIssueTransitions(showTransitions ? issueId : null);
+  console.log("🔍 TaskCard issueId:", issueId, "for task:", task.id);
+
+  const {
+    data: transitions,
+    loading: transitionsLoading,
+    refetch: refetchTransitions,
+  } = useIssueTransitions(issueId);
 
   const { performTransition, loading: isTransitioning } =
     usePerformTransition();
@@ -60,6 +55,14 @@ export function TaskCard({
   const { data: projectStatuses } = useProjectStatuses(
     projectId ? parseInt(projectId) : null
   );
+
+  // ✅ NOUVEAU : Recharger les transitions quand on affiche le sélecteur
+  useEffect(() => {
+    if (showTransitions && issueId) {
+      console.log("🔄 Refetching transitions for issue:", issueId);
+      refetchTransitions();
+    }
+  }, [showTransitions, issueId]);
 
   const getCurrentStatusName = (): string => {
     if (!projectStatuses || projectStatuses.length === 0) {
@@ -213,15 +216,7 @@ export function TaskCard({
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={handleEditSuccess}
-        initialData={{
-          issueId: issueId!,
-          title: task.title,
-          description: task.description,
-          project: task.projectId || "",
-          priority: task.priority,
-          assignee: task.assignee?.id,
-          dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
-        }}
+        colorTheme={colorTheme}
       />
     </>
   );

@@ -8,6 +8,7 @@ export interface User {
 
 export interface Task {
   id: string;
+  issueId?: number;
   title: string;
   description?: string;
   status: TaskStatus;

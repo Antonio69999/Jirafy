@@ -21,6 +21,8 @@ import { SettingsView } from "@/components/kanban/SettingsView";
 import { SummaryView } from "@/components/kanban/SummaryView";
 import ProjectMembersModal from "@/components/modals/ProjectMembersModal";
 import { useProjectStatuses } from "@/hooks/useStatus";
+import { workflowService } from "@/api/services/workflowService";
+
 import { toast } from "sonner";
 
 type TabType =
@@ -132,9 +134,10 @@ export function Dashboard() {
 
       return {
         id: issue.key,
+        issueId: issue.id,
         title: issue.title,
         description: issue.description || undefined,
-        status: mapStatusIdToTaskStatus(issue.status_id), // ✅ Utiliser l'ID du statut
+        status: mapStatusIdToTaskStatus(issue.status_id),
         statusId: issue.status_id, // ✅ Stocker l'ID pour référence
         priority: mapPriorityToTaskPriority(issue.priority?.key || "MEDIUM"),
         labels: issue.labels?.map((label) => label.name) || [],

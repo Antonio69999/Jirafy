@@ -5,9 +5,6 @@ import { TaskCard } from "@/components/kanban/TaskCard";
 import { type Task, type TaskStatus } from "@/types/task";
 import { Plus, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useDragAndDrop } from "@/hooks/useDragAndDrop";
-import { useDroppable, useDraggable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
 
 interface KanbanViewProps {
   tasks: Task[];
@@ -24,10 +21,11 @@ interface KanbanViewProps {
   onTaskUpdate?: (tasks: Task[]) => void;
   onRefreshData?: () => void;
   isCreatingTask?: boolean;
+  disableDragAndDrop?: boolean; // ✅ Conservé pour compatibilité mais ignoré
 }
 
-// Composant pour la zone de drop des colonnes
-function DroppableColumn({
+// ✅ Composant pour la zone de colonnes (SANS drag & drop)
+function Column({
   id,
   title,
   tasks,
@@ -57,7 +55,6 @@ function DroppableColumn({
   isCreatingTask: boolean;
 }) {
   const { t } = useTranslation();
-  const { isOver, setNodeRef } = useDroppable({ id });
 
   const handleSaveClick = async () => {
     if (newTaskTitle.trim() === "") {
@@ -69,10 +66,8 @@ function DroppableColumn({
 
   return (
     <div
-      ref={setNodeRef}
       className={cn(
-        "bg-card rounded-md border shadow-sm flex flex-col h-full w-[280px] flex-shrink-0",
-        isOver && "ring-2 ring-[var(--primary)]/50"
+        "bg-card rounded-md border shadow-sm flex flex-col h-full w-[280px] flex-shrink-0"
       )}
     >
       <div className="p-2 border-b flex justify-between items-center sticky top-0 bg-card z-10">
@@ -83,15 +78,16 @@ function DroppableColumn({
       </div>
 
       <ScrollArea className="flex-1 p-1.5">
-        {/* Tâches existantes */}
+        {/* ✅ Tâches sans drag & drop */}
         {tasks.map((task) => (
-          <DraggableTaskCard
-            key={task.id}
-            task={task}
-            colorTheme={colorTheme}
-            getPriorityClass={getPriorityClass}
-            onTaskUpdate={onTaskUpdate}
-          />
+          <div key={task.id} className="mb-2">
+            <TaskCard
+              task={task}
+              colorTheme={colorTheme}
+              getPriorityClass={getPriorityClass}
+              onTaskUpdate={onTaskUpdate}
+            />
+          </div>
         ))}
 
         {editingColumn === id ? (
@@ -167,38 +163,6 @@ function DroppableColumn({
   );
 }
 
-// Composant pour les tâches draggables
-function DraggableTaskCard({
-  task,
-  colorTheme,
-  getPriorityClass,
-  onTaskUpdate,
-}: {
-  task: Task;
-  colorTheme: string;
-  getPriorityClass: (priority?: string) => string;
-  onTaskUpdate: () => void;
-}) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: task.id });
-
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
-      <TaskCard
-        task={task}
-        colorTheme={colorTheme}
-        getPriorityClass={getPriorityClass}
-        onTaskUpdate={onTaskUpdate}
-      />
-    </div>
-  );
-}
-
 export function KanbanView({
   tasks,
   columns,
@@ -214,19 +178,8 @@ export function KanbanView({
   onTaskUpdate,
   onRefreshData,
   isCreatingTask = false,
+  disableDragAndDrop = true, // ✅ Toujours true maintenant
 }: KanbanViewProps) {
-  const {
-    sensors,
-    activeTask,
-    isUpdating,
-    handleDragStart,
-    handleDragEnd,
-    handleDragCancel,
-    DndContext,
-    DragOverlay,
-    closestCorners,
-  } = useDragAndDrop(tasks, onTaskUpdate || (() => {}), onRefreshData);
-
   const getTasksByStatus = (status: TaskStatus) => {
     return tasks.filter((task) => task.status === status);
   };
@@ -238,49 +191,27 @@ export function KanbanView({
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
-      <div className="flex-1 px-1 pb-3 overflow-auto">
-        <div className="flex gap-3 min-w-fit pb-1">
-          {columns.map((column) => (
-            <DroppableColumn
-              key={column.id}
-              id={column.id}
-              title={column.title}
-              tasks={getTasksByStatus(column.id as TaskStatus)}
-              colorTheme={colorTheme}
-              getPriorityClass={getPriorityClass}
-              editingColumn={editingColumn}
-              newTaskTitle={newTaskTitle}
-              setNewTaskTitle={setNewTaskTitle}
-              handleAddTask={handleAddTask}
-              handleCancelAdd={handleCancelAdd}
-              handleSaveTask={handleSaveTask}
-              onTaskUpdate={handleTaskUpdate}
-              isCreatingTask={isCreatingTask || isUpdating}
-            />
-          ))}
-        </div>
-
-        {/* Overlay pour l'élément en cours de drag */}
-        <DragOverlay>
-          {activeTask && (
-            <div className="rotate-3 opacity-90">
-              <TaskCard
-                task={activeTask}
-                colorTheme={colorTheme}
-                getPriorityClass={getPriorityClass}
-                onTaskUpdate={() => {}}
-              />
-            </div>
-          )}
-        </DragOverlay>
+    <div className="flex-1 px-1 pb-3 overflow-auto">
+      <div className="flex gap-3 min-w-fit pb-1">
+        {columns.map((column) => (
+          <Column
+            key={column.id}
+            id={column.id}
+            title={column.title}
+            tasks={getTasksByStatus(column.id as TaskStatus)}
+            colorTheme={colorTheme}
+            getPriorityClass={getPriorityClass}
+            editingColumn={editingColumn}
+            newTaskTitle={newTaskTitle}
+            setNewTaskTitle={setNewTaskTitle}
+            handleAddTask={handleAddTask}
+            handleCancelAdd={handleCancelAdd}
+            handleSaveTask={handleSaveTask}
+            onTaskUpdate={handleTaskUpdate}
+            isCreatingTask={isCreatingTask}
+          />
+        ))}
       </div>
-    </DndContext>
+    </div>
   );
 }

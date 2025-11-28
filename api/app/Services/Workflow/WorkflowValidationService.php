@@ -16,6 +16,7 @@ class WorkflowValidationService
     $statuses = $project->statuses;
     $transitions = WorkflowTransition::where('project_id', $project->id)
       ->with(['fromStatus', 'toStatus'])
+      ->with(['toStatus:id,key,name,category'])
       ->get();
 
     $errors = [];

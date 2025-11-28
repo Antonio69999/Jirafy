@@ -18,34 +18,39 @@ export function useIssueTransitions(issueId: number | null) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>(null);
 
-  useEffect(() => {
+  // ✅ NOUVEAU : Fonction pour forcer le rechargement
+  const refetch = async () => {
     if (!issueId) {
       setData(null);
       return;
     }
 
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const result = await workflowService.getAvailableTransitions(issueId);
-        setData(result);
-      } catch (err: any) {
-        const error = {
-          message: err.message || "Erreur lors du chargement des transitions",
-          status: err.status,
-        };
-        setError(error);
-        toast.error(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+    console.log("🔄 Fetching transitions for issue:", issueId);
 
-    fetchData();
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await workflowService.getAvailableTransitions(issueId);
+      console.log("✅ Transitions loaded:", result);
+      setData(result);
+    } catch (err: any) {
+      const error = {
+        message: err.message || "Erreur lors du chargement des transitions",
+        status: err.status,
+      };
+      console.error("❌ Error loading transitions:", err);
+      setError(error);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refetch();
   }, [issueId]);
 
-  return { data, loading, error };
+  return { data, loading, error, refetch }; // ✅ Exposer refetch
 }
 
 /**

@@ -57,9 +57,10 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/transitions/{transition}', [WorkflowController::class, 'updateTransition']);
   });
 
+  // ✅ CORRECTION : Remplacer "/transition" par "/transitions"
   Route::prefix('issues/{issue}')->group(function () {
     Route::get('/transitions', [WorkflowController::class, 'getAvailableTransitions']);
-    Route::post('/transition', [WorkflowController::class, 'performTransition']);
+    Route::post('/transitions', [WorkflowController::class, 'performTransition']); // ✅ Pluriel "transitions"
   });
 
   // Labels d'un projet

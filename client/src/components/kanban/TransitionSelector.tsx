@@ -42,7 +42,6 @@ export function TransitionSelector({
   >(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // ✅ Trouver la transition sélectionnée pour afficher les erreurs
   const selectedTransition = transitions.find(
     (t) => t.id === parseInt(selectedTransitionId || "")
   );
@@ -59,9 +58,23 @@ export function TransitionSelector({
     }
   };
 
-  const validTransitions = transitions.filter((t) => t.toStatus);
-  const allowedTransitions = transitions.filter((t) => t.is_allowed !== false);
-  const blockedTransitions = transitions.filter((t) => t.is_allowed === false);
+  // ✅ CORRECTION : Accepter to_status OU toStatus
+  const validTransitions = transitions.filter((t) => {
+    // @ts-ignore - Accepter les deux formats
+    return t.toStatus || t.to_status;
+  });
+
+  const allowedTransitions = validTransitions.filter(
+    (t) => t.is_allowed !== false
+  );
+  const blockedTransitions = validTransitions.filter(
+    (t) => t.is_allowed === false
+  );
+
+  // ✅ HELPER : Récupérer toStatus peu importe le format
+  const getToStatus = (transition: any) => {
+    return transition.toStatus || transition.to_status;
+  };
 
   if (loading) {
     return (
@@ -104,20 +117,22 @@ export function TransitionSelector({
               <SelectValue placeholder="Sélectionnez une transition" />
             </SelectTrigger>
             <SelectContent>
-              {allowedTransitions.map((transition) => (
-                <SelectItem key={transition.id} value={String(transition.id)}>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    <span>{transition.name}</span>
-                    {/* ✅ PROTECTION : Vérifier que toStatus existe */}
-                    {transition.toStatus && (
-                      <span className="text-xs text-muted-foreground">
-                        → {transition.toStatus.name}
-                      </span>
-                    )}
-                  </div>
-                </SelectItem>
-              ))}
+              {allowedTransitions.map((transition) => {
+                const toStatus = getToStatus(transition); // ✅ Utiliser le helper
+                return (
+                  <SelectItem key={transition.id} value={String(transition.id)}>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <span>{transition.name}</span>
+                      {toStatus && (
+                        <span className="text-xs text-muted-foreground">
+                          → {toStatus.name}
+                        </span>
+                      )}
+                    </div>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
 
@@ -166,34 +181,36 @@ export function TransitionSelector({
             Transitions non disponibles :
           </p>
           <div className="space-y-1">
-            {blockedTransitions.map((transition) => (
-              <TooltipProvider key={transition.id}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50 cursor-not-allowed opacity-60">
-                      <X className="h-4 w-4 text-yellow-500" />
-                      <span className="text-sm">{transition.name}</span>
-                      {/* ✅ PROTECTION : Vérifier que toStatus existe */}
-                      {transition.toStatus && (
-                        <span className="text-xs text-muted-foreground">
-                          → {transition.toStatus.name}
-                        </span>
-                      )}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-xs">
-                    <div className="space-y-1">
-                      <p className="font-medium">Conditions requises :</p>
-                      {transition.validation_errors?.map((error, index) => (
-                        <p key={index} className="text-xs">
-                          • {error}
-                        </p>
-                      ))}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ))}
+            {blockedTransitions.map((transition) => {
+              const toStatus = getToStatus(transition); // ✅ Utiliser le helper
+              return (
+                <TooltipProvider key={transition.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50 cursor-not-allowed opacity-60">
+                        <X className="h-4 w-4 text-yellow-500" />
+                        <span className="text-sm">{transition.name}</span>
+                        {toStatus && (
+                          <span className="text-xs text-muted-foreground">
+                            → {toStatus.name}
+                          </span>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <div className="space-y-1">
+                        <p className="font-medium">Conditions requises :</p>
+                        {transition.validation_errors?.map((error, index) => (
+                          <p key={index} className="text-xs">
+                            • {error}
+                          </p>
+                        ))}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              );
+            })}
           </div>
         </div>
       )}
