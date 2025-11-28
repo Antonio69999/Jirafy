@@ -286,6 +286,21 @@ export default function WorkflowEditor() {
         return;
       }
 
+      const existingTransition = transitions?.find(
+        (t) =>
+          (t.from_status_id === parseInt(params.source) &&
+            t.to_status_id === parseInt(params.target)) ||
+          (t.from_status_id === parseInt(params.target) &&
+            t.to_status_id === parseInt(params.source))
+      );
+
+      if (existingTransition) {
+        toast.error(
+          "Une transition existe déjà entre ces deux statuts (dans un sens ou l'autre)"
+        );
+        return;
+      }
+
       const fromStatus = statuses?.find((s) => String(s.id) === params.source);
       const toStatus = statuses?.find((s) => String(s.id) === params.target);
 
@@ -297,7 +312,7 @@ export default function WorkflowEditor() {
       });
       setIsTransitionModalOpen(true);
     },
-    [projectId, statuses]
+    [projectId, statuses, transitions]
   );
 
   const handleCreateTransition = async (data: {
@@ -412,8 +427,8 @@ export default function WorkflowEditor() {
       setTimeout(() => {
         reactFlowInstance.fitView({ padding: 0.2, duration: 300 });
       }, 100);
-    } catch (error) {
-      toast.error("Erreur lors de la suppression");
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de la suppression");
     }
   };
 

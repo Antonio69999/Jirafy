@@ -27,7 +27,6 @@ class WorkflowController extends Controller
   {
     $user = Auth::user();
 
-    // Vérifier que l'utilisateur peut voir l'issue
     if (!$this->permissionService->userCanOnProject($user, 'issue.view', $issue->project)) {
       return response()->json([
         'success' => false,
@@ -35,7 +34,7 @@ class WorkflowController extends Controller
       ], Response::HTTP_FORBIDDEN);
     }
 
-    $transitions = $this->service->getAvailableTransitions($issue);
+    $transitions = $this->service->getAvailableTransitions($issue, $user);
 
     return response()->json([
       'success' => true,
@@ -51,7 +50,6 @@ class WorkflowController extends Controller
   {
     $user = Auth::user();
 
-    // Vérifier les permissions
     if (!$this->permissionService->userCanOnProject($user, 'workflow.transition', $issue->project)) {
       return response()->json([
         'success' => false,
@@ -64,7 +62,11 @@ class WorkflowController extends Controller
     ]);
 
     try {
-      $updatedIssue = $this->service->performTransition($issue, $validated['transition_id']);
+      $updatedIssue = $this->service->performTransition(
+        $issue,
+        $validated['transition_id'],
+        $user
+      );
 
       return response()->json([
         'success' => true,
@@ -102,9 +104,6 @@ class WorkflowController extends Controller
     ]);
   }
 
-  /**
-   * Créer une transition
-   */
   public function createTransition(Request $request): JsonResponse
   {
     $user = Auth::user();
@@ -135,9 +134,6 @@ class WorkflowController extends Controller
     ], Response::HTTP_CREATED);
   }
 
-  /**
-   * Supprimer une transition
-   */
   public function deleteTransition(WorkflowTransition $transition): JsonResponse
   {
     $user = Auth::user();
@@ -158,9 +154,6 @@ class WorkflowController extends Controller
     ]);
   }
 
-  /**
-   * Valider le workflow d'un projet
-   */
   public function validateWorkflow(Project $project): JsonResponse
   {
     $user = Auth::user();
@@ -181,5 +174,37 @@ class WorkflowController extends Controller
         ? 'Workflow valide'
         : 'Le workflow contient des erreurs'
     ], $validation['valid'] ? Response::HTTP_OK : Response::HTTP_UNPROCESSABLE_ENTITY);
+  }
+
+  public function updateTransition(Request $request, WorkflowTransition $transition): JsonResponse
+  {
+    $user = Auth::user();
+    $project = Project::findOrFail($transition->project_id);
+
+    if (!$this->permissionService->userCanOnProject($user, 'workflow.manage', $project)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Permission refusée'
+      ], Response::HTTP_FORBIDDEN);
+    }
+
+    $validated = $request->validate([
+      'name' => 'sometimes|string|max:255',
+      'description' => 'sometimes|nullable|string',
+      'from_status_id' => 'sometimes|integer|exists:statuses,id',
+      'to_status_id' => 'sometimes|integer|exists:statuses,id',
+      'conditions' => 'sometimes|nullable|array',
+      'validators' => 'sometimes|nullable|array',
+      'post_actions' => 'sometimes|nullable|array',
+      'allowed_roles' => 'sometimes|nullable|array',
+    ]);
+
+    $transition->update($validated);
+
+    return response()->json([
+      'success' => true,
+      'data' => $transition->fresh()->load(['fromStatus', 'toStatus']),
+      'message' => 'Transition mise à jour avec succès'
+    ]);
   }
 }

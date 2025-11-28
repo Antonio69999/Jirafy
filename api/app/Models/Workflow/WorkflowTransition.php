@@ -14,27 +14,30 @@ class WorkflowTransition extends Model
     'to_status_id',
     'name',
     'description',
+    'conditions',
+    'validators',
+    'post_actions',
+    'allowed_roles',  
   ];
 
-  /**
-   * Projet auquel appartient la transition
-   */
+  protected $casts = [
+    'conditions' => 'array',
+    'validators' => 'array',
+    'post_actions' => 'array',
+    'allowed_roles' => 'array',
+  ];
+
+  // Relations existantes...
   public function project(): BelongsTo
   {
     return $this->belongsTo(Project::class);
   }
 
-  /**
-   * Statut de départ
-   */
   public function fromStatus(): BelongsTo
   {
     return $this->belongsTo(Status::class, 'from_status_id');
   }
 
-  /**
-   * Statut d'arrivée
-   */
   public function toStatus(): BelongsTo
   {
     return $this->belongsTo(Status::class, 'to_status_id');

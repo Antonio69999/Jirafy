@@ -482,5 +482,14 @@
       "name": "Nom",
       "category": "Catégorie"
     }
+  },
+  "issue": {
+    "transition": {
+      "selectTransition": "Choisir une transition",
+      "selectPlaceholder": "Sélectionnez une transition",
+      "apply": "Appliquer la transition",
+      "conditionsNotMet": "Conditions non remplies",
+      "blockedTransitions": "Transitions non disponibles"
+    }
   }
 }

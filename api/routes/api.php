@@ -54,6 +54,7 @@ Route::middleware('auth:api')->group(function () {
   Route::prefix('workflow')->group(function () {
     Route::post('/transitions', [WorkflowController::class, 'createTransition']);
     Route::delete('/transitions/{transition}', [WorkflowController::class, 'deleteTransition']);
+    Route::put('/transitions/{transition}', [WorkflowController::class, 'updateTransition']);
   });
 
   Route::prefix('issues/{issue}')->group(function () {

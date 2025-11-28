@@ -1,28 +1,31 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
+import { MoreVertical, Calendar, Tag, User, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { type Task } from "@/types/task";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, MoreHorizontal } from "lucide-react";
-import { EditTaskModal } from "@/components/modals/EditTaskModal";
+import type { Task } from "@/types/task";
+import { useDeleteIssue } from "@/hooks/useIssue";
+import { useProjectStatuses } from "@/hooks/useStatus";
+import { useIssueTransitions, usePerformTransition } from "@/hooks/useWorkflow";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
-import { useDeleteIssue } from "@/hooks/useIssue";
-import { issueService } from "@/api/services/issueService";
 import {
-  useIssueTransitions,
-  usePerformTransition,
-} from "@/hooks/useIssueTransitions";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { TransitionSelector } from "./TransitionSelector";
-import { toast } from "sonner";
-import { useProjectStatuses } from "@/hooks/useStatus";
-import { useSearchParams } from "react-router-dom";
+import { EditTaskModal } from "@/components/modals/EditTaskModal";
 
 interface TaskCardProps {
   task: Task;
@@ -46,7 +49,6 @@ export function TaskCard({
 
   const { remove: deleteIssue, loading: deleteLoading } = useDeleteIssue();
 
-  // ✅ Récupérer l'ID numérique de l'issue
   const issueId = parseInt(task.id.split("-")[1]) || null;
 
   const { data: transitions, loading: transitionsLoading } =
@@ -55,43 +57,29 @@ export function TaskCard({
   const { performTransition, loading: isTransitioning } =
     usePerformTransition();
 
-  // ✅ Récupérer les statuts du projet pour afficher le nom réel
   const { data: projectStatuses } = useProjectStatuses(
     projectId ? parseInt(projectId) : null
   );
 
-  // ✅ Trouver le statut actuel de la tâche
   const getCurrentStatusName = (): string => {
-    // Si on n'a pas les statuts du projet, utiliser les noms par défaut
     if (!projectStatuses || projectStatuses.length === 0) {
-      return task.status === "todo"
-        ? "À faire"
-        : task.status === "in-progress"
-        ? "En cours"
-        : "Terminé";
+      return task.status;
     }
 
-    // Trouver le statut correspondant à la catégorie de la tâche
-    const categoryMap: Record<string, string> = {
-      todo: "todo",
-      "in-progress": "in_progress",
-      done: "done",
-    };
-
-    const category = categoryMap[task.status] || "todo";
-    const status = projectStatuses.find((s) => s.category === category);
-
-    return status?.name || task.status;
+    const currentStatus = projectStatuses.find(
+      (s) => `status-${s.id}` === task.status
+    );
+    return currentStatus?.name || task.status;
   };
 
   const handleTransition = async (transitionId: number) => {
     if (!issueId) return;
 
-    const result = await performTransition(issueId, transitionId);
-    if (result && onTaskUpdate) {
-      onTaskUpdate();
+    try {
+      await performTransition(issueId, transitionId);
       setShowTransitions(false);
-    }
+      onTaskUpdate?.();
+    } catch (error) {}
   };
 
   const handleEditClick = () => {
@@ -100,39 +88,14 @@ export function TaskCard({
 
   const handleEditSuccess = () => {
     setIsEditModalOpen(false);
-    if (onTaskUpdate) {
-      onTaskUpdate();
-    }
+    onTaskUpdate?.();
   };
 
   const handleDeleteClick = async () => {
-    const confirmed = window.confirm(
-      t("task.actions.deleteConfirm") ||
-        "Êtes-vous sûr de vouloir supprimer cette tâche ? Cette action est irréversible."
-    );
-
-    if (!confirmed) return;
-
     setIsDeleting(true);
     try {
-      // Récupérer l'ID numérique de l'issue
-      const issue = await issueService.getByKey(task.id);
-      const success = await deleteIssue(issue.id);
-
-      if (success) {
-        toast.success(
-          t("task.actions.deleteSuccess") || "Tâche supprimée avec succès"
-        );
-        if (onTaskUpdate) {
-          onTaskUpdate();
-        }
-      }
-    } catch (error: any) {
-      toast.error(
-        error.message ||
-          t("task.actions.deleteError") ||
-          "Erreur lors de la suppression de la tâche"
-      );
+      await deleteIssue(task.id);
+      onTaskUpdate?.();
     } finally {
       setIsDeleting(false);
     }
@@ -144,116 +107,63 @@ export function TaskCard({
     <>
       <div
         className={cn(
-          "bg-background rounded-lg border p-3 mb-2 shadow-sm",
-          "hover:shadow-md transition-shadow cursor-pointer group",
+          "group p-3 bg-card rounded-lg border border-border hover:border-[var(--primary)] transition-all cursor-pointer",
           `theme-${colorTheme}`,
           isProcessing && "opacity-50 pointer-events-none"
         )}
-        onClick={handleEditClick}
       >
+        {/* En-tête avec titre et menu */}
         <div className="flex items-start justify-between mb-2">
-          <h4 className="font-medium text-sm leading-tight flex-1 pr-2">
+          <h4
+            className="text-sm font-medium flex-1 mr-2"
+            onClick={handleEditClick}
+          >
             {task.title}
           </h4>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                onClick={(e) => e.stopPropagation()}
-                disabled={isProcessing}
+                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <MoreHorizontal className="h-3 w-3" />
+                <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEditClick();
-                }}
-                disabled={isProcessing}
-              >
+              <DropdownMenuItem onClick={handleEditClick}>
                 {t("task.actions.edit") || "Modifier"}
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteClick();
-                }}
-                disabled={isProcessing}
+                onClick={() => setShowTransitions(!showTransitions)}
               >
-                {isProcessing
-                  ? t("task.actions.deleting") || "Suppression..."
-                  : t("task.actions.delete") || "Supprimer"}
+                Changer le statut
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDeleteClick}
+                className="text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t("task.actions.delete") || "Supprimer"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
+        {/* Description (si présente) */}
         {task.description && (
-          <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+          <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
             {task.description}
           </p>
         )}
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                "w-2 h-2 rounded-full",
-                getPriorityClass(task.priority)
-              )}
-            />
-            <span className="text-xs text-muted-foreground">{task.id}</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {task.dueDate && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Calendar className="h-3 w-3" />
-                <span>{new Date(task.dueDate).toLocaleDateString()}</span>
-              </div>
-            )}
-            {task.assignee && (
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={task.assignee.avatar} />
-                <AvatarFallback className="text-xs">
-                  {task.assignee.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            )}
-          </div>
-        </div>
-
-        {task.labels && task.labels.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {task.labels.slice(0, 3).map((label, index) => (
-              <Badge
-                key={index}
-                variant="secondary"
-                className="text-xs px-1 py-0"
-              >
-                {label}
-              </Badge>
-            ))}
-            {task.labels.length > 3 && (
-              <Badge variant="outline" className="text-xs px-1 py-0">
-                +{task.labels.length - 3}
-              </Badge>
-            )}
-          </div>
-        )}
-
-        {/* ✅ Section de transition avec nom de statut dynamique */}
         {showTransitions && issueId && (
-          <div className="mt-3 pt-3 border-t">
+          <div className="mb-3 p-3 bg-muted/50 rounded-md">
             <TransitionSelector
               issueId={issueId}
               currentStatusName={getCurrentStatusName()}
-              transitions={transitions}
+              transitions={transitions || []}
               onTransition={handleTransition}
               loading={transitionsLoading || isTransitioning}
               colorTheme={colorTheme}
@@ -261,27 +171,57 @@ export function TaskCard({
           </div>
         )}
 
-        <div className="mt-2 pt-2 border-t flex justify-end">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowTransitions(!showTransitions);
-            }}
-            className="h-7 px-2 text-xs"
-          >
-            {showTransitions ? "Masquer transitions" : "Changer statut"}
-          </Button>
+        {/* Métadonnées */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {task.priority && (
+            <span
+              className={cn(
+                "px-2 py-0.5 rounded-full text-xs font-medium",
+                getPriorityClass(task.priority)
+              )}
+            >
+              {task.priority}
+            </span>
+          )}
+
+          {task.dueDate && (
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+            </div>
+          )}
+
+          {task.labels && task.labels.length > 0 && (
+            <div className="flex items-center gap-1">
+              <Tag className="h-3 w-3" />
+              <span>{task.labels.length}</span>
+            </div>
+          )}
+
+          {task.assignee && (
+            <div className="flex items-center gap-1 ml-auto">
+              <User className="h-3 w-3" />
+              <span>{task.assignee.name}</span>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Modal d'édition */}
       <EditTaskModal
         task={task}
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={handleEditSuccess}
-        colorTheme={colorTheme}
+        initialData={{
+          issueId: issueId!,
+          title: task.title,
+          description: task.description,
+          project: task.projectId || "",
+          priority: task.priority,
+          assignee: task.assignee?.id,
+          dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+        }}
       />
     </>
   );

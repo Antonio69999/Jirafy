@@ -39,6 +39,8 @@ export interface AvailableTransition {
     name: string;
     category: string;
   };
+  validation_errors?: string[];
+  is_allowed?: boolean;
 }
 
 function unwrap<T>(res: { data: ApiResponse<T> }): T {

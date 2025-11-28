@@ -4,19 +4,22 @@ namespace App\Interfaces\Workflow;
 
 use App\Models\Workflow\WorkflowTransition;
 use App\Models\Ticketing\{Issue, Project};
+use App\Models\Auth\User;
 use Illuminate\Support\Collection;
 
 interface WorkflowServiceInterface
 {
   /**
    * Récupérer les transitions disponibles pour une issue
+   * Accepter un utilisateur optionnel
    */
-  public function getAvailableTransitions(Issue $issue): Collection;
+  public function getAvailableTransitions(Issue $issue, User $user = null): Collection;
 
   /**
    * Effectuer une transition
+   * Accepter un utilisateur optionnel
    */
-  public function performTransition(Issue $issue, int $transitionId): Issue;
+  public function performTransition(Issue $issue, int $transitionId, User $user = null): Issue;
 
   /**
    * Récupérer toutes les transitions d'un projet
@@ -43,4 +46,8 @@ interface WorkflowServiceInterface
    */
   public function validateWorkflow(Project $project): array;
 
+  /**
+   * Mettre à jour une transition
+   */
+  public function updateTransition(WorkflowTransition $transition, array $data): WorkflowTransition;
 }

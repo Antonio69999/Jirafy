@@ -23,32 +23,42 @@ use App\Services\Teams\TeamService;
 use App\Services\Ticketing\LabelService;
 use App\Interfaces\Workflow\WorkflowServiceInterface;
 use App\Services\Workflow\WorkflowService;
+use App\Services\Workflow\WorkflowValidationService;
+use App\Services\Workflow\TransitionValidatorService;
+use App\Services\Workflow\PostTransitionActionService;
 
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        $this->app->bind(LoginServiceInterface::class, LoginService::class);
-        $this->app->bind(RegisterServiceInterface::class, RegisterService::class);
-        $this->app->bind(PasswordServiceInterface::class, PasswordService::class);
-        $this->app->bind(ProjectServiceInterface::class, ProjectService::class);
-        $this->app->bind(IssueServiceInterface::class, IssueService::class);
-        $this->app->bind(StatusServiceInterface::class, StatusService::class);
-        $this->app->bind(TeamServiceInterface::class, TeamService::class);
-        $this->app->bind(PermissionServiceInterface::class, PermissionService::class);
-        $this->app->bind(LabelServiceInterface::class, LabelService::class);
-        $this->app->bind(WorkflowServiceInterface::class, WorkflowService::class);
-    }
+  /**
+   * Register any application services.
+   */
+  public function register(): void
+  {
+    $this->app->bind(LoginServiceInterface::class, LoginService::class);
+    $this->app->bind(RegisterServiceInterface::class, RegisterService::class);
+    $this->app->bind(PasswordServiceInterface::class, PasswordService::class);
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        //
-    }
+    $this->app->bind(PermissionServiceInterface::class, PermissionService::class);
+
+    $this->app->bind(ProjectServiceInterface::class, ProjectService::class);
+    $this->app->bind(IssueServiceInterface::class, IssueService::class);
+    $this->app->bind(StatusServiceInterface::class, StatusService::class);
+    $this->app->bind(LabelServiceInterface::class, LabelService::class);
+
+    $this->app->bind(TeamServiceInterface::class, TeamService::class);
+
+    $this->app->bind(WorkflowServiceInterface::class, WorkflowService::class);
+
+    $this->app->singleton(WorkflowValidationService::class);
+    $this->app->singleton(TransitionValidatorService::class);
+    $this->app->singleton(PostTransitionActionService::class);
+  }
+
+  /**
+   * Bootstrap any application services.
+   */
+  public function boot(): void
+  {
+  }
 }

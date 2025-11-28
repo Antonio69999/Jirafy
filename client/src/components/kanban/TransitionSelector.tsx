@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Select,
   SelectContent,
@@ -7,9 +8,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, AlertCircle, CheckCircle2, X } from "lucide-react";
 import type { AvailableTransition } from "@/api/services/workflowService";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface TransitionSelectorProps {
   issueId: number;
@@ -28,10 +36,16 @@ export function TransitionSelector({
   loading = false,
   colorTheme = "blue",
 }: TransitionSelectorProps) {
+  const { t } = useTranslation();
   const [selectedTransitionId, setSelectedTransitionId] = useState<
     string | null
   >(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // ✅ Trouver la transition sélectionnée pour afficher les erreurs
+  const selectedTransition = transitions.find(
+    (t) => t.id === parseInt(selectedTransitionId || "")
+  );
 
   const handleTransition = async () => {
     if (!selectedTransitionId) return;
@@ -45,68 +59,144 @@ export function TransitionSelector({
     }
   };
 
-  if (transitions.length === 0) {
+  const validTransitions = transitions.filter((t) => t.toStatus);
+  const allowedTransitions = transitions.filter((t) => t.is_allowed !== false);
+  const blockedTransitions = transitions.filter((t) => t.is_allowed === false);
+
+  if (loading) {
     return (
-      <div className="text-xs text-muted-foreground">
-        Aucune transition disponible
+      <div className="flex items-center justify-center p-4">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
+  if (validTransitions.length === 0) {
+    return (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Aucune transition disponible</AlertTitle>
+        <AlertDescription>
+          Il n'y a aucune transition possible depuis le statut "
+          {currentStatusName}".
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-2">
-      <div className="text-xs text-muted-foreground">
-        <span className="font-medium">Statut actuel : </span>
-        <span className="text-foreground">{currentStatusName}</span>
+    <div className={cn(`theme-${colorTheme}`, "space-y-3")}>
+      {/* Statut actuel */}
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-muted-foreground">Statut actuel :</span>
+        <span className="font-medium">{currentStatusName}</span>
       </div>
 
-      <div className="flex items-center gap-2">
-        <Select
-          value={selectedTransitionId || undefined}
-          onValueChange={setSelectedTransitionId}
-          disabled={loading || isTransitioning}
-        >
-          <SelectTrigger
-            className={cn(
-              "h-8 text-xs flex-1",
-              `theme-${colorTheme}`,
-              "focus-visible:ring-[var(--primary)]/30"
-            )}
+      {/* Sélecteur de transition */}
+      {allowedTransitions.length > 0 && (
+        <div className="space-y-2">
+          <Select
+            value={selectedTransitionId || undefined}
+            onValueChange={setSelectedTransitionId}
+            disabled={isTransitioning}
           >
-            <SelectValue placeholder="Choisir une transition" />
-          </SelectTrigger>
-          <SelectContent>
-            {transitions.map((transition) => (
-              <SelectItem key={transition.id} value={String(transition.id)}>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{transition.name}</span>
-                  <ArrowRight className="w-3 h-3" />
-                  <span className="text-xs text-muted-foreground">
-                    {transition.toStatus.name}
-                  </span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionnez une transition" />
+            </SelectTrigger>
+            <SelectContent>
+              {allowedTransitions.map((transition) => (
+                <SelectItem key={transition.id} value={String(transition.id)}>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span>{transition.name}</span>
+                    {/* ✅ PROTECTION : Vérifier que toStatus existe */}
+                    {transition.toStatus && (
+                      <span className="text-xs text-muted-foreground">
+                        → {transition.toStatus.name}
+                      </span>
+                    )}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Button
-          size="sm"
-          onClick={handleTransition}
-          disabled={!selectedTransitionId || loading || isTransitioning}
-          className={cn(
-            "h-8 px-3 text-xs",
-            `theme-${colorTheme}`,
-            "bg-[var(--primary)] hover:bg-[var(--primary-hover)]"
-          )}
-        >
-          {isTransitioning ? (
-            <Loader2 className="w-3 h-3 animate-spin" />
-          ) : (
-            "Appliquer"
-          )}
-        </Button>
-      </div>
+          {/* Bouton de validation */}
+          <Button
+            onClick={handleTransition}
+            disabled={!selectedTransitionId || isTransitioning}
+            className="w-full"
+            size="sm"
+          >
+            {isTransitioning ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Transition en cours...
+              </>
+            ) : (
+              "Appliquer la transition"
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* Afficher les erreurs de validation */}
+      {selectedTransition &&
+        selectedTransition.validation_errors &&
+        selectedTransition.validation_errors.length > 0 && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Conditions non remplies</AlertTitle>
+            <AlertDescription>
+              <ul className="list-disc list-inside space-y-1 mt-2">
+                {selectedTransition.validation_errors.map((error, index) => (
+                  <li key={index} className="text-sm">
+                    {error}
+                  </li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
+
+      {/* Afficher les transitions bloquées */}
+      {blockedTransitions.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-muted-foreground">
+            Transitions non disponibles :
+          </p>
+          <div className="space-y-1">
+            {blockedTransitions.map((transition) => (
+              <TooltipProvider key={transition.id}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50 cursor-not-allowed opacity-60">
+                      <X className="h-4 w-4 text-yellow-500" />
+                      <span className="text-sm">{transition.name}</span>
+                      {/* ✅ PROTECTION : Vérifier que toStatus existe */}
+                      {transition.toStatus && (
+                        <span className="text-xs text-muted-foreground">
+                          → {transition.toStatus.name}
+                        </span>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <div className="space-y-1">
+                      <p className="font-medium">Conditions requises :</p>
+                      {transition.validation_errors?.map((error, index) => (
+                        <p key={index} className="text-xs">
+                          • {error}
+                        </p>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

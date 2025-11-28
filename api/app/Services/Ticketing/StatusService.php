@@ -47,10 +47,28 @@ class StatusService implements StatusServiceInterface
   public function deleteStatus(Status $status): bool
   {
     return DB::transaction(function () use ($status) {
-      // Vérifier si le statut est utilisé par des issues
-      if ($status->issues()->exists()) {
-        throw new \Exception('Impossible de supprimer un statut utilisé par des issues');
+      $issuesCount = $status->issues()->count();
+      if ($issuesCount > 0) {
+        throw new \Exception("Impossible de supprimer un statut utilisé par {$issuesCount} issue(s). Migrez d'abord ces issues vers un autre statut.");
       }
+
+      $transitionsFrom = DB::table('workflow_transitions')
+        ->where('from_status_id', $status->id)
+        ->count();
+
+      $transitionsTo = DB::table('workflow_transitions')
+        ->where('to_status_id', $status->id)
+        ->count();
+
+      $transitionsCount = $transitionsFrom + $transitionsTo;
+
+      if ($transitionsCount > 0) {
+        throw new \Exception("Impossible de supprimer un statut utilisé dans {$transitionsCount} transition(s). Supprimez d'abord les transitions depuis le workflow editor.");
+      }
+
+      DB::table('project_statuses')
+        ->where('status_id', $status->id)
+        ->delete();
 
       return $status->delete();
     });
