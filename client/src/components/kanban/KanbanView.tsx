@@ -21,10 +21,10 @@ interface KanbanViewProps {
   onTaskUpdate?: (tasks: Task[]) => void;
   onRefreshData?: () => void;
   isCreatingTask?: boolean;
-  disableDragAndDrop?: boolean; // ✅ Conservé pour compatibilité mais ignoré
+  disableDragAndDrop?: boolean; // Conservé pour compatibilité mais ignoré
 }
 
-// ✅ Composant pour la zone de colonnes (SANS drag & drop)
+// Composant pour la zone de colonnes (SANS drag & drop)
 function Column({
   id,
   title,
@@ -78,7 +78,7 @@ function Column({
       </div>
 
       <ScrollArea className="flex-1 p-1.5">
-        {/* ✅ Tâches sans drag & drop */}
+        {/* Tâches sans drag & drop */}
         {tasks.map((task) => (
           <div key={task.id} className="mb-2">
             <TaskCard
@@ -178,7 +178,7 @@ export function KanbanView({
   onTaskUpdate,
   onRefreshData,
   isCreatingTask = false,
-  disableDragAndDrop = true, // ✅ Toujours true maintenant
+  disableDragAndDrop = true, // Toujours true maintenant
 }: KanbanViewProps) {
   const getTasksByStatus = (status: TaskStatus) => {
     return tasks.filter((task) => task.status === status);

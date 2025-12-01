@@ -98,7 +98,7 @@ export default function Workflow() {
 
       <ReactFlowProvider>
         {" "}
-        {/* ✅ Envelopper ici */}
+        {/* Envelopper ici */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {selectedProjectId ? (
             isEditing ? (

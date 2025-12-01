@@ -66,7 +66,7 @@ function StatusNode({ data, selected }: StatusNodeProps) {
   const icon = getCategoryIcon(data.category);
   const categoryLabel = getCategoryLabel(data.category);
 
-  // ✅ Le contenu du nœud
+  // Le contenu du nœud
   const nodeContent = (
     <div
       className={cn(
@@ -100,7 +100,7 @@ function StatusNode({ data, selected }: StatusNodeProps) {
     </div>
   );
 
-  // ✅ Si onEdit et onDelete sont fournis, wrapper avec ContextMenu
+  // Si onEdit et onDelete sont fournis, wrapper avec ContextMenu
   if (data.onEdit && data.onDelete) {
     return (
       <ContextMenu>
@@ -120,7 +120,7 @@ function StatusNode({ data, selected }: StatusNodeProps) {
     );
   }
 
-  // ✅ Sinon, afficher juste le nœud
+  // Sinon, afficher juste le nœud
   return nodeContent;
 }
 

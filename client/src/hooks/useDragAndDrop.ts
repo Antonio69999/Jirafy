@@ -20,7 +20,7 @@ export function useDragAndDrop(
   onRefreshData?: () => void
 ) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false); // ✅ Ajout de l'état manquant
+  const [isUpdating, setIsUpdating] = useState(false); // Ajout de l'état manquant
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -71,9 +71,7 @@ export function useDragAndDrop(
         onRefreshData();
       }
     } catch (error: any) {
-      toast.error(
-        error.message || "Erreur lors du déplacement de la tâche"
-      );
+      toast.error(error.message || "Erreur lors du déplacement de la tâche");
     } finally {
       setIsUpdating(false);
       setActiveTask(null);

@@ -74,7 +74,7 @@ export default function WorkflowDiagram() {
     return [entryNode, ...statusNodes, exitNode];
   }, [statuses]);
 
-  // ✅ Création des edges avec connexions entrée/sortie
+  // Création des edges avec connexions entrée/sortie
   const edges: Edge[] = useMemo(() => {
     if (!transitions || transitions.length === 0 || !statuses) return [];
 

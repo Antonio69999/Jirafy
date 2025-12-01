@@ -58,7 +58,7 @@ export function TransitionSelector({
     }
   };
 
-  // ✅ CORRECTION : Accepter to_status OU toStatus
+  // CORRECTION : Accepter to_status OU toStatus
   const validTransitions = transitions.filter((t) => {
     // @ts-ignore - Accepter les deux formats
     return t.toStatus || t.to_status;
@@ -71,7 +71,7 @@ export function TransitionSelector({
     (t) => t.is_allowed === false
   );
 
-  // ✅ HELPER : Récupérer toStatus peu importe le format
+  // HELPER : Récupérer toStatus peu importe le format
   const getToStatus = (transition: any) => {
     return transition.toStatus || transition.to_status;
   };
@@ -118,7 +118,7 @@ export function TransitionSelector({
             </SelectTrigger>
             <SelectContent>
               {allowedTransitions.map((transition) => {
-                const toStatus = getToStatus(transition); // ✅ Utiliser le helper
+                const toStatus = getToStatus(transition); // Utiliser le helper
                 return (
                   <SelectItem key={transition.id} value={String(transition.id)}>
                     <div className="flex items-center gap-2">
@@ -182,7 +182,7 @@ export function TransitionSelector({
           </p>
           <div className="space-y-1">
             {blockedTransitions.map((transition) => {
-              const toStatus = getToStatus(transition); // ✅ Utiliser le helper
+              const toStatus = getToStatus(transition); // Utiliser le helper
               return (
                 <TooltipProvider key={transition.id}>
                   <Tooltip>

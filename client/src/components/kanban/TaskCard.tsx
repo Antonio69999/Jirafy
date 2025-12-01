@@ -56,7 +56,7 @@ export function TaskCard({
     projectId ? parseInt(projectId) : null
   );
 
-  // ✅ NOUVEAU : Recharger les transitions quand on affiche le sélecteur
+  // NOUVEAU : Recharger les transitions quand on affiche le sélecteur
   useEffect(() => {
     if (showTransitions && issueId) {
       console.log("🔄 Refetching transitions for issue:", issueId);
@@ -129,7 +129,7 @@ export function TaskCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-white"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
@@ -179,7 +179,7 @@ export function TaskCard({
           {task.priority && (
             <span
               className={cn(
-                "px-2 py-0.5 rounded-full text-xs font-medium",
+                "px-2 py-0.5 rounded-full text-xs font-medium text-white",
                 getPriorityClass(task.priority)
               )}
             >

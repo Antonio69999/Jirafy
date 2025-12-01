@@ -27,7 +27,7 @@ export function useProjectWorkflow(projectId: number | null) {
     try {
       console.log("🔄 Fetching transitions for project:", projectId);
       const result = await workflowService.getProjectTransitions(projectId);
-      console.log("✅ Transitions loaded:", result);
+      console.log("Transitions loaded:", result);
       setData(result);
     } catch (err: any) {
       const error = {
@@ -108,7 +108,6 @@ export function useDeleteTransition() {
 
   return { remove, loading, error };
 }
-
 
 export function useValidateWorkflow() {
   const [loading, setLoading] = useState(false);

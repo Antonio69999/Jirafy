@@ -577,7 +577,7 @@ export default function WorkflowEditor() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ✅ AlertDialog pour supprimer un statut (déjà existant) */}
+      {/* AlertDialog pour supprimer un statut (déjà existant) */}
       <AlertDialog
         open={!!nodeToDelete}
         onOpenChange={() => setNodeToDelete(null)}

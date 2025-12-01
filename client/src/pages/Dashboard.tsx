@@ -21,8 +21,6 @@ import { SettingsView } from "@/components/kanban/SettingsView";
 import { SummaryView } from "@/components/kanban/SummaryView";
 import ProjectMembersModal from "@/components/modals/ProjectMembersModal";
 import { useProjectStatuses } from "@/hooks/useStatus";
-import { workflowService } from "@/api/services/workflowService";
-
 import { toast } from "sonner";
 
 type TabType =
@@ -48,7 +46,7 @@ export function Dashboard() {
     error: projectError,
   } = useProject(projectId ? parseInt(projectId) : undefined);
 
-  // ✅ Récupération des statuts du projet
+  // Récupération des statuts du projet
   const {
     data: projectStatuses,
     loading: statusesLoading,
@@ -85,7 +83,7 @@ export function Dashboard() {
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
 
-  // ✅ Mapper l'ID du statut vers le format de colonne
+  // Mapper l'ID du statut vers le format de colonne
   const mapStatusIdToTaskStatus = (statusId: number): string => {
     return `status-${statusId}`;
   };
@@ -108,7 +106,7 @@ export function Dashboard() {
     }
   };
 
-  // ✅ Transformation des issues en tâches avec les statuts du projet
+  // Transformation des issues en tâches avec les statuts du projet
   useEffect(() => {
     if (!issuesData?.data) {
       setTasks([]);
@@ -120,10 +118,7 @@ export function Dashboard() {
       return;
     }
 
-    console.log(
-      "✅ Transforming tasks with project statuses:",
-      projectStatuses
-    );
+    console.log("Transforming tasks with project statuses:", projectStatuses);
 
     const transformedTasks: Task[] = issuesData.data.map((issue) => {
       const status = projectStatuses.find((s) => s.id === issue.status_id);
@@ -138,7 +133,7 @@ export function Dashboard() {
         title: issue.title,
         description: issue.description || undefined,
         status: mapStatusIdToTaskStatus(issue.status_id),
-        statusId: issue.status_id, // ✅ Stocker l'ID pour référence
+        statusId: issue.status_id, // Stocker l'ID pour référence
         priority: mapPriorityToTaskPriority(issue.priority?.key || "MEDIUM"),
         labels: issue.labels?.map((label) => label.name) || [],
         assignee: issue.assignee
@@ -154,7 +149,7 @@ export function Dashboard() {
       };
     });
 
-    console.log("✅ Tasks transformed:", transformedTasks);
+    console.log("Tasks transformed:", transformedTasks);
     setTasks(transformedTasks);
   }, [issuesData, projectStatuses]);
 
@@ -193,7 +188,7 @@ export function Dashboard() {
     }
   }, [searchParams]);
 
-  // ✅ Générer les colonnes directement à partir des statuts du projet
+  // Générer les colonnes directement à partir des statuts du projet
   const columns =
     projectStatuses && projectStatuses.length > 0
       ? projectStatuses.map((status) => ({
@@ -209,7 +204,7 @@ export function Dashboard() {
           { id: "status-3", title: t("dashboard.kanban.done") || "Terminé" },
         ];
 
-  console.log("✅ Columns generated:", columns);
+  console.log("Columns generated:", columns);
 
   const getPriorityClass = (priority?: string) => {
     switch (priority) {
@@ -256,7 +251,7 @@ export function Dashboard() {
     }
   };
 
-  // ✅ Créer une tâche avec l'ID du statut extrait de la colonne
+  // Créer une tâche avec l'ID du statut extrait de la colonne
   const handleSaveTask = async (columnId: string, title: string) => {
     if (!projectId || !currentProject) {
       toast.error("Aucun projet sélectionné");
@@ -270,7 +265,7 @@ export function Dashboard() {
       const result = await quickCreate({
         title,
         projectId: parseInt(projectId),
-        statusId, // ✅ Utiliser statusId au lieu de statusKey
+        statusId, // Utiliser statusId au lieu de statusKey
       });
 
       if (result) {

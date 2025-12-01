@@ -23,10 +23,10 @@ class WorkflowService implements WorkflowServiceInterface
    */
   public function getAvailableTransitions(Issue $issue, User $user = null): Collection
   {
-    // ✅ SIMPLIFIER : Pas besoin de select(), Laravel charge tout automatiquement
+    // SIMPLIFIER : Pas besoin de select(), Laravel charge tout automatiquement
     $transitions = WorkflowTransition::where('project_id', $issue->project_id)
       ->where('from_status_id', $issue->status_id)
-      ->with('toStatus') // ✅ SIMPLE : juste le nom de la relation
+      ->with('toStatus') // SIMPLE : juste le nom de la relation
       ->get();
 
     // Si pas d'utilisateur, retourner toutes les transitions

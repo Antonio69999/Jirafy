@@ -18,7 +18,7 @@ export function useIssueTransitions(issueId: number | null) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>(null);
 
-  // ✅ NOUVEAU : Fonction pour forcer le rechargement
+  // NOUVEAU : Fonction pour forcer le rechargement
   const refetch = async () => {
     if (!issueId) {
       setData(null);
@@ -31,7 +31,7 @@ export function useIssueTransitions(issueId: number | null) {
     setError(null);
     try {
       const result = await workflowService.getAvailableTransitions(issueId);
-      console.log("✅ Transitions loaded:", result);
+      console.log("Transitions loaded:", result);
       setData(result);
     } catch (err: any) {
       const error = {
@@ -50,7 +50,7 @@ export function useIssueTransitions(issueId: number | null) {
     refetch();
   }, [issueId]);
 
-  return { data, loading, error, refetch }; // ✅ Exposer refetch
+  return { data, loading, error, refetch }; // Exposer refetch
 }
 
 /**

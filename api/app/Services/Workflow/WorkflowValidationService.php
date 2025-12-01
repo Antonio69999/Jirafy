@@ -22,12 +22,12 @@ class WorkflowValidationService
     $errors = [];
     $warnings = [];
 
-    // ✅ Vérifier qu'il y a au moins 3 statuts
+    // Vérifier qu'il y a au moins 3 statuts
     if ($statuses->count() < 3) {
       $errors[] = 'Le workflow doit contenir au moins 3 statuts';
     }
 
-    // ✅ Vérifier que TODO et DONE existent
+    // Vérifier que TODO et DONE existent
     $todoStatus = $statuses->firstWhere('key', 'TODO');
     $doneStatus = $statuses->firstWhere('key', 'DONE');
 
@@ -38,21 +38,21 @@ class WorkflowValidationService
       $errors[] = 'Le statut DONE est requis';
     }
 
-    // ✅ Vérifier les statuts orphelins
+    // Vérifier les statuts orphelins
     $orphans = $this->findOrphanStatuses($statuses, $transitions);
     if ($orphans->isNotEmpty()) {
       $orphanNames = $orphans->pluck('name')->join(', ');
       $errors[] = "Statuts orphelins (sans transition sortante) : {$orphanNames}";
     }
 
-    // ✅ Vérifier qu'il existe un chemin de TODO → DONE
+    // Vérifier qu'il existe un chemin de TODO → DONE
     if ($todoStatus && $doneStatus) {
       if (!$this->hasPathBetween($todoStatus->id, $doneStatus->id, $transitions)) {
         $errors[] = 'Aucun chemin trouvé entre TODO et DONE';
       }
     }
 
-    // ⚠️ Warnings : Boucles potentielles
+    // Warnings : Boucles potentielles
     $loops = $this->detectLoops($transitions);
     if ($loops->isNotEmpty()) {
       $warnings[] = 'Boucles détectées dans le workflow (peut causer des tickets bloqués)';
