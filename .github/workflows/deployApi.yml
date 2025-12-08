@@ -3,7 +3,9 @@ name: Deploy API with Database to Runcloud
 on:
   push:
     branches: [main]
-    paths: ["api/**", "docker-compose.yml", ".env"]
+    paths:
+      - "api/**"
+      - "docker-compose.yml"
 
 jobs:
   deploy-api:
@@ -25,32 +27,35 @@ jobs:
               git clone https://github.com/Antonio69999/Jirafy.git .
             else
               echo "=== Updating code ==="
-              git pull origin main
+              git fetch origin main
+              git reset --hard origin/main
             fi
 
-            # Vérifier les fichiers présents
-            echo "=== Files in directory ==="
-            ls -la
-
-            # Vérifier que docker-compose.yml existe
-            if [ ! -f "docker-compose.yml" ]; then
-              echo "❌ docker-compose.yml not found!"
-              exit 1
-            fi
+            # Créer le fichier .env pour Docker Compose
+            cat > .env << 'EOF'
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            APP_KEY=${{ secrets.APP_KEY }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            EOF
 
             # Arrêter les conteneurs existants
             docker-compose down || true
 
-            # Construire et démarrer les services
-            echo "=== Building and starting services ==="
-            docker-compose up -d --build
+            # Reconstruire l'API (pour prendre en compte le nouveau entrypoint.sh)
+            docker-compose build --no-cache api
 
-            # Attendre que les services soient prêts
-            echo "=== Waiting for services to be ready ==="
-            sleep 30
+            # Démarrer les services
+            docker-compose up -d
 
-            # Vérifier que tout fonctionne
+            # Attendre que tout soit prêt
+            echo "=== Waiting for services ==="
+            sleep 45
+
+            # Vérifier le statut
+            echo "=== Container status ==="
             docker-compose ps
-            docker-compose logs --tail=20 app
 
-            echo " API deployment completed!"
+            echo "=== API logs ==="
+            docker-compose logs --tail=30 api
+
+            echo "✅ Deployment completed!"
