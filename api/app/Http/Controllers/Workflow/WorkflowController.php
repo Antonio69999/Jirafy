@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Workflow\StoreTransitionRequest;
 use App\Models\Workflow\WorkflowTransition;
 
+/**
+ * @OA\Tag(
+ *     name="Workflow",
+ *     description="Gestion des workflows et transitions"
+ * )
+ */
 class WorkflowController extends Controller
 {
   public function __construct(
@@ -21,7 +27,36 @@ class WorkflowController extends Controller
   ) {}
 
   /**
-   * Récupérer les transitions disponibles pour une issue
+   * @OA\Get(
+   *     path="/api/issues/{issue}/transitions",
+   *     summary="Récupérer les transitions disponibles pour une issue",
+   *     tags={"Workflow"},
+   *     security={{"bearerAuth":{}}},
+   *     @OA\Parameter(
+   *         name="issue",
+   *         in="path",
+   *         required=true,
+   *         description="ID de l'issue",
+   *         @OA\Schema(type="integer")
+   *     ),
+   *     @OA\Response(
+   *         response=200,
+   *         description="Liste des transitions disponibles",
+   *         @OA\JsonContent(
+   *             @OA\Property(property="success", type="boolean", example=true),
+   *             @OA\Property(
+   *                 property="data",
+   *                 type="array",
+   *                 @OA\Items(ref="#/components/schemas/AvailableTransition")
+   *             ),
+   *             @OA\Property(property="message", type="string")
+   *         )
+   *     ),
+   *     @OA\Response(
+   *         response=403,
+   *         description="Permission refusée"
+   *     )
+   * )
    */
   public function getAvailableTransitions(Issue $issue): JsonResponse
   {
@@ -44,7 +79,48 @@ class WorkflowController extends Controller
   }
 
   /**
-   * Effectuer une transition sur une issue
+   * @OA\Post(
+   *     path="/api/issues/{issue}/transitions",
+   *     summary="Effectuer une transition sur une issue",
+   *     tags={"Workflow"},
+   *     security={{"bearerAuth":{}}},
+   *     @OA\Parameter(
+   *         name="issue",
+   *         in="path",
+   *         required=true,
+   *         description="ID de l'issue",
+   *         @OA\Schema(type="integer")
+   *     ),
+   *     @OA\RequestBody(
+   *         required=true,
+   *         @OA\JsonContent(
+   *             required={"transition_id"},
+   *             @OA\Property(
+   *                 property="transition_id",
+   *                 type="integer",
+   *                 description="ID de la transition à effectuer",
+   *                 example=1
+   *             )
+   *         )
+   *     ),
+   *     @OA\Response(
+   *         response=200,
+   *         description="Transition effectuée avec succès",
+   *         @OA\JsonContent(
+   *             @OA\Property(property="success", type="boolean", example=true),
+   *             @OA\Property(property="data", ref="#/components/schemas/Issue"),
+   *             @OA\Property(property="message", type="string")
+   *         )
+   *     ),
+   *     @OA\Response(
+   *         response=400,
+   *         description="Transition non valide"
+   *     ),
+   *     @OA\Response(
+   *         response=403,
+   *         description="Permission refusée"
+   *     )
+   * )
    */
   public function performTransition(Request $request, Issue $issue): JsonResponse
   {
@@ -82,7 +158,31 @@ class WorkflowController extends Controller
   }
 
   /**
-   * Récupérer toutes les transitions d'un projet
+   * @OA\Get(
+   *     path="/api/projects/{project}/workflow/transitions",
+   *     summary="Récupérer toutes les transitions d'un projet",
+   *     tags={"Workflow"},
+   *     security={{"bearerAuth":{}}},
+   *     @OA\Parameter(
+   *         name="project",
+   *         in="path",
+   *         required=true,
+   *         description="ID du projet",
+   *         @OA\Schema(type="integer")
+   *     ),
+   *     @OA\Response(
+   *         response=200,
+   *         description="Liste des transitions du projet",
+   *         @OA\JsonContent(
+   *             @OA\Property(property="success", type="boolean", example=true),
+   *             @OA\Property(
+   *                 property="data",
+   *                 type="array",
+   *                 @OA\Items(ref="#/components/schemas/WorkflowTransition")
+   *             )
+   *         )
+   *     )
+   * )
    */
   public function getProjectTransitions(Project $project): JsonResponse
   {
@@ -104,6 +204,35 @@ class WorkflowController extends Controller
     ]);
   }
 
+  /**
+   * @OA\Post(
+   *     path="/api/workflow/transitions",
+   *     summary="Créer une nouvelle transition",
+   *     tags={"Workflow"},
+   *     security={{"bearerAuth":{}}},
+   *     @OA\RequestBody(
+   *         required=true,
+   *         @OA\JsonContent(ref="#/components/schemas/TransitionCreate")
+   *     ),
+   *     @OA\Response(
+   *         response=201,
+   *         description="Transition créée avec succès",
+   *         @OA\JsonContent(
+   *             @OA\Property(property="success", type="boolean", example=true),
+   *             @OA\Property(property="data", ref="#/components/schemas/WorkflowTransition"),
+   *             @OA\Property(property="message", type="string")
+   *         )
+   *     ),
+   *     @OA\Response(
+   *         response=403,
+   *         description="Permission refusée"
+   *     ),
+   *     @OA\Response(
+   *         response=422,
+   *         description="Erreur de validation"
+   *     )
+   * )
+   */
   public function createTransition(Request $request): JsonResponse
   {
     $user = Auth::user();
@@ -134,6 +263,33 @@ class WorkflowController extends Controller
     ], Response::HTTP_CREATED);
   }
 
+  /**
+   * @OA\Delete(
+   *     path="/api/workflow/transitions/{transition}",
+   *     summary="Supprimer une transition",
+   *     tags={"Workflow"},
+   *     security={{"bearerAuth":{}}},
+   *     @OA\Parameter(
+   *         name="transition",
+   *         in="path",
+   *         required=true,
+   *         description="ID de la transition",
+   *         @OA\Schema(type="integer")
+   *     ),
+   *     @OA\Response(
+   *         response=200,
+   *         description="Transition supprimée avec succès"
+   *     ),
+   *     @OA\Response(
+   *         response=403,
+   *         description="Permission refusée"
+   *     ),
+   *     @OA\Response(
+   *         response=404,
+   *         description="Transition non trouvée"
+   *     )
+   * )
+   */
   public function deleteTransition(WorkflowTransition $transition): JsonResponse
   {
     $user = Auth::user();
@@ -154,6 +310,34 @@ class WorkflowController extends Controller
     ]);
   }
 
+  /**
+   * @OA\Get(
+   *     path="/api/projects/{project}/workflow/validate",
+   *     summary="Valider le workflow d'un projet",
+   *     tags={"Workflow"},
+   *     security={{"bearerAuth":{}}},
+   *     @OA\Parameter(
+   *         name="project",
+   *         in="path",
+   *         required=true,
+   *         description="ID du projet",
+   *         @OA\Schema(type="integer")
+   *     ),
+   *     @OA\Response(
+   *         response=200,
+   *         description="Résultat de la validation",
+   *         @OA\JsonContent(
+   *             @OA\Property(property="success", type="boolean"),
+   *             @OA\Property(property="data", ref="#/components/schemas/WorkflowValidation"),
+   *             @OA\Property(property="message", type="string")
+   *         )
+   *     ),
+   *     @OA\Response(
+   *         response=422,
+   *         description="Workflow invalide"
+   *     )
+   * )
+   */
   public function validateWorkflow(Project $project): JsonResponse
   {
     $user = Auth::user();

@@ -1,0 +1,596 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Jirafy API",
+        "description": "API de gestion de projets et workflows",
+        "contact": {
+            "email": "admin@jirafy.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Serveur de développement"
+        },
+        {
+            "url": "https://jirafy.cda6.garage404.com",
+            "description": "Serveur de production"
+        }
+    ],
+    "paths": {
+        "/api/issues/{issue}/transitions": {
+            "get": {
+                "tags": [
+                    "Workflow"
+                ],
+                "summary": "Récupérer les transitions disponibles pour une issue",
+                "operationId": "7a5e582611d158c5beb53cb507e413d4",
+                "parameters": [
+                    {
+                        "name": "issue",
+                        "in": "path",
+                        "description": "ID de l'issue",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des transitions disponibles",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/AvailableTransition"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Permission refusée"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Workflow"
+                ],
+                "summary": "Effectuer une transition sur une issue",
+                "operationId": "726f209221be4597e00ebac686c551cd",
+                "parameters": [
+                    {
+                        "name": "issue",
+                        "in": "path",
+                        "description": "ID de l'issue",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "transition_id"
+                                ],
+                                "properties": {
+                                    "transition_id": {
+                                        "description": "ID de la transition à effectuer",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transition effectuée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Issue"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Transition non valide"
+                    },
+                    "403": {
+                        "description": "Permission refusée"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/projects/{project}/workflow/transitions": {
+            "get": {
+                "tags": [
+                    "Workflow"
+                ],
+                "summary": "Récupérer toutes les transitions d'un projet",
+                "operationId": "3c02de90e9cdeba1eae4a840a9a2703c",
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "description": "ID du projet",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des transitions du projet",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/WorkflowTransition"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/workflow/transitions": {
+            "post": {
+                "tags": [
+                    "Workflow"
+                ],
+                "summary": "Créer une nouvelle transition",
+                "operationId": "72419eafe5579dc46e81ba0fae14d4dc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TransitionCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Transition créée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/WorkflowTransition"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Permission refusée"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/workflow/transitions/{transition}": {
+            "delete": {
+                "tags": [
+                    "Workflow"
+                ],
+                "summary": "Supprimer une transition",
+                "operationId": "7d5d290117ba82f2d5f0e7fc4e72b69c",
+                "parameters": [
+                    {
+                        "name": "transition",
+                        "in": "path",
+                        "description": "ID de la transition",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transition supprimée avec succès"
+                    },
+                    "403": {
+                        "description": "Permission refusée"
+                    },
+                    "404": {
+                        "description": "Transition non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/projects/{project}/workflow/validate": {
+            "get": {
+                "tags": [
+                    "Workflow"
+                ],
+                "summary": "Valider le workflow d'un projet",
+                "operationId": "72682cc1a74e8e4fabf9c7ee0891cd1c",
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "description": "ID du projet",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Résultat de la validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/WorkflowValidation"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Workflow invalide"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "WorkflowTransition": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "project_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "from_status_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "to_status_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Start Progress"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "fromStatus": {
+                        "$ref": "#/components/schemas/Status"
+                    },
+                    "toStatus": {
+                        "$ref": "#/components/schemas/Status"
+                    }
+                },
+                "type": "object"
+            },
+            "TransitionCreate": {
+                "required": [
+                    "project_id",
+                    "from_status_id",
+                    "to_status_id",
+                    "name"
+                ],
+                "properties": {
+                    "project_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "from_status_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "to_status_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Start Progress"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AvailableTransition": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "to_status_id": {
+                        "type": "integer"
+                    },
+                    "toStatus": {
+                        "$ref": "#/components/schemas/Status"
+                    },
+                    "validation_errors": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "is_allowed": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "WorkflowValidation": {
+                "properties": {
+                    "valid": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "errors": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "warnings": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Status": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "key": {
+                        "type": "string",
+                        "example": "TODO"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "À faire"
+                    },
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "todo",
+                            "in_progress",
+                            "done"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "Issue": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "key": {
+                        "type": "string",
+                        "example": "WEB-123"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "project_id": {
+                        "type": "integer"
+                    },
+                    "status_id": {
+                        "type": "integer"
+                    },
+                    "type_id": {
+                        "type": "integer"
+                    },
+                    "priority_id": {
+                        "type": "integer"
+                    },
+                    "reporter_id": {
+                        "type": "integer"
+                    },
+                    "assignee_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "story_points": {
+                        "type": "number",
+                        "nullable": true
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Project": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "key": {
+                        "type": "string",
+                        "example": "WEB"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Site Web"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "team_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "lead_user_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Workflow",
+            "description": "Gestion des workflows et transitions"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
+}
