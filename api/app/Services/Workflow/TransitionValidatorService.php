@@ -93,7 +93,6 @@ class TransitionValidatorService
         ];
 
       case 'subtasks_completed':
-        // TODO: Implémenter la logique des sous-tâches
         return ['valid' => true, 'message' => ''];
 
       case 'estimated_time_required':

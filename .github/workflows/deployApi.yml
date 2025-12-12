@@ -1,11 +1,10 @@
-name: Deploy API with Database to Runcloud
+name: Deploy API to Runcloud
 
 on:
   push:
     branches: [main]
     paths:
       - "api/**"
-      - "docker-compose.yml"
 
 jobs:
   deploy-api:
@@ -21,41 +20,69 @@ jobs:
           script: |
             cd /home/antoine/webapps/jirafy_api
 
-            # Cloner ou mettre à jour le code
-            if [ ! -d ".git" ]; then
-              echo "=== First deployment ==="
-              git clone https://github.com/Antonio69999/Jirafy.git .
-            else
-              echo "=== Updating code ==="
-              git fetch origin main
-              git reset --hard origin/main
-            fi
+            echo "=== Pulling latest code ==="
+            git fetch origin main
+            git reset --hard origin/main
 
-            # Créer le fichier .env pour Docker Compose
-            cat > .env << 'EOF'
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            echo "=== Moving to API directory ==="
+            cd api
+
+            echo "=== Installing Composer dependencies ==="
+            composer install --optimize-autoloader --no-interaction --no-dev
+
+            echo "=== Creating .env file ==="
+            cat > .env << 'ENVEOF'
+            APP_NAME=Jirafy
+            APP_ENV=production
             APP_KEY=${{ secrets.APP_KEY }}
+            APP_DEBUG=false
+            APP_URL=https://jirafyapi.cda6.garage404.com
+
+            APP_LOCALE=fr
+            APP_FALLBACK_LOCALE=en
+            APP_FAKER_LOCALE=en_US
+
+            LOG_CHANNEL=stack
+            LOG_STACK=single
+            LOG_LEVEL=error
+
+            DB_CONNECTION=pgsql
+            DB_HOST=127.0.0.1
+            DB_PORT=5433
+            DB_DATABASE=jirafy
+            DB_USERNAME=jirafy_user
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+
+            SESSION_DRIVER=file
+            SESSION_LIFETIME=120
+
+            CACHE_STORE=file
+            QUEUE_CONNECTION=sync
+
             JWT_SECRET=${{ secrets.JWT_SECRET }}
-            EOF
 
-            # Arrêter les conteneurs existants
-            docker-compose down || true
+            CORS_ALLOWED_ORIGINS=https://jirafy.cda6.garage404.com
+            ENVEOF
 
-            # Reconstruire l'API (pour prendre en compte le nouveau entrypoint.sh)
-            docker-compose build --no-cache api
+            echo "=== Setting permissions ==="
+            chmod -R 775 storage bootstrap/cache
+            chown -R antoine:antoine storage bootstrap/cache
 
-            # Démarrer les services
-            docker-compose up -d
+            echo "=== Clearing caches ==="
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan route:clear
+            php artisan view:clear
 
-            # Attendre que tout soit prêt
-            echo "=== Waiting for services ==="
-            sleep 45
+            echo "=== Testing database connection ==="
+            php artisan db:show || echo "DB connection test skipped"
 
-            # Vérifier le statut
-            echo "=== Container status ==="
-            docker-compose ps
+            echo "=== Running migrations ==="
+            php artisan migrate --force
 
-            echo "=== API logs ==="
-            docker-compose logs --tail=30 api
+            echo "=== Caching for production ==="
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
 
-            echo "✅ Deployment completed!"
+            echo "✅ API Deployment completed!"

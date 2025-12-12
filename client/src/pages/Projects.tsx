@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import { Plus, Star, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useColorThemeStore } from "@/store/colorThemeStore";
-import { useProjects } from "@/hooks/useProject";
+import { useProjects, useDeleteProject } from "@/hooks/useProject";
 import { usePermissions } from "@/hooks/usePermissions";
-
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -26,7 +26,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-
 import { PageContainer } from "@/components/pages/PageContainer";
 import { SearchBar } from "@/components/layout/SearchBar";
 import CreateProjectModal from "@/components/modals/CreateProjectModal";
@@ -67,6 +66,8 @@ export default function Projects() {
     null
   );
 
+  const { remove: deleteProject, loading: deleteLoading } = useDeleteProject();
+
   const {
     data: projectsData,
     loading,
@@ -105,10 +106,32 @@ export default function Projects() {
   };
 
   const handleDelete = async (project: ApiProject) => {
-    if (!confirm(t("project.actions.deleteConfirm") || "Êtes-vous sûr ?")) {
+    if (
+      !confirm(
+        t("project.actions.deleteConfirm") ||
+          "Êtes-vous sûr de vouloir supprimer ce projet ? Cette action est irréversible."
+      )
+    ) {
       return;
     }
-    console.log("Delete project:", project.id);
+
+    const success = await deleteProject(project.id);
+    if (success) {
+      toast.success(
+        t("project.actions.deleteSuccess") || "Projet supprimé avec succès"
+      );
+      refetch();
+    } else {
+      toast.error(
+        t("project.actions.deleteError") ||
+          "Erreur lors de la suppression du projet"
+      );
+    }
+  };
+
+  const handleNavigateToProject = (project: ApiProject) => {
+    // Naviguer vers le dashboard avec le projet sélectionné
+    navigate(`/dashboard?project=${project.id}`);
   };
 
   const handleManageMembers = (project: ApiProject) => {
@@ -209,7 +232,6 @@ export default function Projects() {
                     <TableCell>{project.lead}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
-                        {/*  Bouton "Membres" : toujours visible si l'utilisateur peut voir le projet */}
                         {canManageProjectMembers(project.originalData) && (
                           <Button
                             onClick={() =>
@@ -223,7 +245,6 @@ export default function Projects() {
                           </Button>
                         )}
 
-                        {/*  Bouton "Modifier" : masqué si pas de permission */}
                         {canEditProject(project.originalData) && (
                           <Button
                             onClick={() => handleEdit(project.originalData)}
@@ -234,7 +255,6 @@ export default function Projects() {
                           </Button>
                         )}
 
-                        {/*  Bouton "Supprimer" : masqué si pas de permission */}
                         {canDeleteProject() && (
                           <Button
                             onClick={() => handleDelete(project.originalData)}
